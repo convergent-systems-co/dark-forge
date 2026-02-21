@@ -34,15 +34,6 @@ else
   echo "  $COPILOT_TARGET already linked"
 fi
 
-# MCP server config -> .vscode/mcp.json
-mkdir -p "$PROJECT_ROOT/.vscode"
-MCP_TARGET=".vscode/mcp.json"
-if [ ! -L "$PROJECT_ROOT/$MCP_TARGET" ] || [ "$(readlink "$PROJECT_ROOT/$MCP_TARGET")" != "../.ai/mcp/vscode.json" ]; then
-  ln -sf ../.ai/mcp/vscode.json "$PROJECT_ROOT/$MCP_TARGET"
-  echo "  Linked $MCP_TARGET -> .ai/mcp/vscode.json"
-else
-  echo "  $MCP_TARGET already linked"
-fi
 
 echo "Done. Symlinks created."
 echo ""

@@ -16,7 +16,7 @@ There is no build system, test runner, or linter. This is a configuration-only r
 ```bash
 bash .ai/init.sh
 ```
-Creates symlinks for CLAUDE.md, .cursorrules, .github/copilot-instructions.md, and .vscode/mcp.json in the parent project.
+Creates symlinks for CLAUDE.md, .cursorrules, and .github/copilot-instructions.md in the parent project.
 
 **Submodule operations (from consuming repo):**
 ```bash
@@ -97,6 +97,5 @@ When operating autonomously (via `prompts/startup.md`), the Code Manager:
 
 `config.yaml` defines symlinks created by `init.sh` for consuming repos:
 - `instructions.md` → `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`
-- `mcp/vscode.json` → `.vscode/mcp.json`
 
 This ensures Claude Code, GitHub Copilot, and Cursor all receive the same base instructions in consuming projects.

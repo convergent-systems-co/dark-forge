@@ -55,9 +55,6 @@ AI governance framework for autonomous software delivery. Provides personas, pan
     react/                     React conventions
     csharp/                    C#/.NET conventions
 
-  mcp/                         MCP server configurations
-    servers/                   Server definitions (gitignore, ServiceNow)
-
   docs/                        Architecture and design documents
     dark-factory-governance-model.md    Governance layers and decision authority
     artifact-classification.md          Cognitive, Enforcement, Audit artifact types

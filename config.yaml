@@ -16,9 +16,6 @@ symlinks:
       - .github/copilot-instructions.md
       - CLAUDE.md
       - .cursorrules
-  - source: mcp/vscode.json
-    targets:
-      - .vscode/mcp.json
 
 # Gitignore patterns for .ai/
 gitignore:
