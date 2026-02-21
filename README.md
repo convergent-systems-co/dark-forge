@@ -2,6 +2,21 @@
 
 AI governance framework for autonomous software delivery. Provides personas, panels, policy enforcement, structured emissions, and audit manifests — distributed as a git submodule to any repository.
 
+> **New here?** See the [Developer Quick Guide](DEVELOPER_GUIDE.md) for a TLDR onboarding.
+
+## Goals
+
+The Dark Factory Governance Platform exists to:
+
+1. **Automate software delivery governance** — Replace manual code review gates with structured, auditable AI-driven review panels that produce deterministic merge decisions.
+2. **Enforce policy without human bottlenecks** — Deterministic policy profiles (default, financial/PII, infrastructure-critical) evaluate every change programmatically. AI models never interpret policy rules.
+3. **Maintain compliance at scale** — Embed SOC2, PCI-DSS, HIPAA, and GDPR compliance into the review pipeline so regulated changes are caught at intake, not after merge.
+4. **Enable autonomous agentic operation** — A Code Manager persona orchestrates the full lifecycle (issue triage, planning, implementation, review, merge) with human oversight only where policy requires it.
+5. **Distribute governance as infrastructure** — Ship as a git submodule so any repository gets personas, panels, policies, and CI workflows by adding a single dependency.
+6. **Reach full Dark Factory** — Progress through defined maturity phases toward fully autonomous software delivery with runtime feedback loops and self-evolving governance.
+
+See [GOALS.md](GOALS.md) for detailed phase tracking, completed work, and open enhancements.
+
 ## Governance Maturity Model
 
 | Phase | Name | Description | Status |

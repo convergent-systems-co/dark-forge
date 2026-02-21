@@ -34,6 +34,13 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #26 | #29 | Branch naming convention | `itsfwcp/{type}/{number}/{name}` standard |
 | #32 | #33 | Issue labeling | Governance labels (refine, blocked, P0-P4, chore, refactor, ci) |
 
+### Documentation & Structure
+
+| Issue | PR | Title | Impact |
+|-------|----|-------|--------|
+| #40 | #45 | README and Goals status update | Comprehensive README rewrite, GOALS.md creation |
+| #38 | #46 | Filesystem structure collapse | Consolidated 7 top-level directories under `governance/` |
+
 ### Personas and Panels
 
 | Issue | PR | Title | Impact |
@@ -44,18 +51,11 @@ This document tracks the maturity phases, completed work, and open enhancements 
 
 ## Open Work
 
-### Actionable
+### In Progress
 
 | Issue | Title | Labels | Notes |
 |-------|-------|--------|-------|
-| #38 | Evaluate filesystem structure | `enhancement` | Simplify top-level layout for developers |
-| #40 | README/Goals status update | `documentation` | Completed by PR #45 |
-
-### Blocked
-
-| Issue | Title | Labels | Blocked By |
-|-------|-------|--------|------------|
-| #36 | Dark Factory Next Steps | `documentation`, `blocked` | All other issues must close first |
+| #36 | Dark Factory Next Steps | `documentation` | Goals review, Developer Quick Guide |
 
 ### Needs Refinement
 
