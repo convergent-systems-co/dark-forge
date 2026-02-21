@@ -1,7 +1,7 @@
 {
   "panel_name": "code-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.95,
+  "confidence_score": 0.90,
   "risk_level": "low",
   "compliance_score": 1.0,
   "policy_flags": [],
@@ -11,21 +11,21 @@
     {
       "persona": "quality/code-reviewer",
       "verdict": "approve",
-      "confidence": 0.95,
-      "rationale": "Clean removal of MCP directory. config.yaml, init.sh, CLAUDE.md, and README.md all updated consistently. No orphaned references."
+      "confidence": 0.90,
+      "rationale": "Workflow logic is sound. Changelog and update jobs separated correctly. fail-fast disabled for matrix. Job disabled with if:false until consuming repos configured."
     },
     {
       "persona": "compliance/security-auditor",
       "verdict": "approve",
-      "confidence": 0.95,
-      "rationale": "Removal of MCP server code including ServiceNow credentials handling reduces attack surface. No secrets committed."
+      "confidence": 0.88,
+      "rationale": "Secret passed via env var (not inline). Token validation fails fast if missing. peter-evans/create-pull-request pinned to SHA for supply chain security."
     }
   ],
   "aggregate_verdict": "approve",
   "execution_context": {
     "repository": "SET-Apps/ai-submodule",
-    "branch": "itsfwcp/remove-mcp-directories",
-    "pr_number": 14,
+    "branch": "itsfwcp/12-auto-propagation",
+    "pr_number": 18,
     "policy_profile": "default",
     "model_version": "claude-opus-4-6",
     "triggered_by": "manual"
