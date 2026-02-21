@@ -2,7 +2,7 @@
   "panel_name": "documentation-review",
   "panel_version": "1.0.0",
   "confidence_score": 0.90,
-  "risk_level": "negligible",
+  "risk_level": "low",
   "compliance_score": 1.0,
   "policy_flags": [],
   "requires_human_review": false,
@@ -12,20 +12,20 @@
       "persona": "leadership/mentor",
       "verdict": "approve",
       "confidence": 0.90,
-      "rationale": "MITRE Specialist persona and Threat Modeling panel follow established patterns. STRIDE expansion prevents acronym opacity. Panel process covers both prevention and detection."
+      "rationale": "Base instructions trimmed to ~90 tokens (under 200 budget). Five domain-specific files each under 500 tokens. ANCHOR markers correctly placed. No cross-file dependencies."
     },
     {
-      "persona": "compliance/security-auditor",
+      "persona": "engineering/ux-engineer",
       "verdict": "approve",
       "confidence": 0.90,
-      "rationale": "ATT&CK-first approach is sound. Panel correctly includes adversarial and architectural perspectives alongside security."
+      "rationale": "Consistent structure across all decomposed files. Loaded-for headers aid JIT context. PHASE markers use descriptive names appropriate for standalone instruction files."
     }
   ],
   "aggregate_verdict": "approve",
   "execution_context": {
     "repository": "SET-Apps/ai-submodule",
-    "branch": "itsfwcp/7-mitre-specialist",
-    "pr_number": 16,
+    "branch": "itsfwcp/11-instruction-decomposition",
+    "pr_number": 17,
     "policy_profile": "default",
     "model_version": "claude-opus-4-6",
     "triggered_by": "manual"
