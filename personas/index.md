@@ -77,6 +77,13 @@ Quick reference for all available personas and when to use them.
 | Migration Specialist | `specialist/migration-specialist.md` | Data/system migrations — integrity, rollback, parallel running |
 | API Consumer | `specialist/api-consumer.md` | API evaluation — from the consumer's perspective, DX friction |
 
+## FinOps
+
+| Persona | File | Use When |
+|---------|------|----------|
+| FinOps Engineer | `finops/finops-engineer.md` | Cloud cost governance — tagging compliance, budget enforcement, rightsizing, waste detection |
+| FinOps Analyst | `finops/finops-analyst.md` | Financial reporting — showback/chargeback, unit economics, forecasting, anomaly detection |
+
 ## Governance
 
 | Persona | File | Use When |
