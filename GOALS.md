@@ -40,6 +40,8 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|----|-------|--------|
 | #40 | #45 | README and Goals status update | Comprehensive README rewrite, GOALS.md creation |
 | #38 | #46 | Filesystem structure collapse | Consolidated 7 top-level directories under `governance/` |
+| #36 | #47 | Dark Factory Next Steps | Goals section in README, Developer Quick Guide, GOALS.md cleanup |
+| #49 | #52 | Missing panel emissions | Added security-review and ai-expert-review baseline emissions |
 
 ### Personas and Panels
 
@@ -55,7 +57,8 @@ This document tracks the maturity phases, completed work, and open enhancements 
 
 | Issue | Title | Labels | Notes |
 |-------|-------|--------|-------|
-| #36 | Dark Factory Next Steps | `documentation` | Goals review, Developer Quick Guide |
+| #48 | Agentic loop goals fallback | `enhancement` (P1) | Startup sequence falls back to GOALS.md when no issues remain |
+| #50 | Fix persona/panel counts | `enhancement` | CLAUDE.md still references 48 personas and 13 panels |
 
 ### Needs Refinement
 

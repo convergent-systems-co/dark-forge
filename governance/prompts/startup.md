@@ -260,9 +260,23 @@ After merge and before marking the plan as completed, run a lightweight retrospe
 4. **If any context pressure signal is present** (see "Context Capacity — MANDATORY" at top of file): execute shutdown protocol regardless of issue count
 5. **If neither limit is hit**: proceed to Step 8
 
-### Step 8: Continue
+### Step 8: Continue or Fall Back to Goals
 
-Return to Step 1. Pick the next actionable issue. Repeat until no actionable issues remain or a hard limit is reached.
+Return to Step 1. Pick the next actionable issue.
+
+If **no actionable issues remain** after Step 3 (all issues are closed, blocked, in `refine`, or otherwise excluded):
+
+1. Read `GOALS.md` and scan for unchecked items (lines starting with `- [ ]`) in the Phase 4b and Phase 5 sections (or any section with pending items).
+2. **Filter out items that already have an open issue** — for each GOALS.md item, check the open issue list and treat it as a duplicate if there is (a) an open issue whose title is an exact or very close match to the item text, or (b) an open issue whose description clearly references the same capability or work item.
+3. **Prioritize by phase** — Phase 4b items before Phase 5 items (closer to current maturity).
+4. For the highest-priority unchecked item that is sufficiently clear to act on:
+   a. **Create a GitHub issue** from the GOALS.md item, with a title matching the item text and a body describing the scope from the surrounding context in GOALS.md. Label it with the appropriate label (`enhancement` for features, `bug` for defects).
+   b. **Enter the Startup Sequence at Step 4** (Validate Intent) with the newly created issue.
+5. When that issue is eventually merged (during the retrospective at Step 7h), update `GOALS.md` to check off the completed item (`- [x]`) and add the issue/PR to the "Completed Work" section.
+6. If the highest-priority unchecked item is too vague to act on, skip it and move to the next unchecked item. Do not create an issue for vague items — note them for a future planning pass.
+7. If no unchecked GOALS.md items remain (or all remaining items are too vague), the loop exits.
+
+Repeat until no actionable issues or goals remain, or a hard limit is reached.
 
 ## Constraints
 
@@ -315,7 +329,7 @@ When triggered:
 ## Exit Conditions
 
 Stop the loop when:
-- No actionable issues remain
+- No actionable issues remain **and** no unchecked GOALS.md items can be converted to issues
 - **3 issues have been completed this session** — execute shutdown protocol, checkpoint, request `/clear`
 - **Any context pressure signal triggers** — execute shutdown protocol immediately
 - A human sends a message (human input takes priority)
