@@ -94,35 +94,41 @@ It does NOT govern:
 
 The governance model operates on the following existing components:
 
-**Personas (48 across 8 categories):**
+**Personas (42 across 11 categories):**
 
 | Category | Count | Directory |
 |----------|-------|-----------|
-| Code Quality | 3 | `governance/personas/quality/` |
 | Architecture | 3 | `governance/personas/architecture/` |
-| Engineering | 6 | `governance/personas/engineering/` |
-| Operations & Reliability | 6 | `governance/personas/operations/` |
+| Compliance | 4 | `governance/personas/compliance/` |
+| Documentation | 2 | `governance/personas/documentation/` |
 | Domain Specific | 5 | `governance/personas/domain/` |
-| Compliance & Governance | 3 | `governance/personas/compliance/` |
-| Process & People | 4 | `governance/personas/leadership/` |
+| Engineering | 6 | `governance/personas/engineering/` |
+| FinOps | 2 | `governance/personas/finops/` |
+| Governance | 2 | `governance/personas/governance/` |
+| Leadership | 5 | `governance/personas/leadership/` |
+| Operations & Reliability | 6 | `governance/personas/operations/` |
+| Code Quality | 3 | `governance/personas/quality/` |
 | Special Purpose | 4 | `governance/personas/specialist/` |
 
-**Panels (12 multi-persona panels):**
+**Panels (15 multi-persona panels):**
 
 | Panel | Participants | Primary Governance Layer |
 |-------|-------------|------------------------|
-| Code Review | 5 | Execution (L3) |
-| Architecture Review | 5 | Cognitive (L2) / Execution (L3) |
-| Security Review | 5 | Execution (L3) |
-| Performance Review | 5 | Execution (L3) |
-| Testing Review | 5 | Execution (L3) |
-| Production Readiness | 5 | Runtime (L4) |
+| AI Expert Review | 5 | Cognitive (L2) |
 | API Design Review | 5 | Cognitive (L2) |
+| Architecture Review | 5 | Cognitive (L2) / Execution (L3) |
+| Code Review | 5 | Execution (L3) |
+| Copilot Review | 5 | Execution (L3) |
 | Data Design Review | 5 | Cognitive (L2) / Execution (L3) |
 | Documentation Review | 5 | Execution (L3) |
-| Technical Debt Review | 5 | Evolution (L5) |
-| Migration Review | 5 | Execution (L3) / Evolution (L5) |
 | Incident Post-Mortem | 5 | Runtime (L4) |
+| Migration Review | 5 | Execution (L3) / Evolution (L5) |
+| Performance Review | 5 | Execution (L3) |
+| Production Readiness | 5 | Runtime (L4) |
+| Security Review | 5 | Execution (L3) |
+| Technical Debt Review | 5 | Evolution (L5) |
+| Testing Review | 5 | Execution (L3) |
+| Threat Modeling | 5 | Cognitive (L2) / Execution (L3) |
 
 **Workflows (8 end-to-end processes):**
 
@@ -1439,7 +1445,7 @@ Each step can be adopted independently. Steps 1-4 are additive with zero risk. S
 +---------------------+--------------------------------------------------+
 |                     |                                                  |
 | L3: Execution       | Coder (implementation)                           |
-|                     | All panel participants (12 panels)                |
+|                     | All panel participants (15 panels)                |
 |                     | Test Engineer (test validation)                  |
 |                     | Policy Engine (automated, not a persona)          |
 |                     |                                                  |
