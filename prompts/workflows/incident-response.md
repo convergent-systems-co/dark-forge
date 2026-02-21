@@ -21,7 +21,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 1: Triage
 
-> **Adopt persona:** `personas/special_purpose/incident-commander.md`
+> **Adopt persona:** `personas/specialist/incident-commander.md`
 
 ### Input
 
@@ -78,8 +78,8 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 2: Mitigate
 
-> **Adopt persona:** `personas/special_purpose/incident-commander.md`
-> **Secondary persona:** `personas/operations_reliability/sre.md`
+> **Adopt persona:** `personas/specialist/incident-commander.md`
+> **Secondary persona:** `personas/operations/sre.md`
 
 ### Input
 
@@ -129,7 +129,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 3: Communicate
 
-> **Adopt persona:** `personas/special_purpose/incident-commander.md`
+> **Adopt persona:** `personas/specialist/incident-commander.md`
 
 ### Input
 
@@ -228,7 +228,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 5: Post-Mortem
 
-> **Invoke round table:** `personas/round_tables/incident-post-mortem.md`
+> **Invoke panel:** `personas/panels/incident-post-mortem.md`
 
 ### Input
 
@@ -238,7 +238,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ### Process
 
-1. Review the incident end-to-end with the round table
+1. Review the incident end-to-end with the panel
 2. Evaluate what went well (detection, response, communication)
 3. Evaluate what went poorly
 4. Identify lessons learned
@@ -284,7 +284,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 6: Action Items
 
-> **Adopt persona:** `personas/process_people/tech-lead.md`
+> **Adopt persona:** `personas/leadership/tech-lead.md`
 
 ### Input
 

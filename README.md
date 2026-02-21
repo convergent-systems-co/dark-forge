@@ -1,111 +1,219 @@
-# .ai — Shared AI Configuration
+# .ai — Dark Factory Governance Platform
 
-Reusable AI instructions, prompts, personas, and templates designed to be added to any project as a git submodule.
+AI governance framework for autonomous software delivery. Provides personas, panels, policy enforcement, structured emissions, and audit manifests — distributed as a git submodule to any repository.
 
-## Contents
+## Governance Maturity Model
 
-- **instructions.md** — Base instructions inherited by all projects
-- **config.yaml** — Configuration for symlinks, defaults, and gitignore patterns
-- **prompts/** — Reusable prompt templates (debug, refactor, code-review, workflows, etc.)
-- **personas/** — Specialized AI personas for different roles and review types
-- **templates/** — Language/framework-specific project scaffolding (Go, Python, Node, React, C#)
-- **mcp/** — MCP server configurations for shared AI tooling (requires binaries installed locally)
+| Phase | Name | Description | Status |
+|-------|------|-------------|--------|
+| 3 | Agentic Orchestration | Personas, panels, workflows with human gates | Implemented |
+| 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Current** |
+| 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | Designed |
+| 5 | Dark Factory | Full automation with runtime feedback and self-evolution | Architecture defined |
+
+## Repository Structure
+
+```
+.ai/
+  instructions.md              Base AI instructions (< 200 tokens, Tier 0)
+  config.yaml                  Symlink and sync configuration
+
+  personas/                    AI persona definitions (Markdown)
+    architecture/              System design (3 personas)
+    quality/                   Code review (3 personas)
+    compliance/                Security, regulatory, accessibility (3 personas)
+    documentation/             Content creation and review (2 personas)
+    domain/                    Frontend, backend, data, ML, mobile (5 personas)
+    engineering/               Testing, performance, debugging (6 personas)
+    operations/                SRE, DevOps, infrastructure (6 personas)
+    leadership/                Technical leadership, product, mentoring (4 personas)
+    specialist/                Legacy, incidents, migrations (4 personas)
+    governance/                Governance Auditor, Policy Evaluator (2 personas)
+    agentic/                   Code Manager, Coder (2 personas)
+    panels/                    Multi-persona review panels (13 panels incl. Copilot)
+    index.md                   Persona reference grid
+
+  prompts/                     Reusable prompt templates
+    workflows/                 Multi-phase orchestration (8 workflows)
+    plan-template.md           Standardized plan template for AI and humans
+
+  schemas/                     Enforcement artifacts (JSON Schema)
+    panel-output.schema.json   Structured emission standard for panel reviews
+    run-manifest.schema.json   Audit manifest for every merge decision
+
+  policy/                      Deterministic policy profiles (YAML)
+    default.yaml               Standard risk tolerance
+    fin_pii_high.yaml          Financial/PII — SOC2, PCI-DSS, HIPAA, GDPR
+    infrastructure_critical.yaml  Infrastructure-as-code, deployment configs
+
+  manifests/                   Run manifests (audit trail, append-only)
+
+  templates/                   Language-specific scaffolding
+    go/                        Go conventions and project config
+    python/                    Python conventions and project config
+    node/                      Node.js/TypeScript conventions
+    react/                     React conventions
+    csharp/                    C#/.NET conventions
+
+  mcp/                         MCP server configurations
+    servers/                   Server definitions (gitignore, ServiceNow)
+
+  docs/                        Architecture and design documents
+    dark-factory-governance-model.md    Governance layers and decision authority
+    artifact-classification.md          Cognitive, Enforcement, Audit artifact types
+    context-management.md               JIT loading and context reset protection
+    runtime-feedback-architecture.md    Drift detection and incident-to-DI generation
+    autonomy-metrics.md                 Autonomy index and weekly reporting
+    ci-gating-blueprint.md              CI checks, branch protection, auto-merge
+    naming-review.md                    Persona/panel naming consistency review
+
+  .plans/                      Implementation plans (per-task)
+  .github/workflows/           CI/CD (jm-compliance.yml — enterprise-locked)
+```
+
+## How It Works
+
+### For Code Changes (Phase 4a)
+
+```
+Issue / Design Intent
+        |
+        v
+Code Manager validates intent (Layer 1: Intent Governance)
+        |
+        v
+Panel graph activated (Layer 2: Cognitive Governance)
+  - Personas assigned based on change type and risk
+  - Panels execute in parallel where possible
+        |
+        v
+Panels emit structured JSON (Layer 3: Execution Governance)
+  - Confidence scores, risk levels, policy flags
+  - Validated against schemas/panel-output.schema.json
+        |
+        v
+Policy engine evaluates (deterministic, no prose)
+  - Reads active policy profile (default, fin_pii_high, etc.)
+  - Produces decision: auto_merge | auto_remediate | human_review_required | block
+        |
+        v
+Run manifest logged (schemas/run-manifest.schema.json)
+  - Complete audit trail for replay and compliance
+```
+
+### For Runtime Feedback (Phase 5 — Designed)
+
+```
+Runtime anomaly detected
+        |
+        v
+Signal classified and deduplicated
+        |
+        v
+Design Intent generated automatically
+        |
+        v
+Feeds back into Layer 1 (closes the autonomous loop)
+```
+
+## Compliance and Security
+
+Security, regulatory compliance, and code quality are embedded at every governance layer:
+
+| Layer | Compliance Mechanism |
+|-------|---------------------|
+| Intent | Risk classification at intake; PII/financial flags trigger `fin_pii_high` profile |
+| Cognitive | Security Auditor and Compliance Officer personas activated for regulated changes |
+| Execution | Policy engine enforces compliance scores, blocks PII exposure, requires security panel |
+| Runtime | Drift detection monitors compliance regression; incidents generate remediation DIs |
+| Evolution | Backward compatibility checks; breaking changes require migration plans |
+
+Policy profiles provide pre-configured compliance postures:
+- **`fin_pii_high`** — SOC2, PCI-DSS, HIPAA, GDPR. Auto-merge disabled. 3-approver override.
+- **`infrastructure_critical`** — Production stability. Mandatory architecture and SRE review.
+- **`default`** — Standard internal applications. Balanced automation and oversight.
+
+## Context Management
+
+The framework uses JIT (Just-In-Time) loading to minimize AI context window usage:
+
+| Tier | Content | Budget | Survives Reset |
+|------|---------|--------|----------------|
+| 0 | Base instructions + project identity | ~400 tokens | Yes (pinned) |
+| 1 | Language conventions + active personas | ~2,000 tokens | Session duration |
+| 2 | Current workflow phase + panel context | ~3,000 tokens | Released per phase |
+| 3 | Policies, schemas, docs | 0 tokens | Queried on-demand |
+
+See `docs/context-management.md` for the full strategy including checkpoint-based reset protection and instruction decomposition.
+
+## Repo Rename Recommendation
+
+This repository is currently named `ai-submodule`. Given its evolution into a governance platform, a more descriptive name is recommended:
+
+| Candidate | Rationale |
+|-----------|-----------|
+| **`dark-factory`** | Aligns with the governance model name and Phase 5 goal |
+| **`ai-governance`** | Descriptive of current function |
+| **`forge`** | Short, evocative of autonomous manufacturing |
+
+The rename should be coordinated across all consuming repositories that reference the submodule URL.
 
 ## Why a Git Submodule?
 
-There are several ways to share configuration across repos. A git submodule is the best fit here.
+| Approach | Drawback |
+|----------|----------|
+| Copy-paste | Drifts immediately. No propagation across repos. |
+| Package manager | Runtime dependency for static text. Overkill. |
+| Monorepo | Forces all projects into one repo. |
+| Template repo | One-time only. Updates don't flow. |
+| Git subtree | Merges history into host repo. Hard to update cleanly. |
 
-### Alternatives considered
+Submodules provide version-pinned, single-source-of-truth distribution with no toolchain requirement.
 
-| Approach                             | Drawback                                                                                                                                                                       |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Copy-paste**                       | Drifts immediately. No way to propagate updates across 10+ repos. You end up with N slightly different versions of the same instructions.                                      |
-| **Package manager** (npm, pip, etc.) | Adds a runtime dependency and build step for static text files. Requires a registry, versioning toolchain, and a language-specific ecosystem — overkill for markdown and YAML. |
-| **Monorepo / shared folder**         | Forces all projects into one repo or requires a separate sync script. Doesn't work when repos live in different orgs or on different hosts.                                    |
-| **Template repo**                    | Good for bootstrapping, but one-time only. Changes to the template don't flow to repos that were created from it.                                                              |
-| **Symlinks to a local path**         | Machine-specific. Breaks for every other developer who doesn't have the same filesystem layout.                                                                                |
-| **Git subtree**                      | Merges history into the host repo, making it harder to cleanly update or remove. Subtree splits are error-prone and confusing for contributors.                                |
+## Usage
 
-### Why submodules win for this use case
-
-- **Version-pinned**: Each project locks to a specific commit. You update deliberately, not accidentally.
-- **Single source of truth**: Fix a prompt or add a persona once, pull it into every project with one command.
-- **No toolchain required**: Works with bare git — no package manager, no CI plugin, no custom scripts.
-- **Clean separation**: The `.ai/` directory is its own repo with its own history. It doesn't pollute the host project's log, and removing it is a clean operation.
-- **Works everywhere**: Any git host, any language, any CI system. No ecosystem lock-in.
-- **Project-level overrides**: Local files (gitignored) let each project customize without forking the shared config.
-
-The main tradeoff is that submodules require contributors to run `git submodule update` (or clone with `--recurse-submodules`). This is a well-understood git workflow and the commands are documented below.
-
-## Adding to a Project
+### Adding to a Project
 
 ```bash
 git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
 git commit -m "Add .ai submodule"
 ```
 
-This clones the `.ai` repo into your project at the `.ai/` path.
-
-## Cloning a Project That Uses This Submodule
-
-When cloning a repo that already includes this submodule:
+### Cloning with Submodule
 
 ```bash
-# Option 1: Clone with submodules in one step
 git clone --recurse-submodules <PROJECT_URL>
-
-# Option 2: Initialize after cloning
-git clone <PROJECT_URL>
-cd <project>
-git submodule init
-git submodule update
 ```
 
-## Updating the Submodule
-
-To pull the latest changes from this repo into your project:
+### Updating
 
 ```bash
-# From the project root
 git submodule update --remote .ai
 git add .ai
 git commit -m "Update .ai submodule"
 ```
 
-Or enter the submodule directory directly:
+### Pinning a Version
 
 ```bash
 cd .ai
-git pull origin main
+git checkout v2.0.0
 cd ..
 git add .ai
-git commit -m "Update .ai submodule"
+git commit -m "Pin .ai submodule to v2.0.0"
 ```
 
-## Pinning a Specific Version
+### Project-Specific Configuration
 
-Submodules track a specific commit. To pin to a tag or commit:
+1. Copy a language template: `cp .ai/templates/python/project.yaml .ai/project.yaml`
+2. Customize personas, panels, and conventions
+3. Set the governance policy profile:
+   ```yaml
+   governance:
+     policy_profile: default
+   ```
 
-```bash
-cd .ai
-git checkout v1.0.0   # or a specific commit hash
-cd ..
-git add .ai
-git commit -m "Pin .ai submodule to v1.0.0"
-```
-
-## Project-Specific Overrides
-
-The submodule provides shared defaults. To customize per-project:
-
-1. **Create a `project.yaml`** in `.ai/` (gitignored via `*.local.*` patterns) or at the project root
-2. **Add project-specific instructions** that extend the base `instructions.md`
-3. **Use `config.yaml` symlinks** to map instructions to tool-specific files:
-   - `.github/copilot-instructions.md`
-   - `CLAUDE.md`
-   - `.cursorrules`
-
-## Removing the Submodule
+### Removing
 
 ```bash
 git submodule deinit -f .ai

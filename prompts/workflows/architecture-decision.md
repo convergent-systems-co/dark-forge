@@ -103,7 +103,7 @@ Making and documenting an architectural choice using an Architecture Decision Re
 
 ## Phase 3: Trade-offs
 
-> **Invoke round table:** `personas/round_tables/architecture-review.md`
+> **Invoke panel:** `personas/panels/architecture-review.md`
 
 ### Input
 
@@ -144,7 +144,7 @@ Making and documenting an architectural choice using an Architecture Decision Re
 ## Option C: Pros & Cons
 ...
 
-## Round Table Perspectives
+## Panel Perspectives
 - <Persona>: <key insight or concern>
 - ...
 ```
@@ -162,7 +162,7 @@ Making and documenting an architectural choice using an Architecture Decision Re
 
 ## Phase 4: Decision
 
-> **Adopt persona:** `personas/process_people/tech-lead.md`
+> **Adopt persona:** `personas/leadership/tech-lead.md`
 
 ### Input
 

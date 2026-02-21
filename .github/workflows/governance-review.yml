@@ -1,0 +1,183 @@
+name: Governance Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find panel emissions
+        id: emissions
+        run: |
+          EMISSIONS=$(find emissions -name '*.json' 2>/dev/null | sort)
+          if [ -z "$EMISSIONS" ]; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No panel emissions found in emissions/"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "files<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$EMISSIONS" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.emissions.outputs.found == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        if: steps.emissions.outputs.found == 'true'
+        run: pip install jsonschema pyyaml
+
+      - name: Validate and evaluate emissions
+        if: steps.emissions.outputs.found == 'true'
+        id: evaluate
+        env:
+          EMISSION_FILES: ${{ steps.emissions.outputs.files }}
+        shell: python
+        run: |
+          import json, sys, os
+          from jsonschema import validate, ValidationError
+          import yaml
+
+          with open("schemas/panel-output.schema.json") as f:
+              schema = json.load(f)
+
+          with open("policy/default.yaml") as f:
+              policy = yaml.safe_load(f)
+
+          emission_files = [f.strip() for f in os.environ["EMISSION_FILES"].strip().split("\n") if f.strip()]
+
+          results = []
+          all_valid = True
+          all_approve = True
+          confidence_sum = 0.0
+          weight_sum = 0.0
+          max_risk = "negligible"
+          risk_order = ["negligible", "low", "medium", "high", "critical"]
+          has_blocking_flags = False
+          has_human_review = False
+
+          weights = policy.get("weighting", {}).get("weights", {})
+
+          for filepath in emission_files:
+              try:
+                  with open(filepath) as f:
+                      emission = json.load(f)
+
+                  validate(instance=emission, schema=schema)
+
+                  panel_name = emission["panel_name"]
+                  confidence = emission["confidence_score"]
+                  risk = emission["risk_level"]
+                  verdict = emission.get("aggregate_verdict", "approve")
+                  flags = emission.get("policy_flags", [])
+                  human_review = emission.get("requires_human_review", False)
+
+                  weight = weights.get(panel_name, 0.10)
+                  confidence_sum += confidence * weight
+                  weight_sum += weight
+
+                  if risk_order.index(risk) > risk_order.index(max_risk):
+                      max_risk = risk
+
+                  if verdict != "approve":
+                      all_approve = False
+
+                  for flag in flags:
+                      if flag.get("severity") in ["critical", "high"]:
+                          has_blocking_flags = True
+
+                  if human_review:
+                      has_human_review = True
+
+                  results.append({
+                      "file": filepath, "panel": panel_name, "valid": True,
+                      "confidence": confidence, "risk": risk, "verdict": verdict,
+                  })
+                  print(f"  PASS {panel_name}: {verdict} (confidence: {confidence}, risk: {risk})")
+
+              except (ValidationError, json.JSONDecodeError, Exception) as e:
+                  all_valid = False
+                  error_msg = e.message if hasattr(e, "message") else str(e)
+                  results.append({"file": filepath, "valid": False, "error": error_msg})
+                  print(f"  FAIL {filepath}: {error_msg}")
+
+          aggregate_confidence = confidence_sum / weight_sum if weight_sum > 0 else 0.0
+
+          if not all_valid:
+              decision, reason = "block", "One or more emissions failed schema validation."
+          elif aggregate_confidence < 0.40:
+              decision, reason = "block", f"Aggregate confidence {aggregate_confidence:.2f} below block threshold 0.40."
+          elif has_blocking_flags:
+              decision, reason = "block", "Critical or high severity policy flags present."
+          elif has_human_review or aggregate_confidence < 0.70:
+              decision, reason = "human_review_required", f"Confidence {aggregate_confidence:.2f} below 0.70 or panel requested human review."
+          elif not all_approve:
+              decision, reason = "human_review_required", "Not all panels approved."
+          elif max_risk in ["critical", "high"]:
+              decision, reason = "human_review_required", f"Risk level '{max_risk}' requires human review."
+          elif aggregate_confidence >= 0.85 and max_risk in ["low", "negligible"]:
+              decision, reason = "approve", f"All panels approved. Confidence {aggregate_confidence:.2f} meets threshold. Risk: {max_risk}."
+          else:
+              decision, reason = "human_review_required", f"Confidence {aggregate_confidence:.2f} below auto-merge threshold 0.85."
+
+          print(f"\n  Decision: {decision} | Confidence: {aggregate_confidence:.2f} | Risk: {max_risk}")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"decision={decision}\n")
+
+          # Write review body to file for safe multiline handling
+          lines = [
+              "## Dark Factory Governance Review\n",
+              f"**Decision:** `{decision}`",
+              f"**Aggregate confidence:** {aggregate_confidence:.2f}",
+              f"**Risk level:** {max_risk}",
+              f"**Reason:** {reason}\n",
+              "### Panel Results\n",
+              "| Panel | Verdict | Confidence | Risk |",
+              "|-------|---------|------------|------|",
+          ]
+          for r in results:
+              if r.get("valid"):
+                  lines.append(f"| {r['panel']} | {r['verdict']} | {r['confidence']:.2f} | {r['risk']} |")
+              else:
+                  lines.append(f"| {r['file']} | INVALID | - | - |")
+          lines.append(f"\n**Policy profile:** default")
+
+          with open("review-body.md", "w") as f:
+              f.write("\n".join(lines))
+
+          if decision == "block":
+              sys.exit(1)
+
+      - name: Approve PR
+        if: steps.emissions.outputs.found == 'true' && steps.evaluate.outputs.decision == 'approve'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr review "${{ github.event.pull_request.number }}" --approve --body-file review-body.md
+
+      - name: Comment — needs human review
+        if: steps.emissions.outputs.found == 'true' && steps.evaluate.outputs.decision == 'human_review_required'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr review "${{ github.event.pull_request.number }}" --comment --body-file review-body.md
+
+      - name: Block PR
+        if: failure() && steps.emissions.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr review "${{ github.event.pull_request.number }}" --request-changes --body-file review-body.md
+
+      - name: Skip — no emissions
+        if: steps.emissions.outputs.found != 'true'
+        run: echo "No panel emissions found in emissions/. Skipping governance review."

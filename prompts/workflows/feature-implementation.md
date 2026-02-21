@@ -21,7 +21,7 @@ End-to-end delivery of a new feature, from requirements gathering through commit
 
 ## Phase 1: Requirements
 
-> **Adopt persona:** `personas/process_people/product-manager.md`
+> **Adopt persona:** `personas/leadership/product-manager.md`
 
 ### Input
 
@@ -132,7 +132,7 @@ End-to-end delivery of a new feature, from requirements gathering through commit
 
 ## Phase 3: Implementation
 
-> **Adopt persona:** `personas/process_people/tech-lead.md`
+> **Adopt persona:** `personas/leadership/tech-lead.md`
 
 ### Input
 
@@ -206,7 +206,7 @@ End-to-end delivery of a new feature, from requirements gathering through commit
 
 ## Phase 5: Review
 
-> **Invoke round table:** `personas/round_tables/code-review.md`
+> **Invoke panel:** `personas/panels/code-review.md`
 
 ### Input
 

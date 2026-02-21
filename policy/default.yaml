@@ -1,0 +1,172 @@
+# Default Policy Profile
+# Applied when no project-specific profile is configured.
+# All policy evaluation is deterministic and must not depend on prose.
+
+profile_name: default
+profile_version: "1.0.0"
+description: >
+  Baseline policy profile for standard repositories. Balances automation
+  with human oversight. Suitable for internal applications with moderate
+  risk tolerance.
+
+# Confidence Weighting Model
+# Defines how individual panel confidence scores are weighted to produce
+# the aggregate confidence used in merge decisions.
+weighting:
+  model: weighted_average
+  weights:
+    code-review: 0.25
+    security-review: 0.20
+    architecture-review: 0.15
+    testing-review: 0.15
+    performance-review: 0.10
+    copilot-review: 0.10
+    documentation-review: 0.05
+  # If a panel is not executed, its weight is redistributed proportionally.
+  missing_panel_behavior: redistribute
+
+# Risk Aggregation Model
+# Determines the final risk level from individual panel assessments.
+risk_aggregation:
+  model: highest_severity
+  rules:
+    - description: "Any panel reporting critical risk escalates to critical."
+      condition: any_panel_risk == "critical"
+      result: critical
+    - description: "Two or more panels reporting high risk escalates to high."
+      condition: count(panel_risk == "high") >= 2
+      result: high
+    - description: "Single high-risk panel with others low results in medium."
+      condition: count(panel_risk == "high") == 1
+      result: medium
+    - description: "All panels low or negligible results in low."
+      condition: all_panels_risk in ["low", "negligible"]
+      result: low
+
+# Escalation Rules
+# Define when and how decisions escalate to human review.
+escalation:
+  rules:
+    - name: low_confidence
+      description: "Aggregate confidence below threshold requires human review."
+      condition: aggregate_confidence < 0.70
+      action: human_review_required
+      notify:
+        - role: tech_lead
+        - role: code_owner
+
+    - name: critical_risk
+      description: "Critical risk always requires human review."
+      condition: risk_level == "critical"
+      action: human_review_required
+      notify:
+        - role: security_lead
+        - role: tech_lead
+
+    - name: policy_violation
+      description: "Any critical or high severity policy flag blocks merge."
+      condition: any_policy_flag_severity in ["critical", "high"]
+      action: block
+      notify:
+        - role: compliance_officer
+        - role: tech_lead
+
+    - name: panel_disagreement
+      description: "Conflicting verdicts across panels requires human review."
+      condition: panel_disagreement_detected == true
+      action: human_review_required
+      notify:
+        - role: tech_lead
+
+# Auto-merge Rules
+# Conditions under which a PR can be merged without human intervention.
+auto_merge:
+  enabled: true
+  conditions:
+    - aggregate_confidence >= 0.85
+    - risk_level in ["low", "negligible"]
+    - no_policy_flags_severity in ["critical", "high"]
+    - all_panel_verdicts in ["approve"]
+    - requires_human_review == false
+    - ci_checks_passed == true
+  # All conditions must be satisfied (logical AND).
+  operator: all
+
+# Auto-remediate Rules
+# Conditions under which automated remediation is attempted before blocking.
+auto_remediate:
+  enabled: true
+  max_attempts: 3
+  cooldown_minutes: 5
+  conditions:
+    - risk_level in ["low", "medium"]
+    - all_policy_flags.auto_remediable == true
+    - aggregate_confidence >= 0.60
+  # Remediation types that can be automated.
+  allowed_actions:
+    - fix_linting
+    - add_missing_tests
+    - update_documentation
+    - fix_type_errors
+  # Actions that always require human intervention.
+  prohibited_actions:
+    - modify_security_controls
+    - change_api_contracts
+    - alter_data_schemas
+    - modify_infrastructure
+
+# Block Rules
+# Hard blocks that cannot be overridden by auto-merge or auto-remediate.
+block:
+  conditions:
+    - description: "Critical policy violation with no remediation."
+      condition: any_policy_flag_severity == "critical" and not auto_remediable
+    - description: "Confidence below minimum threshold."
+      condition: aggregate_confidence < 0.40
+    - description: "Required panel did not execute."
+      condition: required_panel_missing == true
+    - description: "CI checks failed."
+      condition: ci_checks_passed == false
+
+# Override Rules
+# Enterprise override procedure for blocked merges.
+override:
+  enabled: true
+  requirements:
+    min_approvals: 2
+    required_roles:
+      - senior_engineer
+      - tech_lead
+    justification_required: true
+    justification_min_length: 50
+  audit:
+    log_to_manifest: true
+    create_github_issue: true
+    notify:
+      - role: compliance_officer
+      - role: engineering_manager
+  expiry:
+    cooldown_hours: 24
+    post_override_review_required: true
+
+# Required Panels
+# Panels that must execute for a merge decision to be valid.
+required_panels:
+  - code-review
+  - security-review
+
+# Optional Panels
+# Panels executed based on change characteristics.
+optional_panels:
+  - panel: architecture-review
+    trigger: files_changed_in ["src/", "lib/", "pkg/"]
+  - panel: performance-review
+    trigger: files_changed_in ["src/", "bench/"]
+  - panel: testing-review
+    trigger: test_files_changed == true
+  - panel: documentation-review
+    trigger: docs_files_changed == true
+  - panel: data-design-review
+    trigger: files_changed_in ["db/", "migrations/", "schema/"]
+  - panel: copilot-review
+    trigger: always

@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://set-apps.github.io/ai-submodule/schemas/panel-output.schema.json",
+  "title": "Panel Structured Output",
+  "description": "Required structured emission appended to every panel review. Panels continue emitting Markdown reasoning but must append this JSON block. Execution fails if the structured block is missing.",
+  "type": "object",
+  "required": [
+    "panel_name",
+    "panel_version",
+    "confidence_score",
+    "risk_level",
+    "compliance_score",
+    "policy_flags",
+    "requires_human_review",
+    "timestamp",
+    "findings"
+  ],
+  "properties": {
+    "panel_name": {
+      "type": "string",
+      "description": "Identifier matching the panel filename without extension (e.g., 'code-review', 'security-review').",
+      "pattern": "^[a-z][a-z0-9-]+$"
+    },
+    "panel_version": {
+      "type": "string",
+      "description": "Semantic version of the panel definition used for this execution.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "Aggregate confidence in the panel's assessment. 0.0 = no confidence, 1.0 = full confidence.",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "risk_level": {
+      "type": "string",
+      "description": "Assessed risk level for the reviewed change.",
+      "enum": ["critical", "high", "medium", "low", "negligible"]
+    },
+    "compliance_score": {
+      "type": "number",
+      "description": "Degree of compliance with applicable policies. 0.0 = non-compliant, 1.0 = fully compliant.",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "policy_flags": {
+      "type": "array",
+      "description": "Policy violation or concern flags raised during review.",
+      "items": {
+        "type": "object",
+        "required": ["flag", "severity", "description"],
+        "properties": {
+          "flag": {
+            "type": "string",
+            "description": "Machine-readable flag identifier (e.g., 'pii_exposure', 'missing_tests', 'breaking_change').",
+            "pattern": "^[a-z][a-z0-9_]+$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable explanation of the flag."
+          },
+          "remediation": {
+            "type": "string",
+            "description": "Suggested remediation action."
+          },
+          "auto_remediable": {
+            "type": "boolean",
+            "description": "Whether this flag can be resolved without human intervention.",
+            "default": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "requires_human_review": {
+      "type": "boolean",
+      "description": "Whether the panel recommends human review before merge."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of panel execution."
+    },
+    "findings": {
+      "type": "array",
+      "description": "Individual findings from each persona in the panel.",
+      "items": {
+        "type": "object",
+        "required": ["persona", "verdict", "confidence", "rationale"],
+        "properties": {
+          "persona": {
+            "type": "string",
+            "description": "Persona identifier (e.g., 'quality/style-reviewer')."
+          },
+          "verdict": {
+            "type": "string",
+            "enum": ["approve", "request_changes", "block", "abstain"],
+            "description": "This persona's individual verdict."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "This persona's confidence in their verdict."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Brief rationale for the verdict. Must not be empty."
+          },
+          "findings_count": {
+            "type": "object",
+            "properties": {
+              "critical": { "type": "integer", "minimum": 0 },
+              "high": { "type": "integer", "minimum": 0 },
+              "medium": { "type": "integer", "minimum": 0 },
+              "low": { "type": "integer", "minimum": 0 },
+              "info": { "type": "integer", "minimum": 0 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "aggregate_verdict": {
+      "type": "string",
+      "enum": ["approve", "request_changes", "block"],
+      "description": "Computed aggregate verdict based on individual persona verdicts and policy weighting."
+    },
+    "execution_context": {
+      "type": "object",
+      "description": "Contextual metadata about the panel execution environment.",
+      "properties": {
+        "repository": { "type": "string" },
+        "branch": { "type": "string" },
+        "commit_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "pr_number": { "type": "integer" },
+        "policy_profile": { "type": "string" },
+        "model_version": { "type": "string" },
+        "triggered_by": {
+          "type": "string",
+          "enum": ["ci", "manual", "drift_detection", "incident_response", "scheduled"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "duration_ms": {
+      "type": "integer",
+      "description": "Panel execution duration in milliseconds.",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

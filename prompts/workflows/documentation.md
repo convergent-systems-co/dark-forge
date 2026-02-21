@@ -21,7 +21,7 @@ Creating or updating technical documentation, from audience analysis through pub
 ## Phase 1: Audience Analysis
 
 > **Adopt persona:** `personas/documentation/documentation-writer.md`
-> **Secondary persona:** `personas/process_people/product-manager.md`
+> **Secondary persona:** `personas/leadership/product-manager.md`
 
 ### Input
 
@@ -166,7 +166,7 @@ Creating or updating technical documentation, from audience analysis through pub
 
 ## Phase 4: Review
 
-> **Invoke round table:** `personas/round_tables/documentation-review.md`
+> **Invoke panel:** `personas/panels/documentation-review.md`
 
 ### Input
 

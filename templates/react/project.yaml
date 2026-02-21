@@ -6,15 +6,15 @@ language: "typescript"
 framework: "react"               # react, nextjs, remix, react-router
 
 personas:
-  - code_quality/code-reviewer.md
-  - code_quality/adversarial-reviewer.md
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
   - engineering/test-engineer.md
   - engineering/performance-engineer.md
-  - domain_specific/frontend-engineer.md
-  - compliance_governance/accessibility-engineer.md
-  # - operations_reliability/sre.md
+  - domain/frontend-engineer.md
+  - compliance/accessibility-engineer.md
+  # - operations/sre.md
 
-round_tables:
+panels:
   - code-review.md
   - architecture-review.md
   # - performance-review.md

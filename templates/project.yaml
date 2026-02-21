@@ -9,15 +9,15 @@ framework: "express"         # Primary framework (optional)
 # Which personas are relevant for this project
 personas:
   # List persona files to activate (paths relative to .ai/personas/)
-  - code_quality/code-reviewer.md
-  - code_quality/adversarial-reviewer.md
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
   - engineering/test-engineer.md
   - engineering/performance-engineer.md
-  # - operations_reliability/sre.md
-  # - compliance_governance/security-auditor.md
+  # - operations/sre.md
+  # - compliance/security-auditor.md
 
-# Which round tables are relevant
-round_tables:
+# Which panels are relevant
+panels:
   - code-review.md
   - architecture-review.md
   # - security-review.md

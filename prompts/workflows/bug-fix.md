@@ -153,7 +153,7 @@ Systematic investigation and resolution of a bug, from reproduction through comm
 
 ## Phase 4: Fix
 
-> **Adopt persona:** `personas/process_people/tech-lead.md`
+> **Adopt persona:** `personas/leadership/tech-lead.md`
 
 ### Input
 
@@ -220,7 +220,7 @@ Systematic investigation and resolution of a bug, from reproduction through comm
 
 ## Phase 6: Review
 
-> **Adopt persona:** `personas/code_quality/code-reviewer.md`
+> **Adopt persona:** `personas/quality/code-reviewer.md`
 
 ### Input
 

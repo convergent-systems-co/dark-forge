@@ -6,14 +6,14 @@ language: "python"
 framework: ""                    # fastapi, django, flask, cli
 
 personas:
-  - code_quality/code-reviewer.md
-  - code_quality/adversarial-reviewer.md
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
   - engineering/test-engineer.md
   - engineering/performance-engineer.md
-  # - compliance_governance/security-auditor.md
-  # - operations_reliability/sre.md
+  # - compliance/security-auditor.md
+  # - operations/sre.md
 
-round_tables:
+panels:
   - code-review.md
   - architecture-review.md
   # - security-review.md

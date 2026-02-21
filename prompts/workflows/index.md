@@ -1,6 +1,6 @@
 # Workflow Plans
 
-Standardized multi-phase workflows that chain personas, prompts, and round tables together into end-to-end processes. Each workflow produces named artifacts at every phase, with decision gates where human review is required before proceeding.
+Standardized multi-phase workflows that chain personas, prompts, and panels together into end-to-end processes. Each workflow produces named artifacts at every phase, with decision gates where human review is required before proceeding.
 
 ## How to Use
 
@@ -43,5 +43,5 @@ Each workflow uses a unique prefix for its artifacts, enabling cross-referencing
 - **Gates** require explicit approval before the workflow continues
 - **Personas** are adopted at the start of each phase via `personas/` paths
 - **Prompts** are invoked where a specific task prompt applies via `prompts/` paths
-- **Round tables** are invoked for multi-perspective review phases
-- **Mid-workflow resume**: paste a prior artifact to pick up from that point
+- **Panels** are invoked for multi-perspective review phases
+- **Mid-workflow resume:** paste a prior artifact to pick up from that point

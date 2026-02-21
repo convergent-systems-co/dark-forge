@@ -1,0 +1,100 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What This Repository Is
+
+This is the **Dark Factory Governance Platform** — an AI governance framework for autonomous software delivery, distributed as a git submodule to consuming repositories. It contains no application source code; it is entirely configuration, policy, schemas, and documentation.
+
+Current maturity: **Phase 4a (Policy-Bound Autonomy)**. Phases 4b and 5 are designed but not implemented.
+
+## Repository Commands
+
+There is no build system, test runner, or linter. This is a configuration-only repo.
+
+**Bootstrap (for consuming repos):**
+```bash
+bash .ai/init.sh
+```
+Creates symlinks for CLAUDE.md, .cursorrules, .github/copilot-instructions.md, and .vscode/mcp.json in the parent project.
+
+**Submodule operations (from consuming repo):**
+```bash
+git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
+git submodule update --remote .ai
+```
+
+## Architecture
+
+### Five Governance Layers
+
+Every code change flows through these layers in order:
+
+1. **Intent** — Design Intent intake, completeness validation, risk classification
+2. **Cognitive** — Persona-based reasoning via multi-persona panels producing structured emissions
+3. **Execution** — Deterministic policy engine evaluates panel emissions, produces merge decisions
+4. **Runtime** (Phase 5) — Drift detection, incident-to-DI generation
+5. **Evolution** (Phase 5) — Self-improvement loops with backward compatibility checks
+
+### Three Artifact Types
+
+| Type | Format | Purpose | Mutability |
+|------|--------|---------|------------|
+| **Cognitive** | Markdown | Personas, prompts, workflows — interpreted by AI | Editable |
+| **Enforcement** | JSON Schema / YAML | Policies, schemas — evaluated programmatically, never by AI | Versioned |
+| **Audit** | JSON + Markdown | Run manifests — immutable decision records | Append-only |
+
+### Persona and Panel System
+
+- **Personas** (`personas/`) — 48 role definitions across 10 categories. Each defines Role, Evaluate For, Output Format, Principles, Anti-patterns. They are reasoning roles, not model prompts.
+- **Panels** (`personas/panels/`) — 13 multi-persona review workflows. Panels coordinate personas and emit structured JSON conforming to `schemas/panel-output.schema.json`.
+- **Agentic personas** (`personas/agentic/`) — Code Manager (orchestrator, never writes code) and Coder (executor, follows Code Manager direction).
+
+### Policy Engine
+
+Three deterministic YAML profiles in `policy/`:
+- `default.yaml` — Standard risk tolerance, auto-merge enabled with conditions
+- `fin_pii_high.yaml` — SOC2/PCI-DSS/HIPAA/GDPR, auto-merge disabled, 3-approver override
+- `infrastructure_critical.yaml` — Mandatory architecture and SRE review
+
+Policies are evaluated programmatically. AI models never interpret policy rules.
+
+### Context Management (JIT Loading)
+
+Context is loaded in tiers to prevent window overflow:
+- **Tier 0** (~400 tokens, survives resets): `instructions.md` + project identity
+- **Tier 1** (~2,000 tokens, session): Language conventions + active personas
+- **Tier 2** (~3,000 tokens, per-phase): Workflow phase + panel context
+- **Tier 3** (0 tokens, on-demand): Policies, schemas, docs — queried only when needed
+
+### Structured Emissions
+
+All panel output must include JSON between `<!-- STRUCTURED_EMISSION_START -->` and `<!-- STRUCTURED_EMISSION_END -->` markers, validated against `schemas/panel-output.schema.json`. Missing markers or invalid JSON means panel execution failed.
+
+## Key Conventions
+
+- **Commit style**: Conventional commits (`feat:`, `fix:`, `refactor:`, `docs:`)
+- **Branch naming**: `itsfwcp/{issue-number}-{short-description}`
+- **Plans before code**: Every implementation requires a plan in `.plans/` using `prompts/plan-template.md`
+- **Backward compatibility**: All changes must be additive. Breaking changes require migration plans and version bumps.
+- **Enforcement artifacts use semantic versioning** in their `profile_version` or `version` field
+- **Cognitive artifacts version by git SHA** — they evolve with the submodule
+- **Manifests are immutable** — never edit after creation
+
+## Agentic Startup Sequence
+
+When operating autonomously (via `prompts/startup.md`), the Code Manager:
+1. Scans open GitHub issues
+2. Filters for actionable (no branch, not blocked/wontfix/duplicate, not recently human-edited)
+3. Prioritizes by label (P0 > P1 > P2 > P3 > P4), then creation date
+4. Validates intent clarity, creates plan, executes via Coder persona
+5. Invokes review panels, logs run manifest
+6. Max 5 issues per session; stops at 80% context capacity
+
+## Symlink Configuration
+
+`config.yaml` defines symlinks created by `init.sh` for consuming repos:
+- `instructions.md` → `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`
+- `mcp/vscode.json` → `.vscode/mcp.json`
+
+This ensures Claude Code, GitHub Copilot, and Cursor all receive the same base instructions in consuming projects.

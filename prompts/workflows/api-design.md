@@ -20,7 +20,7 @@ Designing or evolving an API, from requirements through implementation and consu
 
 ## Phase 1: Requirements
 
-> **Adopt persona:** `personas/process_people/product-manager.md`
+> **Adopt persona:** `personas/leadership/product-manager.md`
 > **Secondary persona:** `personas/architecture/api-designer.md`
 
 ### Input
@@ -146,7 +146,7 @@ Designing or evolving an API, from requirements through implementation and consu
 
 ## Phase 3: Consumer Review
 
-> **Invoke round table:** `personas/round_tables/api-design-review.md`
+> **Invoke panel:** `personas/panels/api-design-review.md`
 
 ### Input
 
@@ -198,7 +198,7 @@ Designing or evolving an API, from requirements through implementation and consu
 
 ## Phase 4: Implementation
 
-> **Adopt persona:** `personas/domain_specific/backend-engineer.md`
+> **Adopt persona:** `personas/domain/backend-engineer.md`
 > **Invoke prompt:** `prompts/plan.md`
 
 ### Input
@@ -239,7 +239,7 @@ Designing or evolving an API, from requirements through implementation and consu
 ## Phase 5: Documentation
 
 > **Adopt persona:** `personas/documentation/documentation-writer.md`
-> **Secondary persona:** `personas/special_purpose/api-consumer.md`
+> **Secondary persona:** `personas/specialist/api-consumer.md`
 
 ### Input
 

@@ -219,7 +219,7 @@ For each step in the strategy:
 
 ## Phase 5: Review
 
-> **Invoke round table:** `personas/round_tables/code-review.md`
+> **Invoke panel:** `personas/panels/code-review.md`
 
 ### Input
 

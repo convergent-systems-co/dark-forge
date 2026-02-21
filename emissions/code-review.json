@@ -1,0 +1,42 @@
+{
+  "panel_name": "code-review",
+  "panel_version": "1.0.0",
+  "confidence_score": 0.90,
+  "risk_level": "low",
+  "compliance_score": 1.0,
+  "policy_flags": [],
+  "requires_human_review": false,
+  "timestamp": "2026-02-20T19:00:00Z",
+  "findings": [
+    {
+      "persona": "quality/code-reviewer",
+      "verdict": "approve",
+      "confidence": 0.90,
+      "rationale": "Workflow YAML is well-structured. Policy evaluation logic correctly implements thresholds from default.yaml. Error handling covers schema validation, JSON parse, and generic exceptions.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+    },
+    {
+      "persona": "compliance/security-auditor",
+      "verdict": "approve",
+      "confidence": 0.90,
+      "rationale": "Token handling is correct — app token passed via env, not inline. GITHUB_TOKEN fallback uses standard permissions. tibdex/github-app-token pinned to SHA. No secrets exposed in outputs.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+    },
+    {
+      "persona": "engineering/test-engineer",
+      "verdict": "approve",
+      "confidence": 0.85,
+      "rationale": "Validation logic handles edge cases: empty emission list, missing fields, invalid JSON. Block/approve/comment paths are distinct. Manual end-to-end test required after merge.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 1}
+    }
+  ],
+  "aggregate_verdict": "approve",
+  "execution_context": {
+    "repository": "SET-Apps/ai-submodule",
+    "branch": "itsfwcp/governance-review-workflow",
+    "pr_number": 19,
+    "policy_profile": "default",
+    "model_version": "claude-opus-4-6",
+    "triggered_by": "manual"
+  }
+}
