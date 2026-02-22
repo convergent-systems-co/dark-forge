@@ -7,14 +7,16 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
   issues: write
 
 jobs:
   archive:
     name: archive-plans
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.user.login != 'github-actions[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -152,16 +154,20 @@ jobs:
           set -e
           gh issue comment "$ISSUE_NUMBER" --body-file /tmp/summary.md
 
-      - name: Remove archived plans from repo
+      - name: Remove archived plans via PR
         if: steps.detect.outputs.has_plans == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           set -e
-          # Switch to main for the cleanup commit
-          git checkout main
-          git pull origin main
+          # Include run ID for uniqueness on workflow re-runs
+          CLEANUP_BRANCH="chore/archive-plans-pr-${PR_NUMBER}-${RUN_ID}"
+
+          # Create cleanup branch from origin/main (works in detached HEAD)
+          git fetch origin main
+          git checkout -B "$CLEANUP_BRANCH" origin/main
 
           REMOVED=false
           while IFS= read -r plan_file; do
@@ -176,9 +182,18 @@ jobs:
           if [ "$REMOVED" = "true" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore: archive plan files from PR #${PR_NUMBER}
+            git commit -m "chore: archive plan files from PR #${PR_NUMBER}" \
+              -m "Plan files moved to plans-archive release assets."
+            git push origin "$CLEANUP_BRANCH"
 
-            Plan files moved to plans-archive release assets."
-            git pull --rebase origin main
-            git push origin main
+            # Create PR and enable auto-merge
+            PR_BODY="Automated cleanup: removes plan files that were archived as release assets.\n\nSource PR: #${PR_NUMBER}\nPlan files archived to the [plans-archive release](../releases/tag/plans-archive)."
+            CLEANUP_PR=$(gh pr create \
+              --base main \
+              --head "$CLEANUP_BRANCH" \
+              --title "chore: archive plan files from PR #${PR_NUMBER}" \
+              --body "$(echo -e "$PR_BODY")" \
+              --json number -q .number)
+            echo "Created cleanup PR #${CLEANUP_PR}"
+            gh pr merge "$CLEANUP_PR" --auto --squash --delete-branch
           fi
