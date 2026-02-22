@@ -8,7 +8,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|------|-------------|--------|------------------|
 | 3 | Agentic Orchestration | Personas, panels, workflows with human gates | **Implemented** | Governance personas and panels, agentic workflows, Code Manager + Coder personas |
 | 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Implemented** | Governance CI workflow, structured emissions, run manifests, policy profiles |
-| 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Partial** | Policy engine runtime built and integrated into CI; drift detection and auto-remediation not yet implemented |
+| 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Partial** | Policy engine runtime; drift detection schemas and policy config (PR #69); auto-remediation schemas and workflow (PR #81); incident-to-DI generation not yet implemented |
 | 5 | Dark Factory | Full automation with runtime feedback and self-evolution | **Architecture defined** | Runtime feedback architecture documented; not yet implemented |
 
 ## Completed Work
@@ -64,6 +64,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #68 | #69 | Drift detection schemas and policy config | 2 JSON schemas + 8 YAML policy files for Phase 4b drift detection |
 | #71 | #72 | Simplify install with single-command setup | Streamlined bootstrap with venv support |
 | #73 | #74 | Issue monitor (local scripts + GitHub Actions) | GitHub Actions workflow + local shell/PowerShell scripts for autonomous issue dispatch |
+| #81 | #83 | Auto-remediation loops | 2 JSON schemas (remediation action + verification) + agentic workflow prompt for Phase 4b autonomous remediation |
 
 ## Open Work
 
@@ -73,13 +74,14 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|-------|--------|----------------|
 | #41 | Agentic Speedup (parallelization) | `enhancement`, `refine` | Platform constraints for parallel agent execution |
 | #42 | Agentic Monitor (always-on orchestrator) | `enhancement`, `refine` | Daemon vs. scheduled vs. event-driven architecture |
+| #80 | VS Code/Copilot token detection info | `enhancement`, `P1`, `refine` | Unclear deliverable — reference material without specific acceptance criteria |
 
 ## Phase 4b — Remaining Work
 
 The following Phase 4b capabilities are designed but not yet implemented:
 
 - [x] **Drift detection** — Schemas and policy configuration files created (PR #69); runtime implementation pending
-- [ ] **Auto-remediation loops** — Automatic fix generation for detected drift
+- [x] **Auto-remediation loops** — Governance artifacts for autonomous drift remediation (PR #81): remediation action schema, verification schema, and agentic workflow prompt
 - [ ] **Incident-to-DI generation** — Runtime anomalies automatically create Design Intents
 
 ## Phase 5 — Dark Factory (Future)

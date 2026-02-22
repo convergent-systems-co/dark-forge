@@ -1454,6 +1454,9 @@ The following files are defined or referenced by this architecture. Files marked
 | `governance/policy/drift-remediation.yaml` | New | Drift auto-remediation rules |
 | `governance/policy/drift-policy.yaml` | New | Drift-specific policy engine rules |
 | `governance/policy/component-registry.yaml` | New | Component criticality and ownership |
+| `governance/schemas/remediation-action.schema.json` | Defined in Phase 4b | Remediation action audit record |
+| `governance/schemas/remediation-verification.schema.json` | Defined in Phase 4b | Post-remediation verification result |
+| `governance/prompts/remediation-workflow.md` | Defined in Phase 4b | Agentic workflow for autonomous drift remediation |
 | `governance/schemas/panel-output.schema.json` | Defined in Phase 4 | Structured panel emission schema |
 | `governance/schemas/run-manifest.schema.json` | Defined in Phase 4 | Merge manifest schema |
 | `governance/personas/panels/*.md` | Existing | Panel definitions consumed by re-execution |
