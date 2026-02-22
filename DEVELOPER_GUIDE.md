@@ -12,9 +12,18 @@ A git submodule (`.ai/`) that gives your repository AI-powered governance: autom
 
 ```bash
 git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
-bash .ai/init.sh   # creates symlinks for Claude Code, Copilot, and Cursor
+bash .ai/init.sh   # macOS/Linux — creates symlinks for Claude Code, Copilot, and Cursor
 git commit -m "Add .ai governance submodule"
 ```
+
+**Windows (PowerShell):**
+```powershell
+git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
+powershell -ExecutionPolicy Bypass -File .ai\init.ps1
+git commit -m "Add .ai governance submodule"
+```
+
+> Windows requires Python 3.9+ for the policy engine. Install from [python.org](https://www.python.org/downloads/), then run `pip install jsonschema pyyaml`.
 
 ### 2. Configure for your stack
 
@@ -35,7 +44,7 @@ git add .ai && git commit -m "Update .ai submodule"
 
 | Concept | What It Is | Where It Lives |
 |---------|-----------|----------------|
-| **Personas** | 44 AI reasoning roles (Security Auditor, Architect, etc.) | `governance/personas/` |
+| **Personas** | 57 AI reasoning roles (Security Auditor, Architect, Rust Engineer, etc.) | `governance/personas/` |
 | **Panels** | Multi-persona review workflows that emit structured JSON | `governance/personas/panels/` |
 | **Policy profiles** | Deterministic rules for merge decisions (no AI interpretation) | `governance/policy/` |
 | **Structured emissions** | JSON output from panels, validated against schema | `governance/schemas/panel-output.schema.json` |
@@ -124,10 +133,11 @@ AI context windows are finite. The framework uses tiered loading:
   instructions.md            # Base AI instructions (Tier 0)
   instructions/              # Decomposed instruction modules
   config.yaml                # Symlink configuration
-  init.sh                    # Bootstrap script
+  init.sh                    # Bootstrap script (macOS/Linux)
+  init.ps1                   # Bootstrap script (Windows)
   templates/                 # Language-specific scaffolding (go, python, node, react, csharp)
   governance/
-    personas/                # 44 persona definitions (including 2 agentic) + 15 panels
+    personas/                # 57 persona definitions (including 2 agentic) + 16 panels
     policy/                  # 3 deterministic policy profiles (YAML)
     schemas/                 # JSON Schema for emissions and manifests
     prompts/                 # Reusable prompts and workflows

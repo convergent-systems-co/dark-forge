@@ -37,7 +37,8 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
   instructions.md              Base AI instructions (< 200 tokens, Tier 0)
   instructions/                Decomposed instruction modules (code-quality, security, testing, etc.)
   config.yaml                  Symlink and sync configuration
-  init.sh                      Bootstrap script for consuming repos
+  init.sh                      Bootstrap script for consuming repos (macOS/Linux)
+  init.ps1                     Bootstrap script for consuming repos (Windows)
 
   templates/                   Language-specific scaffolding
     go/                        Go conventions and project config
@@ -213,6 +214,24 @@ Submodules provide version-pinned, single-source-of-truth distribution with no t
 git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
 git commit -m "Add .ai submodule"
 ```
+
+### Bootstrap (after adding submodule)
+
+**macOS / Linux:**
+```bash
+bash .ai/init.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File .ai\init.ps1
+```
+
+The bootstrap script creates symlinks so Claude Code, GitHub Copilot, and Cursor all receive shared instructions. On Windows, if symlinks are unavailable (requires Developer Mode or admin), it falls back to file copies.
+
+**Windows prerequisites:**
+- **Python 3.9+** — required for the governance policy engine. Install from [python.org](https://www.python.org/downloads/) and ensure it's in your PATH.
+- After installing Python: `pip install jsonschema pyyaml`
 
 ### Cloning with Submodule
 
