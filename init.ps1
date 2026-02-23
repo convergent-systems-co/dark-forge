@@ -172,6 +172,111 @@ function New-LinkOrCopy {
     }
 }
 
+function ConvertTo-Hashtable {
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [AllowNull()]
+        $InputObject
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    if ($InputObject -is [System.Collections.IDictionary]) {
+        $result = @{}
+        foreach ($key in $InputObject.Keys) {
+            $result[$key] = ConvertTo-Hashtable -InputObject $InputObject[$key]
+        }
+        return $result
+    }
+
+    if ($InputObject -is [pscustomobject]) {
+        $result = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $result[$prop.Name] = ConvertTo-Hashtable -InputObject $prop.Value
+        }
+        return $result
+    }
+
+    if ($InputObject -is [System.Collections.IEnumerable] -and -not ($InputObject -is [string])) {
+        $list = @()
+        foreach ($item in $InputObject) {
+            $list += , (ConvertTo-Hashtable -InputObject $item)
+        }
+        return $list
+    }
+
+    return $InputObject
+}
+
+function Get-ConfigData {
+    if (Test-Path variable:script:AiMergedConfigCache) {
+        return $script:AiMergedConfigCache
+    }
+
+    $config = @{}
+
+    if (-not $pythonOk) {
+        Write-Host "  [INFO] Python is not available; skipping config.yaml/project.yaml parsing and using defaults." -ForegroundColor Yellow
+        return $config
+    }
+
+    $configScript = @"
+import json
+import os
+import yaml
+
+def deep_merge(base, override):
+    result = dict(base)
+    for key, value in override.items():
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            result[key] = deep_merge(result[key], value)
+        elif key in result and isinstance(result[key], list) and isinstance(value, list):
+            result[key] = result[key] + value
+        else:
+            result[key] = value
+    return result
+
+script_dir = os.environ.get('AI_SCRIPT_DIR')
+files = [
+    os.path.join(script_dir, 'config.yaml'),
+    os.path.join(script_dir, 'project.yaml')
+]
+
+merged = {}
+for file_path in files:
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+            merged = deep_merge(merged, data)
+
+print(json.dumps(merged))
+"@
+
+    try {
+        $env:AI_SCRIPT_DIR = $ScriptDir
+        $configJson = & python -c $configScript
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($configJson)) {
+            $script:AiMergedConfigCache = $config
+            return $script:AiMergedConfigCache
+        }
+        $configObject = $configJson | ConvertFrom-Json
+        $config = ConvertTo-Hashtable -InputObject $configObject
+        $script:AiMergedConfigCache = $config
+    }
+    catch {
+        Write-Host "  [WARN] Failed to load configuration: $($_.Exception.Message)" -ForegroundColor Yellow
+        $script:AiMergedConfigCache = @{}
+        return $script:AiMergedConfigCache
+    }
+    finally {
+        Remove-Item Env:AI_SCRIPT_DIR -ErrorAction SilentlyContinue
+    }
+
+    return $script:AiMergedConfigCache
+}
+
 # --- Create symlinks/copies ---
 
 Write-Host "Initializing .ai submodule configuration..." -ForegroundColor Cyan
@@ -227,6 +332,197 @@ if ($IsSubmodule) {
             }
         }
     }
+
+    # Governance workflows
+    $workflowSrc = Join-Path $ScriptDir ".github\workflows"
+    $workflowDst = Join-Path $ProjectRoot ".github\workflows"
+    if (Test-Path $workflowSrc) {
+        if (-not (Test-Path $workflowDst)) {
+            New-Item -ItemType Directory -Path $workflowDst -Force | Out-Null
+        }
+
+        $config = Get-ConfigData
+        $requiredWorkflows = @('dark-factory-governance.yml')
+        $optionalWorkflows = @()
+        $requiredWorkflowsOverridden = $false
+
+        if ($config -and $config.ContainsKey('workflows') -and $config.workflows -is [hashtable]) {
+            if ($config.workflows.ContainsKey('required') -and $config.workflows.required) {
+                $requiredWorkflows = @($config.workflows.required)
+                $requiredWorkflowsOverridden = $true
+            }
+            if ($config.workflows.ContainsKey('optional') -and $config.workflows.optional) {
+                $optionalWorkflows = @($config.workflows.optional)
+            }
+        }
+
+        # Legacy fallback: support workflows_to_copy if new structure not present
+        if (-not $requiredWorkflowsOverridden -and $config -and $config.ContainsKey('workflows_to_copy')) {
+            $requiredWorkflows = @($config.workflows_to_copy)
+        }
+
+        foreach ($wf in $requiredWorkflows) {
+            $srcFile = Join-Path $workflowSrc $wf
+            $dstFile = Join-Path $workflowDst $wf
+            if (Test-Path $srcFile) {
+                if ($CanSymlink) {
+                    $linkTarget = "..\..\.ai\.github\workflows\$wf"
+                    New-LinkOrCopy -LinkPath $dstFile -TargetRelative $linkTarget -TargetAbsolute $srcFile
+                }
+                else {
+                    if (Test-Path $dstFile -PathType Leaf) {
+                        $dstItem = Get-Item -LiteralPath $dstFile -ErrorAction SilentlyContinue
+                        if ($dstItem -and -not $dstItem.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) {
+                            Write-Host "  Workflow $wf exists as regular file, skipping (remove to use symlink)" -ForegroundColor Yellow
+                            continue
+                        }
+                    }
+                    Copy-Item -Path $srcFile -Destination $dstFile -Force
+                    Write-Host "  Copied workflow $wf" -ForegroundColor Green
+                }
+            }
+            else {
+                Write-Host "  [WARN] Required workflow $wf not found in .ai\.github\workflows" -ForegroundColor Yellow
+            }
+        }
+
+        foreach ($wf in $optionalWorkflows) {
+            $srcFile = Join-Path $workflowSrc $wf
+            $dstFile = Join-Path $workflowDst $wf
+            if (Test-Path $srcFile) {
+                if ($CanSymlink) {
+                    $linkTarget = "..\..\.ai\.github\workflows\$wf"
+                    New-LinkOrCopy -LinkPath $dstFile -TargetRelative $linkTarget -TargetAbsolute $srcFile
+                }
+                else {
+                    if (Test-Path $dstFile -PathType Leaf) {
+                        $dstItem = Get-Item -LiteralPath $dstFile -ErrorAction SilentlyContinue
+                        if ($dstItem -and -not $dstItem.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)) {
+                            Write-Host "  Workflow $wf exists as regular file, skipping (optional)" -ForegroundColor Yellow
+                            continue
+                        }
+                    }
+                    Copy-Item -Path $srcFile -Destination $dstFile -Force
+                    Write-Host "  Copied workflow $wf (optional)" -ForegroundColor Green
+                }
+            }
+        }
+    }
+
+    # Project directories
+    $projectDirs = @('.plans', '.panels')
+    $configForDirs = Get-ConfigData
+    if ($configForDirs -and $configForDirs.ContainsKey('project_directories') -and $configForDirs.project_directories) {
+        $projectDirs = @()
+        foreach ($dirCfg in $configForDirs.project_directories) {
+            if ($dirCfg.ContainsKey('path') -and -not [string]::IsNullOrWhiteSpace($dirCfg.path)) {
+                $projectDirs += $dirCfg.path
+            }
+        }
+        if ($projectDirs.Count -eq 0) {
+            $projectDirs = @('.plans', '.panels')
+        }
+    }
+
+    foreach ($dir in $projectDirs) {
+        $dirPath = Join-Path $ProjectRoot $dir
+        $createdDir = $false
+        if (-not (Test-Path $dirPath)) {
+            New-Item -ItemType Directory -Path $dirPath -Force | Out-Null
+            Write-Host "  Created $dir/" -ForegroundColor Green
+            $createdDir = $true
+        }
+        # Only create .gitkeep in newly created dirs or empty existing dirs
+        $gitkeep = Join-Path $dirPath '.gitkeep'
+        if ($createdDir) {
+            if (-not (Test-Path $gitkeep)) {
+                New-Item -ItemType File -Path $gitkeep -Force | Out-Null
+            }
+        }
+        else {
+            $nonMetaItems = Get-ChildItem -Path $dirPath -Force | Where-Object { $_.Name -ne '.gitkeep' }
+            if (-not $nonMetaItems -and -not (Test-Path $gitkeep)) {
+                New-Item -ItemType File -Path $gitkeep -Force | Out-Null
+            }
+        }
+    }
+
+    # CODEOWNERS
+    $codeownersPath = Join-Path $ProjectRoot 'CODEOWNERS'
+    $configForOwners = Get-ConfigData
+
+    # Respect codeowners.enabled flag (default: true)
+    $codeownersEnabled = $true
+    if ($configForOwners -and $configForOwners.ContainsKey('repository') -and
+        $configForOwners.repository -is [hashtable] -and
+        $configForOwners.repository.ContainsKey('codeowners') -and
+        $configForOwners.repository.codeowners -is [hashtable] -and
+        $configForOwners.repository.codeowners.ContainsKey('enabled')) {
+        $codeownersEnabled = $configForOwners.repository.codeowners.enabled
+    }
+
+    if (-not $codeownersEnabled) {
+        Write-Host "  [SKIP] CODEOWNERS generation disabled" -ForegroundColor DarkGray
+    }
+    else {
+        $shouldCreateCodeowners = $true
+        if (Test-Path $codeownersPath) {
+            $existing = Get-Content $codeownersPath -Raw
+            if (-not [string]::IsNullOrWhiteSpace($existing)) {
+                $shouldCreateCodeowners = $false
+            }
+        }
+
+        if ($shouldCreateCodeowners) {
+            $defaultOwner = '@SET-Apps/approvers'
+            $ownerRules = @(
+                @{ pattern = '/.github/workflows/'; owners = @('@SET-Apps/devops_engineers') },
+                @{ pattern = '/infra/'; owners = @('@SET-Apps/devops_engineers') },
+                @{ pattern = '/.ai'; owners = @('@SET-Apps/approvers') }
+            )
+
+            if ($configForOwners -and $configForOwners.ContainsKey('repository') -and
+                $configForOwners.repository -is [hashtable] -and
+                $configForOwners.repository.ContainsKey('codeowners') -and
+                $configForOwners.repository.codeowners -is [hashtable]) {
+
+                if ($configForOwners.repository.codeowners.ContainsKey('default_owner') -and
+                    -not [string]::IsNullOrWhiteSpace($configForOwners.repository.codeowners.default_owner)) {
+                    $defaultOwner = $configForOwners.repository.codeowners.default_owner
+                }
+
+                if ($configForOwners.repository.codeowners.ContainsKey('rules') -and
+                    $configForOwners.repository.codeowners.rules) {
+                    $ownerRules = @($configForOwners.repository.codeowners.rules)
+                }
+            }
+
+            $lines = @(
+                '# CODEOWNERS — generated by .ai/init.ps1 from config.yaml',
+                '# Manual edits will be overwritten on next init run.',
+                '#',
+                '# NOTE: The Dark Factory governance workflow approves PRs as github-actions[bot].',
+                '# Bot approvals do NOT satisfy code owner review requirements. See',
+                '# .ai/governance/docs/repository-configuration.md for workarounds.',
+                '',
+                "* $defaultOwner",
+                ''
+            )
+            foreach ($rule in $ownerRules) {
+                if (-not $rule.ContainsKey('pattern') -or -not $rule.ContainsKey('owners')) {
+                    continue
+                }
+                $owners = @($rule.owners) -join ' '
+                $lines += "$($rule.pattern) $owners"
+            }
+
+            Set-Content -Path $codeownersPath -Value ($lines -join [Environment]::NewLine)
+            Write-Host "  Generated CODEOWNERS" -ForegroundColor Green
+        }
+        else {
+            Write-Host "  [OK] CODEOWNERS already populated" -ForegroundColor DarkGray
+        }
+    }
 }
 else {
     Write-Host "  Skipping issue template copy (not a submodule context)" -ForegroundColor DarkGray
@@ -270,12 +566,12 @@ if ($InstallDeps) {
     }
 
     Write-Host "  Installing packages from requirements.txt ..." -ForegroundColor Cyan
-    & $venvPip install --quiet --upgrade pip
+    & $venvPython -m pip install --quiet --upgrade pip
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  [ERROR] Failed to upgrade pip (exit code $LASTEXITCODE)." -ForegroundColor Red
         exit 1
     }
-    & $venvPip install --quiet -r $RequirementsFile
+    & $venvPython -m pip install --quiet -r $RequirementsFile
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  [ERROR] Failed to install requirements (exit code $LASTEXITCODE)." -ForegroundColor Red
         exit 1

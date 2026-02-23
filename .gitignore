@@ -2,6 +2,7 @@
 context.md
 *.local.md
 *.local.json
+project.yaml
 
 # OS files
 .DS_Store
