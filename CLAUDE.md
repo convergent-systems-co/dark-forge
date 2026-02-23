@@ -17,7 +17,7 @@ There is no build system, test runner, or linter. This is a configuration-only r
 bash .ai/init.sh                    # Symlinks only
 bash .ai/init.sh --install-deps     # Symlinks + Python venv + dependencies
 ```
-Creates symlinks for CLAUDE.md, .cursorrules, and .github/copilot-instructions.md in the parent project. Also creates `.plans/` and `.panels/` directories for governance artifacts.
+Checks `.ai` submodule freshness (auto-updates if behind), creates symlinks for CLAUDE.md, .cursorrules, and .github/copilot-instructions.md, and creates `.plans/` and `.panels/` directories for governance artifacts.
 
 **Agentic bootstrap (interactive):**
 Tell your AI assistant to read and execute `governance/prompts/init.md`. This walks through setup interactively — choosing a language template, configuring repository settings, and installing dependencies — with the agent asking about each option.
@@ -90,12 +90,13 @@ All panel output must include JSON between `<!-- STRUCTURED_EMISSION_START -->` 
 ## Agentic Startup Sequence
 
 When operating autonomously (via `governance/prompts/startup.md`), the Code Manager:
-1. Scans open GitHub issues
-2. Filters for actionable (no branch, not blocked/wontfix/duplicate, not recently human-edited)
-3. Prioritizes by label (P0 > P1 > P2 > P3 > P4), then creation date
-4. Validates intent clarity, creates plan, executes via Coder persona
-5. Invokes review panels, logs run manifest
-6. Max 5 issues per session; **hard stop at 80% context capacity** — executes shutdown protocol (clean git, write checkpoint, request `/clear`)
+1. Updates `.ai` submodule to latest (pre-flight, in consuming repos)
+2. Scans open GitHub issues
+3. Filters for actionable (no branch, not blocked/wontfix/duplicate, not recently human-edited)
+4. Prioritizes by label (P0 > P1 > P2 > P3 > P4), then creation date
+5. Validates intent clarity, creates plan, executes via Coder persona
+6. Invokes review panels, logs run manifest
+7. Max 5 issues per session; **hard stop at 80% context capacity** — executes shutdown protocol (clean git, write checkpoint, request `/clear`)
 
 ## Symlink Configuration
 

@@ -55,6 +55,40 @@ PLATFORM="$(detect_platform)"
 echo "Platform: $PLATFORM"
 echo ""
 
+# --- Submodule freshness check ---
+
+# If running in a consuming repo (submodule context), check if .ai is up to date
+if [ -f "$PROJECT_ROOT/.gitmodules" ] && grep -q '\.ai' "$PROJECT_ROOT/.gitmodules" 2>/dev/null; then
+  echo "Checking .ai submodule freshness..."
+  # Check for dirty state before attempting update
+  if ! git -C "$SCRIPT_DIR" diff-index --quiet HEAD -- 2>/dev/null; then
+    echo "  [WARN] .ai submodule has uncommitted changes; skipping automatic update"
+    echo "         Commit, stash, or discard local changes in .ai, then re-run init.sh"
+  elif git -C "$SCRIPT_DIR" fetch origin main --quiet 2>/dev/null; then
+    LOCAL_SHA=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null)
+    REMOTE_SHA=$(git -C "$SCRIPT_DIR" rev-parse origin/main 2>/dev/null)
+    if [ -n "$LOCAL_SHA" ] && [ -n "$REMOTE_SHA" ]; then
+      if [ "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+        echo "  [OK] .ai submodule is up to date (${LOCAL_SHA:0:8})"
+      else
+        echo "  [UPDATE] .ai submodule is behind (local: ${LOCAL_SHA:0:8}, remote: ${REMOTE_SHA:0:8})"
+        if git -C "$PROJECT_ROOT" submodule update --remote .ai 2>/dev/null; then
+          NEW_SHA=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null)
+          echo "  [OK] .ai submodule updated to ${NEW_SHA:0:8}"
+          echo "  Run 'git add .ai && git commit -m \"chore: update .ai submodule\"' to save the update"
+        else
+          echo "  [WARN] Could not update .ai submodule automatically"
+          echo "         Run: git submodule update --remote .ai"
+        fi
+      fi
+    fi
+  else
+    echo "  [WARN] Could not fetch .ai remote (network error or no remote configured)"
+    echo "         Continuing with current version"
+  fi
+  echo ""
+fi
+
 # --- Symlinks ---
 
 echo "Initializing .ai submodule symlinks..."

@@ -44,6 +44,46 @@ When the user identifies a problem with a previously-created PR (e.g., failing c
 
 ## Startup Sequence
 
+### Pre-flight: Update .ai Submodule
+
+Before any other pre-flight checks, ensure the `.ai` governance submodule is at the latest version:
+
+1. **Detect submodule context** — check if `.ai` is a git submodule:
+   ```bash
+   git submodule status .ai 2>/dev/null
+   ```
+   If this fails (not a submodule, e.g., running inside the ai-submodule repo itself), skip this section.
+
+2. **Check for dirty state in `.ai`:**
+   ```bash
+   if [ -n "$(git -C .ai status --porcelain)" ]; then
+     echo "Warning: .ai submodule has uncommitted changes; skipping automatic update."
+   fi
+   ```
+   If dirty, skip the update and log a warning. Do not attempt to update over uncommitted changes.
+
+3. **Fetch latest and check for updates** (only if not dirty):
+   ```bash
+   git -C .ai fetch origin main --quiet 2>/dev/null
+   ```
+   If the fetch fails (network error), warn and continue — this is non-blocking.
+   ```bash
+   LOCAL_SHA=$(git -C .ai rev-parse HEAD)
+   REMOTE_SHA=$(git -C .ai rev-parse origin/main)
+   ```
+
+4. **If behind, update:**
+   ```bash
+   git submodule update --remote .ai
+   ```
+   If the submodule pointer changed (`LOCAL_SHA != REMOTE_SHA`):
+   - Commit the update: `git add .ai && git commit -m "chore: update .ai submodule to latest"`
+   - Log: ".ai submodule updated from {LOCAL_SHA} to {REMOTE_SHA}"
+
+   If already current, log: ".ai submodule is up to date"
+
+5. **If update fails**, warn and continue — this is non-blocking but should be noted in the session log.
+
 ### Pre-flight: Repository Configuration
 
 Before scanning issues, verify the repository supports the agentic workflow:
