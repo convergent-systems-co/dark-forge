@@ -46,7 +46,7 @@ Then re-run `bash .ai/init.sh` if the symlink configuration has changed.
 | `governance/personas/panels/` | 15 multi-persona review workflows |
 | `governance/policy/` | 3 deterministic policy profiles (default, fin_pii_high, infrastructure_critical) |
 | `governance/schemas/` | JSON schemas for structured emissions and panel configuration |
-| `governance/prompts/` | Workflow prompts, plan template, startup loop |
+| `governance/prompts/` | Workflow prompts, templates (plan, runtime DI), startup loop |
 | `governance/docs/` | Architecture docs, context management, governance model |
 
 ## Configuration

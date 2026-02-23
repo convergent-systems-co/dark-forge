@@ -91,7 +91,7 @@ Every non-trivial change needs a plan in `.plans/`:
 
 ```bash
 # Use the template
-cp governance/prompts/plan-template.md .plans/42-my-feature.md
+cp governance/prompts/templates/plan-template.md .plans/42-my-feature.md
 # Fill in all sections, then implement
 ```
 

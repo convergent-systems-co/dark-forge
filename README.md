@@ -66,7 +66,9 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
     prompts/                   Reusable prompt templates
       startup.md               Agentic improvement loop entry point
       retrospective.md         Post-merge process evaluation prompt
-      plan-template.md         Standardized plan template for AI and humans
+      templates/               Reusable document templates
+        plan-template.md       Standardized plan template for AI and humans
+        runtime-di-template.md DI template for runtime-generated intents
       workflows/               Multi-phase orchestration (8 workflows)
 
     schemas/                   Enforcement artifacts (JSON Schema)

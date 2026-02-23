@@ -511,7 +511,7 @@ A Design Intent produced by the DI Generator is structurally identical to a huma
 
 All runtime-generated DIs use the following template. The template ensures that every field required by the policy engine is present and that provenance is fully traceable.
 
-**Template location:** `templates/runtime-di.md`
+**Template location:** `governance/prompts/templates/runtime-di-template.md`
 
 ```markdown
 # Design Intent: ${di_title}
@@ -1442,21 +1442,23 @@ The following files are defined or referenced by this architecture. Files marked
 | File | Status | Purpose |
 |---|---|---|
 | `governance/docs/runtime-feedback-architecture.md` | This document | Design specification |
-| `governance/schemas/runtime-signal.schema.json` | New | Signal normalization schema |
-| `governance/schemas/baseline.schema.json` | New | Baseline snapshot schema |
-| `templates/runtime-di.md` | New | DI template for runtime-generated intents |
-| `governance/policy/severity-reclassification.yaml` | New | Severity reclassification rules |
-| `governance/policy/deduplication.yaml` | New | Deduplication window configuration |
+| `governance/schemas/runtime-signal.schema.json` | Implemented (PR #69) | Signal normalization schema |
+| `governance/schemas/baseline.schema.json` | Implemented (PR #69) | Baseline snapshot schema |
+| `governance/prompts/templates/runtime-di-template.md` | Implemented (PR #89) | DI template for runtime-generated intents |
+| `governance/schemas/runtime-di.schema.json` | Implemented (PR #89) | Runtime DI structured emission schema |
+| `governance/prompts/di-generation-workflow.md` | Implemented (PR #89) | Agentic workflow for DI generation |
+| `governance/policy/severity-reclassification.yaml` | Implemented (PR #69) | Severity reclassification rules |
+| `governance/policy/deduplication.yaml` | Implemented (PR #69) | Deduplication window configuration |
 | `governance/policy/signal-adapters/` | New (directory) | Polling adapter configurations |
-| `governance/policy/signal-panel-mapping.yaml` | New | Signal category to panel mapping |
-| `governance/policy/rate-limits.yaml` | New | Rate limit configuration |
-| `governance/policy/circuit-breaker.yaml` | New | Circuit breaker parameters |
-| `governance/policy/drift-remediation.yaml` | New | Drift auto-remediation rules |
-| `governance/policy/drift-policy.yaml` | New | Drift-specific policy engine rules |
-| `governance/policy/component-registry.yaml` | New | Component criticality and ownership |
-| `governance/schemas/remediation-action.schema.json` | Defined in Phase 4b | Remediation action audit record |
-| `governance/schemas/remediation-verification.schema.json` | Defined in Phase 4b | Post-remediation verification result |
-| `governance/prompts/remediation-workflow.md` | Defined in Phase 4b | Agentic workflow for autonomous drift remediation |
+| `governance/policy/signal-panel-mapping.yaml` | Implemented (PR #69) | Signal category to panel mapping |
+| `governance/policy/rate-limits.yaml` | Implemented (PR #69) | Rate limit configuration |
+| `governance/policy/circuit-breaker.yaml` | Implemented (PR #69) | Circuit breaker parameters |
+| `governance/policy/drift-remediation.yaml` | Implemented (PR #69) | Drift auto-remediation rules |
+| `governance/policy/drift-policy.yaml` | Implemented (PR #69) | Drift-specific policy engine rules |
+| `governance/policy/component-registry.yaml` | Implemented (PR #69) | Component criticality and ownership |
+| `governance/schemas/remediation-action.schema.json` | Implemented (PR #83) | Remediation action audit record |
+| `governance/schemas/remediation-verification.schema.json` | Implemented (PR #83) | Post-remediation verification result |
+| `governance/prompts/remediation-workflow.md` | Implemented (PR #83) | Agentic workflow for autonomous drift remediation |
 | `governance/schemas/panel-output.schema.json` | Defined in Phase 4 | Structured panel emission schema |
 | `governance/schemas/run-manifest.schema.json` | Defined in Phase 4 | Merge manifest schema |
 | `governance/personas/panels/*.md` | Existing | Panel definitions consumed by re-execution |

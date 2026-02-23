@@ -36,7 +36,7 @@
 | `governance/personas/governance/policy-evaluator.md` | Cognitive | Deterministic policy application persona |
 | `governance/personas/agentic/code-manager.md` | Cognitive | Orchestration persona |
 | `governance/personas/agentic/coder.md` | Cognitive | Execution persona |
-| `governance/prompts/plan-template.md` | Cognitive | Standardized plan template |
+| `governance/prompts/templates/plan-template.md` | Cognitive | Standardized plan template |
 | `governance/manifests/.gitkeep` | — | Placeholder for manifest directory |
 
 ### Modified Files
@@ -137,7 +137,7 @@ git commit -m "Update .ai submodule URL after rename"
 | 9 | Autonomy metrics specification | `governance/docs/autonomy-metrics.md` | Complete |
 | + | Context management strategy | `governance/docs/context-management.md` | Complete |
 | + | Naming review | `governance/docs/naming-review.md` | Complete |
-| + | Plan template | `governance/prompts/plan-template.md` | Complete |
+| + | Plan template | `governance/prompts/templates/plan-template.md` | Complete |
 | + | Code Manager persona | `governance/personas/agentic/code-manager.md` | Complete |
 | + | Coder persona | `governance/personas/agentic/coder.md` | Complete |
 | + | Governance Auditor persona | `governance/personas/governance/governance-auditor.md` | Complete |

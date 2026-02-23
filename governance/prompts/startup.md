@@ -88,7 +88,7 @@ For the highest-priority actionable issue:
 
 1. Create a branch: `itsfwcp/{issue-type}/{issue-number}/{branch-name}` (e.g., `itsfwcp/feat/42/add-auth`)
    - `{issue-type}` maps from the issue's conventional commit type: `feat`, `fix`, `refactor`, `docs`, `chore`
-2. Write a plan using the plan template (`governance/prompts/plan-template.md`)
+2. Write a plan using the plan template (`governance/prompts/templates/plan-template.md`)
 3. Save the plan to `.plans/{issue-number}-{short-description}.md`
 4. If the issue is low risk and well-defined, proceed to implementation
 5. If the issue is high risk or ambiguous, comment the plan on the issue and wait for approval
