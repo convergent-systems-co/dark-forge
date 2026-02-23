@@ -8,7 +8,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|------|-------------|--------|------------------|
 | 3 | Agentic Orchestration | Personas, panels, workflows with human gates | **Implemented** | Governance personas and panels, agentic workflows, Code Manager + Coder personas |
 | 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Implemented** | Governance CI workflow, structured emissions, run manifests, policy profiles |
-| 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Partial** | Policy engine runtime; drift detection schemas and policy config (PR #69); auto-remediation schemas and workflow (PR #81); incident-to-DI generation not yet implemented |
+| 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Implemented** | Policy engine runtime; drift detection schemas and policy config (PR #69); auto-remediation schemas and workflow (PR #81); incident-to-DI generation schemas and workflow (PR #87) |
 | 5 | Dark Factory | Full automation with runtime feedback and self-evolution | **Architecture defined** | Runtime feedback architecture documented; not yet implemented |
 
 ## Completed Work
@@ -82,7 +82,7 @@ The following Phase 4b capabilities are designed but not yet implemented:
 
 - [x] **Drift detection** — Schemas and policy configuration files created (PR #69); runtime implementation pending
 - [x] **Auto-remediation loops** — Governance artifacts for autonomous drift remediation (PR #81): remediation action schema, verification schema, and agentic workflow prompt
-- [ ] **Incident-to-DI generation** — Runtime anomalies automatically create Design Intents
+- [x] **Incident-to-DI generation** — Runtime anomalies automatically create Design Intents (PR #87)
 
 ## Phase 5 — Dark Factory (Future)
 
