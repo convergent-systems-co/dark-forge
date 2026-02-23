@@ -1,0 +1,70 @@
+# Bicep / Azure IaC Project Configuration
+# Copy to .ai/project.yaml and customize.
+
+name: "my-bicep-project"
+language: "bicep"
+framework: ""                      # standalone, aks, app-service, container-apps
+
+personas:
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
+  - operations/infrastructure-engineer.md
+  - engineering/performance-engineer.md
+  # - compliance/security-auditor.md
+  # - operations/sre.md
+
+panels:
+  - code-review.md
+  - architecture-review.md
+  - security-review.md
+  # - production-readiness-review.md
+  # - cost-analysis.md
+
+conventions:
+  registry:
+    # Azure Container Registry for Bicep modules
+    # Uses the SET-Apps production Bicep registry for shared modules
+    acr_alias: "acr-prod"
+    acr_registry: "crtoprodbicepregistrya.azurecr.io"
+    # Prefer registry modules over inline definitions
+    # Use 'br/acr-prod:moduleName:version' for shared modules
+    prefer_registry_modules: true
+  style:
+    indent: "spaces"
+    indent_size: 2
+    naming: "camelCase"              # Bicep parameter/variable naming
+    resource_naming: "kebab-case"    # Azure resource naming
+    use_descriptions: true           # @description() on all params
+    use_secure_decorator: true       # @secure() on sensitive params
+  architecture:
+    target_scope: "resourceGroup"    # resourceGroup, subscription, managementGroup
+    pattern: "modular"               # modular (registry modules), monolithic
+    environment_handling: "params"   # params, env files, both
+    tagging:
+      required:
+        - Application
+        - Environment
+        - ManagedBy
+  testing:
+    framework: "bicep-test"          # bicep test framework (bicep test .)
+    what_if: true                    # Run what-if before deploy
+    linter: "bicep linter"           # Built-in Bicep linter
+  tooling:
+    cli: "az bicep"
+    min_version: "0.28"              # Minimum Bicep CLI version
+    bicepconfig: true                # Require bicepconfig.json
+  git:
+    branch_pattern: "feature/{ticket}-{description}"
+    commit_style: "conventional"
+    pr_template: true
+
+instructions: |
+  - Use the SET-Apps Bicep registry (crtoprodbicepregistrya.azurecr.io) for all shared modules
+  - Reference registry modules as: module myResource 'br/acr-prod:moduleName:version' = { ... }
+  - Only use standard Bicep for modules not yet in the registry
+  - Add @description() decorator to all parameters
+  - Add @secure() decorator to sensitive parameters (passwords, keys, connection strings)
+  - Use environment parameter to control resource naming and configuration
+  - Tag all resources with Application, Environment, and ManagedBy
+  - Run `az bicep lint` before committing
+  - Configure bicepconfig.json with the ACR module alias

@@ -1,0 +1,76 @@
+# Terraform / IaC Project Configuration
+# Copy to .ai/project.yaml and customize.
+
+name: "my-terraform-project"
+language: "terraform"
+framework: ""                      # azure, aws, gcp, multi-cloud
+
+personas:
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
+  - operations/infrastructure-engineer.md
+  - engineering/performance-engineer.md
+  # - compliance/security-auditor.md
+  # - operations/sre.md
+
+panels:
+  - code-review.md
+  - architecture-review.md
+  - security-review.md
+  # - production-readiness-review.md
+  # - cost-analysis.md
+
+conventions:
+  registry:
+    # JM-Terraform organization for shared Terraform modules
+    # See: https://github.com/JM-Terraform
+    org: "JM-Terraform"
+    # Reference modules as: source = "github.com/JM-Terraform/tfm-<provider>-<resource>"
+    # Examples:
+    #   source = "github.com/JM-Terraform/tfm-azure-keyvault?ref=v1.0.0"
+    #   source = "github.com/JM-Terraform/tfm-azure-vnet?ref=v2.1.0"
+    prefer_org_modules: true
+  style:
+    indent: "spaces"
+    indent_size: 2
+    naming: "snake_case"             # Terraform resource/variable naming
+    resource_naming: "kebab-case"    # Cloud resource naming
+    max_line_length: 120
+  architecture:
+    layout: "standard"               # standard (main.tf, variables.tf, outputs.tf)
+    state_backend: "azurerm"         # azurerm, s3, gcs, remote
+    environment_handling: "workspaces"  # workspaces, tfvars, directories
+    modules:
+      local: "modules/"              # Path for project-specific modules
+      shared: "github.com/JM-Terraform"  # Shared module source
+    tagging:
+      required:
+        - Application
+        - Environment
+        - ManagedBy
+  testing:
+    framework: "terraform test"      # terraform test (native), terratest
+    validate: true                   # Run terraform validate
+    plan: true                       # Run terraform plan for review
+    linter: "tflint"
+    security_scanner: "tfsec"        # tfsec, checkov
+  tooling:
+    min_version: "1.6"               # Minimum Terraform version
+    lock_file: true                  # Commit .terraform.lock.hcl
+    fmt: "terraform fmt"
+  git:
+    branch_pattern: "feature/{ticket}-{description}"
+    commit_style: "conventional"
+    pr_template: true
+
+instructions: |
+  - Use JM-Terraform org modules (github.com/JM-Terraform) for all shared infrastructure
+  - Reference modules with pinned versions: source = "github.com/JM-Terraform/tfm-<name>?ref=v1.0.0"
+  - Only create local modules in modules/ for project-specific infrastructure
+  - Use terraform workspaces or .tfvars files for environment separation
+  - Run `terraform fmt` and `terraform validate` before committing
+  - Run `tflint` for Terraform-specific linting
+  - Tag all resources with Application, Environment, and ManagedBy
+  - Commit .terraform.lock.hcl for reproducible builds
+  - Use variables with descriptions and type constraints
+  - Use `sensitive = true` for sensitive variables
