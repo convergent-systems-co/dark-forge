@@ -75,6 +75,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
     schemas/                   Enforcement artifacts (JSON Schema)
       panel-output.schema.json Structured emission standard for panel reviews
       run-manifest.schema.json Audit manifest for every merge decision
+      retrospective-aggregation.schema.json  Aggregated retrospective data across governance runs
 
     policy/                    Deterministic policy profiles (YAML)
       default.yaml             Standard risk tolerance
@@ -92,6 +93,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       autonomy-metrics.md                 Autonomy index and weekly reporting
       ci-gating-blueprint.md              CI checks, branch protection, auto-merge
       naming-review.md                    Persona/panel naming consistency review
+      retrospective-aggregation.md         Aggregated retrospective data schema docs
 
   .governance/                 Policy engine runtime
     policy-engine.py           Deterministic evaluation engine (Phase 4b)
