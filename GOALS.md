@@ -82,6 +82,8 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #113 | #115 | Retrospective aggregation schema | JSON Schema for aggregating panel accuracy and override frequency (Phase 5b) |
 | #116 | #123 | Auto-update .ai submodule | Startup and init.sh auto-update .ai submodule when behind remote |
 | #117 | #118 | Threshold auto-tuning policy | Policy rules for adjusting confidence thresholds from retrospective data (Phase 5b) |
+| #120 | #131 | Consuming repo governance review flow | Auto-detect governance root in CI workflow, SSH→HTTPS URL conversion in init.sh |
+| #127 | #129 | Reconcile documentation drift | Fixed phase status, added missing completed work, updated file structure across all docs |
 
 ## Open Work
 
