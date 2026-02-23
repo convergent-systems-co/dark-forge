@@ -90,5 +90,5 @@ Architecture is documented in `governance/docs/runtime-feedback-architecture.md`
 
 - [ ] Runtime feedback loop (anomaly → signal → DI → implementation → deploy)
 - [ ] Self-evolution (governance process improves itself based on outcomes)
-- [ ] Backward compatibility enforcement for governance changes
+- [x] Backward compatibility enforcement for governance changes (PR #92)
 - [ ] Autonomy metrics and weekly reporting dashboard
