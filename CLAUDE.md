@@ -17,7 +17,7 @@ There is no build system, test runner, or linter. This is a configuration-only r
 bash .ai/init.sh                    # Symlinks only
 bash .ai/init.sh --install-deps     # Symlinks + Python venv + dependencies
 ```
-Creates symlinks for CLAUDE.md, .cursorrules, and .github/copilot-instructions.md in the parent project.
+Creates symlinks for CLAUDE.md, .cursorrules, and .github/copilot-instructions.md in the parent project. Also creates `.plans/` and `.panels/` directories for governance artifacts.
 
 **Agentic bootstrap (interactive):**
 Tell your AI assistant to read and execute `governance/prompts/init.md`. This walks through setup interactively — choosing a language template, configuring repository settings, and installing dependencies — with the agent asking about each option.
@@ -103,3 +103,11 @@ When operating autonomously (via `governance/prompts/startup.md`), the Code Mana
 - `instructions.md` → `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`
 
 This ensures Claude Code, GitHub Copilot, and Cursor all receive the same base instructions in consuming projects.
+
+## Project Directories
+
+`init.sh` creates these directories in consuming repos (not in the submodule):
+- `.plans/` — Implementation plans for issues and features (accumulated)
+- `.panels/` — Panel review reports (latest only per panel type, overwrite strategy)
+
+Directories are configured in `config.yaml` under `project_directories` and can be extended in `project.yaml`.

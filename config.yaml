@@ -22,6 +22,15 @@ symlinks:
 workflows_to_copy:
   - dark-factory-governance.yml
 
+# Directories to create in consuming repos during init
+# These are created with .gitkeep files so git tracks empty directories
+# Consuming projects can add additional directories in project.yaml
+project_directories:
+  - path: .plans
+    description: "Implementation plans for issues and features"
+  - path: .panels
+    description: "Panel reports — only latest per panel type"
+
 # Gitignore patterns for .ai/
 gitignore:
   - context.md

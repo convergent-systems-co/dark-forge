@@ -67,9 +67,10 @@ When `init.sh` runs, after creating symlinks it:
 1. **Checks prerequisites** -- `gh` CLI installed and authenticated
 2. **Detects the GitHub repository** from git remotes
 3. **Reads configuration** from `config.yaml` (defaults) and `project.yaml` (overrides)
-4. **Applies repository settings** via `gh api repos/{owner}/{repo} -X PATCH`
-5. **Generates CODEOWNERS** if the file is empty or missing
-6. **Validates branch protection** by checking expected rulesets exist (warns on mismatch, does not apply)
+4. **Creates project directories** (`.plans/`, `.panels/`) with `.gitkeep` files
+5. **Applies repository settings** via `gh api repos/{owner}/{repo} -X PATCH`
+6. **Generates CODEOWNERS** if the file is empty or missing
+7. **Validates branch protection** by checking expected rulesets exist (warns on mismatch, does not apply)
 
 ### Graceful Degradation
 
@@ -109,6 +110,44 @@ This catches misconfiguration before the agentic loop starts, preventing silent 
 | `delete_branch_on_merge` | `true` | Feature branches are cleaned up automatically |
 | CODEOWNERS populated | Non-empty file | `require_code_owner_review` rulesets need owners defined |
 
+## Project Directories
+
+`init.sh` creates standard directories in consuming repos for storing governance artifacts. These directories are created in the project root (not inside the `.ai` submodule) so that plans and panel reports are tracked in the consuming repo's own git history.
+
+### Default Directories
+
+| Directory | Purpose | Retention |
+|-----------|---------|-----------|
+| `.plans/` | Implementation plans for issues and features | Accumulated — all plans retained |
+| `.panels/` | Panel review reports | Latest only — overwrite per panel type |
+
+### Configuration
+
+Directories are declared in `config.yaml` under `project_directories`:
+
+```yaml
+project_directories:
+  - path: .plans
+    description: "Implementation plans for issues and features"
+  - path: .panels
+    description: "Panel reports — only latest per panel type"
+```
+
+Consuming projects can add additional directories in their `project.yaml`. Directory lists from both files are merged (appended).
+
+### Behavior
+
+- Directories are only created in submodule context (consuming repos, not the ai-submodule itself)
+- Each directory gets a `.gitkeep` file so git tracks the empty directory
+- Idempotent — existing directories are left untouched
+- If Python is not available, falls back to the hardcoded defaults (`.plans/` and `.panels/`)
+
+### Panel Report Convention
+
+Panel reports in `.panels/` follow an overwrite strategy: each panel type writes to a fixed filename (e.g., `.panels/security-review.json`), replacing the previous report. This keeps only the latest report per panel type, avoiding repository bloat from accumulated review artifacts.
+
 ## Backward Compatibility
 
 The `repository` section is fully optional. If absent from `config.yaml`, `init.sh` skips repository configuration entirely. Existing consuming repos are unaffected until they add the section.
+
+The `project_directories` section is also optional. If absent, `init.sh` falls back to creating `.plans/` and `.panels/` with hardcoded defaults. Existing consuming repos that already have these directories are unaffected (idempotent).

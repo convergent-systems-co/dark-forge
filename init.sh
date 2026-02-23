@@ -138,8 +138,46 @@ print(' '.join(wf))
       fi
     done
   fi
+  # Project directories — create .plans/ and .panels/ in consuming repo
+  echo ""
+  echo "Creating project directories..."
+  # Read directory list from config if Python is available, otherwise use defaults
+  PROJECT_DIRS=".plans .panels"
+  if [ -n "$PYTHON_CMD" ]; then
+    CONFIG_DIRS=$("$PYTHON_CMD" -c "
+import yaml, os
+config = {}
+for f in ['$SCRIPT_DIR/config.yaml', '$SCRIPT_DIR/project.yaml']:
+    if os.path.exists(f):
+        with open(f) as fh:
+            data = yaml.safe_load(fh) or {}
+            # Merge project_directories lists
+            if 'project_directories' in data:
+                existing = config.get('project_directories', [])
+                config['project_directories'] = existing + data['project_directories']
+            for k, v in data.items():
+                if k != 'project_directories':
+                    config[k] = v
+dirs = config.get('project_directories', [{'path': '.plans'}, {'path': '.panels'}])
+print(' '.join(d.get('path', '') for d in dirs if d.get('path')))
+" 2>/dev/null) && PROJECT_DIRS="$CONFIG_DIRS"
+  fi
+  for dir_name in $PROJECT_DIRS; do
+    dir_path="$PROJECT_ROOT/$dir_name"
+    if [ -d "$dir_path" ]; then
+      echo "  $dir_name/ already exists"
+    else
+      mkdir -p "$dir_path"
+      touch "$dir_path/.gitkeep"
+      echo "  Created $dir_name/ with .gitkeep"
+    fi
+    # Ensure .gitkeep exists even if directory was created manually
+    if [ ! -f "$dir_path/.gitkeep" ] && [ -z "$(ls -A "$dir_path" 2>/dev/null)" ]; then
+      touch "$dir_path/.gitkeep"
+    fi
+  done
 else
-  echo "  Skipping template/workflow copy (not a submodule context)"
+  echo "  Skipping template/workflow/directory setup (not a submodule context)"
 fi
 
 echo ""
