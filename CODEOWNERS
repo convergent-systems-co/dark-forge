@@ -1,0 +1,24 @@
+# CODEOWNERS — Dark Factory Governance Platform (ai-submodule)
+#
+# Defines code ownership for pull request review requirements.
+# The org ruleset "Pull Request - Reviewer" enforces require_code_owner_review.
+#
+# NOTE: The Dark Factory governance workflow approves PRs as github-actions[bot].
+# Bot approvals do NOT satisfy code owner review requirements. For the agentic
+# loop to merge PRs without human intervention, either:
+#   1. Disable require_code_owner_review in the org/repo ruleset, OR
+#   2. Add a machine user (not bot) as a code owner who can approve, OR
+#   3. Use a GitHub App with bypass permissions for the branch protection rule
+# See governance/docs/repository-configuration.md for details.
+
+# Default owner — all files not matched by more specific rules
+* @SET-Apps/approvers
+
+# CI/CD workflows require DevOps review
+/.github/workflows/ @SET-Apps/devops_engineers
+
+# Infrastructure files require DevOps review
+/infra/ @SET-Apps/devops_engineers
+
+# Governance submodule changes
+/.ai @SET-Apps/approvers

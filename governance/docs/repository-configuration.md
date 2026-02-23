@@ -146,6 +146,35 @@ Consuming projects can add additional directories in their `project.yaml`. Direc
 
 Panel reports in `.panels/` follow an overwrite strategy: each panel type writes to a fixed filename (e.g., `.panels/security-review.json`), replacing the previous report. This keeps only the latest report per panel type, avoiding repository bloat from accumulated review artifacts.
 
+## CODEOWNERS and Governance Workflow Interaction
+
+The Dark Factory governance workflow (`dark-factory-governance.yml`) approves PRs as `github-actions[bot]`. This creates an interaction with the `require_code_owner_review` org/repo ruleset:
+
+**Problem:** `github-actions[bot]` is a GitHub App, not a user or team. Its approvals do **not** satisfy code owner review requirements. PRs approved only by the governance workflow will be blocked from merging if `require_code_owner_review` is enabled and no code owner has also approved.
+
+### Workarounds
+
+Choose the approach that fits your organization's security posture:
+
+| Approach | Tradeoff |
+|----------|----------|
+| **Disable `require_code_owner_review`** | Simplest. Governance workflow approval is sufficient. Loses code ownership enforcement. |
+| **Add a machine user as code owner** | Create a GitHub user account (not bot) for the agentic workflow. Add it to CODEOWNERS. The workflow must authenticate as this user (via PAT or SSH key). Maintains code ownership but requires credential management. |
+| **Add bypass actor to branch ruleset** | Configure the branch protection ruleset to grant `github-actions[bot]` bypass permissions. The governance workflow can then merge without code owner review. Requires org admin access. |
+| **Require human code owner review** | Keep `require_code_owner_review` as-is. The governance workflow provides automated review, but a human code owner must also approve before merge. This is the most conservative approach and aligns with `fin_pii_high` and `infrastructure_critical` policy profiles. |
+
+### Recommended Setup by Policy Profile
+
+| Profile | Recommendation |
+|---------|---------------|
+| `default` | Bypass actor or disable `require_code_owner_review` — agentic loop operates autonomously |
+| `fin_pii_high` | Require human code owner review — auto-merge is already disabled, human approval is expected |
+| `infrastructure_critical` | Require human code owner review — mandatory architecture and SRE review already in policy |
+
+### ai-submodule Repository
+
+The ai-submodule itself uses `require_code_owner_review: true` in its org ruleset. CODEOWNERS assigns `@SET-Apps/approvers` as the default owner. The governance workflow's `github-actions[bot]` approval satisfies the standard `required_approving_review_count: 1` check but not the code owner check. This works because the branch ruleset grants bypass permissions to the governance workflow.
+
 ## Backward Compatibility
 
 The `repository` section is fully optional. If absent from `config.yaml`, `init.sh` skips repository configuration entirely. Existing consuming repos are unaffected until they add the section.
