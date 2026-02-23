@@ -166,24 +166,54 @@ If checks fail:
 
 #### 7b: Fetch Copilot Recommendations
 
-After checks complete, fetch Copilot findings from **all three comment sources** (each source is disjoint):
+After checks complete, fetch Copilot findings from **all three comment sources** (each source is disjoint).
+
+##### Diagnostic Pre-Fetch (Mandatory)
+
+Before running any filtered query, fetch **unfiltered** comment counts from all three endpoints to establish a baseline:
+
+```bash
+# Unfiltered counts — run these FIRST
+INLINE_TOTAL=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --jq 'length')
+REVIEW_TOTAL=$(gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews --jq 'length')
+ISSUE_TOTAL=$(gh api repos/{owner}/{repo}/issues/{pr_number}/comments --jq 'length')
+```
+
+Log all three counts. After running the filtered queries below, compare filtered vs. unfiltered counts. If **any** filtered result is empty but its corresponding unfiltered count is non-zero, emit a **filter-mismatch warning** and inspect the unfiltered results manually to determine whether the jq filter missed bot comments due to an unexpected `user.login` value.
+
+##### Filtered Queries
+
+The jq filter combines a username regex with a user-type check for defense in depth:
+
+```
+select(
+  (.user.login | test("^copilot$|copilot-pull-request-reviewer|github-advanced-security|github-copilot"; "i"))
+  or ((.user.type == "Bot" or (.user.login | test("\\[bot\\]$"))) and (.user.login | test("copilot"; "i")))
+)
+```
+
+Apply this filter to each endpoint:
 
 1. **Inline code comments** (Copilot posts line-level suggestions and review thread comments here):
    ```bash
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --jq '[.[] | select(.user.login | test("copilot|github-advanced-security|copilot-pull-request-reviewer"; "i"))]'
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/comments --jq '[.[] | select((.user.login | test("^copilot$|copilot-pull-request-reviewer|github-advanced-security|github-copilot"; "i")) or ((.user.type == "Bot" or (.user.login | test("\\[bot\\]$"))) and (.user.login | test("copilot"; "i"))))]'
    ```
 
 2. **PR reviews** (Copilot may post a top-level review summary):
    ```bash
-   gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews --jq '[.[] | select(.user.login | test("copilot|github-advanced-security|copilot-pull-request-reviewer"; "i"))]'
+   gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews --jq '[.[] | select((.user.login | test("^copilot$|copilot-pull-request-reviewer|github-advanced-security|github-copilot"; "i")) or ((.user.type == "Bot" or (.user.login | test("\\[bot\\]$"))) and (.user.login | test("copilot"; "i"))))]'
    ```
 
 3. **Issue-level comments** (some bots post here instead of as reviews):
    ```bash
-   gh api repos/{owner}/{repo}/issues/{pr_number}/comments --jq '[.[] | select(.user.login | test("copilot|github-advanced-security|copilot-pull-request-reviewer"; "i"))]'
+   gh api repos/{owner}/{repo}/issues/{pr_number}/comments --jq '[.[] | select((.user.login | test("^copilot$|copilot-pull-request-reviewer|github-advanced-security|github-copilot"; "i")) or ((.user.type == "Bot" or (.user.login | test("\\[bot\\]$"))) and (.user.login | test("copilot"; "i"))))]'
    ```
 
-**Waiting protocol:** Treat the wait window as the first 10 minutes after PR creation (using `created_at`). First, check all sources immediately. If no Copilot comments exist from any source, you may poll again **only while** (a) it is still less than 10 minutes since PR creation, (b) the remaining time until `created_at + 10 minutes` is at least 2 minutes, and (c) you have performed fewer than 5 total polling attempts. Between polls, sleep for up to 2 minutes but **never longer than the remaining time** before the 10-minute deadline (i.e., `sleep = min(2 minutes, remaining)`). Once either the 10-minute window has elapsed or you have reached 5 polling attempts, proceed without Copilot input (per `missing_panel_behavior: redistribute` in policy).
+##### Minimum Polling Requirement
+
+The agent **MUST** execute at least 2 polling attempts separated by at least 2 minutes before concluding no Copilot comments exist. A single empty poll is **NOT** sufficient to confirm absence — timing gaps between PR creation and Copilot analysis mean early polls frequently return empty results even when Copilot will comment.
+
+**Waiting protocol:** Treat the wait window as the first 10 minutes after PR creation (using `created_at`). First, check all sources immediately. If no Copilot comments exist from any source, you **must** poll at least one more time after waiting at least 2 minutes. You may continue polling **only while** (a) it is still less than 10 minutes since PR creation, (b) the remaining time until `created_at + 10 minutes` is at least 2 minutes, and (c) you have performed fewer than 5 total polling attempts. Between polls, sleep for up to 2 minutes but **never longer than the remaining time** before the 10-minute deadline (i.e., `sleep = min(2 minutes, remaining)`). Once either the 10-minute window has elapsed or you have reached 5 polling attempts (with a minimum of 2), proceed without Copilot input (per `missing_panel_behavior: redistribute` in policy).
 
 **Do NOT merge until all sources have been checked.** The absence of Copilot findings must be confirmed, not assumed.
 
@@ -250,7 +280,47 @@ If any code changes were made in Steps 7d:
 
 Maximum review cycles: **3**. If after 3 cycles the PR still has blocking findings, comment on the issue requesting human review and move to the next issue.
 
+#### 7f-bis: Pre-Merge Review Thread Verification (Safety Net)
+
+This step is the **critical safety net** that catches review comments missed by the Copilot-specific filter in Step 7b. It is author-agnostic and uses GitHub's GraphQL API to inspect all review threads on the PR, regardless of who created them. **This step must pass before merge.**
+
+1. **Fetch all review threads** using the GraphQL `reviewThreads` query:
+
+   ```bash
+   gh api graphql -f query='
+     query($owner: String!, $repo: String!, $pr: Int!) {
+       repository(owner: $owner, name: $repo) {
+         pullRequest(number: $pr) {
+           reviewThreads(first: 100) {
+             nodes {
+               isResolved
+               isOutdated
+               comments(first: 1) {
+                 nodes {
+                   author { login }
+                   body
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+   ' -f owner='{owner}' -f repo='{repo}' -F pr={pr_number}
+   ```
+
+2. **Count active unresolved threads** — threads where `isResolved == false` AND `isOutdated == false`. Outdated threads (on code that has been subsequently changed) do not block merge.
+
+3. **Evaluate result:**
+   - **Zero active unresolved threads:** Proceed to Step 7g (merge).
+   - **Non-zero active unresolved threads:** Process each unresolved thread as if it were a new finding — classify per Step 7c, implement or dismiss per Step 7d, then return to Step 7a to re-run the full cycle.
+   - **GraphQL query fails:** Block merge. Do not fall through to Step 7g. Comment on the issue requesting human review and escalate.
+
+This gate catches: Copilot comments missed by the jq filter, human review comments added between cycles, and feedback from any other bot or integration. It is intentionally redundant with Step 7b — the two mechanisms must independently agree that no unresolved feedback exists before merge proceeds.
+
 #### 7g: Merge to Main
+
+**Precondition:** Step 7f-bis must have completed with zero active unresolved threads. If Step 7f-bis was skipped or did not execute, do not proceed — return to Step 7f-bis.
 
 Once governance approves (all checks pass, aggregate confidence meets threshold, no blocking policy flags):
 

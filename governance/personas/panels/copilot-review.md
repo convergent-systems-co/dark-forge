@@ -31,13 +31,39 @@ Feed into Policy Engine
 
 ## Feedback Parsing
 
-Copilot feedback is consumed from the GitHub API via:
+Copilot feedback is consumed from the GitHub API via **three disjoint endpoints**. All three must be checked — Copilot distributes comments across them depending on the type of feedback.
+
+### Comment Endpoints
+
+| Endpoint | API Path | What It Contains |
+|----------|----------|-----------------|
+| Inline code comments | `GET /repos/{owner}/{repo}/pulls/{pr_number}/comments` | Line-level suggestions, review thread comments |
+| PR reviews | `GET /repos/{owner}/{repo}/pulls/{pr_number}/reviews` | Top-level review summaries, approve/request-changes |
+| Issue-level comments | `GET /repos/{owner}/{repo}/issues/{pr_number}/comments` | General PR comments, some bot integrations |
+
+### Bot Identity Table
+
+Known Copilot-related `user.login` values and their characteristics:
+
+| `user.login` | `user.type` | Endpoint(s) | Notes |
+|--------------|-------------|-------------|-------|
+| `copilot-pull-request-reviewer` | `Bot` | Inline, Reviews | Primary Copilot code review bot |
+| `github-advanced-security` | `Bot` | Inline, Issue | Security scanning results |
+| `copilot` | `Bot` | Any | Standalone name — must be anchored (`^copilot$`) to avoid false matches |
+| `github-copilot` | `Bot` | Any | Future-proofing for potential rebranding |
+
+The jq filter combines username regex matching with a user-type secondary check for defense in depth:
 
 ```
-GET /repos/{owner}/{repo}/pulls/{pr_number}/comments
+select(
+  (.user.login | test("^copilot$|copilot-pull-request-reviewer|github-advanced-security|github-copilot"; "i"))
+  or ((.user.type == "Bot" or (.user.login | test("\\[bot\\]$"))) and (.user.login | test("copilot"; "i")))
+)
 ```
 
-Filter for comments where `user.login` matches the Copilot bot account.
+### Diagnostic Pre-Fetch Requirement
+
+Before running filtered queries, the agent must fetch **unfiltered** comment counts from all three endpoints. If any filtered result is empty but its unfiltered count is non-zero, the agent must emit a **filter-mismatch warning** and manually inspect the unfiltered results for bot comments with unexpected `user.login` values. This catches filter regressions caused by GitHub changing bot account names.
 
 ### Classification Rules
 
@@ -94,6 +120,7 @@ Copilot review emits a standard `panel-output.schema.json` artifact:
 | Copilot API unavailable | Retry 3 times with exponential backoff. If all retries fail, emit panel output with `confidence_score: 0.0` and `requires_human_review: true`. |
 | Copilot comments unparseable | Log raw comments, emit panel output with `confidence_score: 0.0`, flag `copilot_parse_failure`. |
 | Copilot review still pending | Wait up to 10 minutes. If not completed, proceed without Copilot panel. |
+| Filter returns empty despite comments existing | Diagnostic pre-fetch detected non-zero unfiltered count but zero filtered results. Agent must inspect unfiltered comments, update filter if needed, and log the mismatch. Do not proceed to merge until resolved. |
 
 ## Severity Mapping
 

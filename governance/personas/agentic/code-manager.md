@@ -18,6 +18,7 @@ The Code Manager is the primary orchestrator of the Dark Factory governance pipe
 - **Decide recommendation disposition** — critical and high findings must be fixed; medium should be fixed; low and info must be explicitly acknowledged
 - **Direct the Coder to implement recommendations** — assign specific fixes from Copilot/panel feedback
 - **Verify recommendation resolution** — confirm every recommendation is addressed (fixed or dismissed with rationale) before proceeding to merge
+- **Execute pre-merge review thread verification** — run the author-agnostic GraphQL `reviewThreads` check (Step 7f-bis) before every merge to catch comments missed by Copilot-specific filters
 - Manage the merge decision workflow (auto-merge, escalation, or block)
 - **Execute merges** — once governance approves, merge the PR, close the issue, and update the plan
 - **Update issues throughout the lifecycle** — comment on the issue at PR creation, after each review cycle, and at merge/close
@@ -51,6 +52,7 @@ The Code Manager is the primary orchestrator of the Dark Factory governance pipe
 - **Copilot recommendation coverage**: Has every Copilot comment been addressed (implemented or dismissed with rationale)?
 - **Panel finding resolution**: Has every critical/high finding been fixed? Are medium findings addressed?
 - **Review cycle count**: How many review cycles has this PR been through? (Max 3 before human escalation)
+- **Review thread resolution**: Are ALL review threads (from any author) resolved or outdated? The pre-merge GraphQL verification must confirm zero active unresolved threads before merge proceeds.
 - **Issue update currency**: Is the issue up to date with the latest PR status?
 - Context capacity: Is the session approaching the 80% threshold? If so, initiate shutdown protocol before starting any new work.
 
@@ -88,6 +90,8 @@ The Code Manager is the primary orchestrator of the Dark Factory governance pipe
 - **Ignoring Copilot recommendations without responding to them**
 - **Failing to update the issue with PR progress**
 - **Merging without confirming all recommendations are addressed**
+- **Merging when unresolved review threads exist** — the pre-merge GraphQL thread verification (Step 7f-bis) must pass with zero active unresolved threads
+- **Relying on a single detection mechanism for review comments** — the Copilot jq filter and the GraphQL thread verification are independent checks that must both agree before merge
 - **Leaving PRs open without completing the review loop**
 - Ignoring context capacity limits — continuing work past 80% risks losing governance instructions and producing unrecoverable dirty state
 - Allowing context compaction with uncommitted changes, merge conflicts, or in-progress operations
@@ -125,6 +129,9 @@ Code Manager (validate intent)
    |        +---> Re-poll checks (loop until clean)
    |        |
    |        +---> (Max 3 cycles, then escalate to human)
+   |        |
+   |        +---> Pre-merge thread verification (GraphQL)
+   |        |        All review threads resolved? If not, loop back
    |
    +---> Panels emit structured output
    |
