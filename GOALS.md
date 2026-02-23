@@ -65,6 +65,10 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #71 | #72 | Simplify install with single-command setup | Streamlined bootstrap with venv support |
 | #73 | #74 | Issue monitor (local scripts + GitHub Actions) | GitHub Actions workflow + local shell/PowerShell scripts for autonomous issue dispatch |
 | #81 | #83 | Auto-remediation loops | 2 JSON schemas (remediation action + verification) + agentic workflow prompt for Phase 4b autonomous remediation |
+| #87 | #89 | Incident-to-DI generation | Runtime DI schema, template, and 6-step agentic workflow for Phase 4b |
+| #92 | #93 | Backward compatibility enforcement | Breaking change schema + 6-step backward compatibility workflow for Phase 5 |
+| #90 | #91 | Template consolidation | Moved plan-template into templates/, updated all references, fixed stale architecture doc paths |
+| #80 | #94 | Copilot context management parity | Expanded Copilot detection strategies, Tier 1 instruction module, refine label re-evaluation in startup |
 
 ## Open Work
 
@@ -74,7 +78,6 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|-------|--------|----------------|
 | #41 | Agentic Speedup (parallelization) | `enhancement`, `refine` | Platform constraints for parallel agent execution |
 | #42 | Agentic Monitor (always-on orchestrator) | `enhancement`, `refine` | Daemon vs. scheduled vs. event-driven architecture |
-| #80 | VS Code/Copilot token detection info | `enhancement`, `P1`, `refine` | Unclear deliverable — reference material without specific acceptance criteria |
 
 ## Phase 4b — Remaining Work
 
