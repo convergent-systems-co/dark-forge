@@ -270,7 +270,7 @@ powershell -ExecutionPolicy Bypass -File .ai\init.ps1
 The bootstrap script creates symlinks so Claude Code, GitHub Copilot, and Cursor all receive shared instructions. On Windows, if symlinks are unavailable (requires Developer Mode or admin), it falls back to file copies.
 
 **Windows prerequisites:**
-- **Python 3.9+** — required for the governance policy engine. Install from [python.org](https://www.python.org/downloads/) and ensure it's in your PATH.
+- **Python 3.12+** — required for the governance policy engine. Install from [python.org](https://www.python.org/downloads/) and ensure it's in your PATH.
 - After installing Python: `pip install jsonschema pyyaml`
 
 ### Cloning with Submodule

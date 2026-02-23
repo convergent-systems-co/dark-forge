@@ -23,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File .ai\init.ps1
 git commit -m "Add .ai governance submodule"
 ```
 
-> Windows requires Python 3.9+ for the policy engine. Install from [python.org](https://www.python.org/downloads/), then run `pip install jsonschema pyyaml`.
+> Windows requires Python 3.12+ for the policy engine. Install from [python.org](https://www.python.org/downloads/), then run `pip install jsonschema pyyaml`.
 
 ### 2. Configure for your stack
 
