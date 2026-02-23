@@ -62,9 +62,32 @@ gh api repos/{owner}/{repo}/branches --jq '.[].name'
 
 An issue is **actionable** if:
 - It has no associated branch matching `itsfwcp/*/*` or `feature/*` patterns
-- It is not labeled `blocked`, `wontfix`, `duplicate`, or `refine`
+- It is not labeled `blocked`, `wontfix`, `duplicate`
 - It is not assigned to a human (or is assigned to an agentic persona)
 - It has not been updated in the last 24 hours by a human (avoid conflicts)
+- **For `refine`-labeled issues**: see Step 2a below
+
+#### Step 2a: Re-evaluate `refine` Issues
+
+**Critical: Always query current issue state from the GitHub API. Never rely on cached assessments from earlier in the session or previous sessions.**
+
+For each open issue currently labeled `refine`, check whether a human has updated it since the `refine` label was applied:
+
+```bash
+gh issue view {number} --json labels,comments,updatedAt
+```
+
+A `refine` issue should be **re-evaluated** (treated as potentially actionable) if ANY of:
+- A human has added new comments since the agent's `refine` comment
+- The issue body has been edited since the `refine` label was applied
+- A human has removed and re-added the `refine` label (indicating they reviewed it)
+
+If a human has removed the `refine` label entirely, the issue is already actionable — it will pass the standard filter above. **Never re-add `refine` to an issue where a human removed it** unless the agent reads the updated issue and independently determines the intent is still unclear.
+
+For re-evaluable `refine` issues:
+1. Re-read the full issue body and all comments (not cached versions)
+2. If the human's updates provide the clarification that was requested, remove the `refine` label and treat the issue as actionable
+3. If the updates are insufficient, leave the `refine` label and move on
 
 ### Step 3: Prioritize
 
@@ -81,7 +104,8 @@ For the highest-priority actionable issue:
 3. If the intent is unclear, has too many decision points, or lacks sufficient detail for action:
    - Label the issue `refine`
    - Comment on the issue explaining what needs clarification or which decisions must be made by the user
-   - Move to the next issue (the `refine` label excludes it from actionable issues until a human updates it)
+   - Move to the next issue
+   - **Important**: The `refine` label is a request for human input, not a permanent exclusion. When a human updates the issue (adds comments, edits the body, or removes the label), Step 2a will re-evaluate it in the next session. Never treat `refine` as cached state that persists across sessions — always re-check against the live API.
 4. If the intent is clear, proceed to Step 5
 
 ### Step 5: Create Plan

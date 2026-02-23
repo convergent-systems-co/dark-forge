@@ -194,9 +194,76 @@ The agent must actively monitor for context pressure using platform-specific sig
 - **System warnings**: Claude Code emits warnings when approaching context limits. These appear as system messages in the conversation.
 - **Automatic summarization**: When Claude Code summarizes earlier messages, this is a signal that context is already under pressure. If this happens mid-task, immediately checkpoint.
 
-#### GitHub Copilot
-- **Context window indicators**: Copilot surfaces context usage in its UI. Watch for degraded suggestion quality as a proxy.
-- **Response truncation**: If responses are cut short or lose coherence, context is likely near capacity.
+#### GitHub Copilot (VS Code)
+
+Copilot does not expose per-request token usage via a public API the way OpenAI-style APIs do. Detection relies on a combination of UI signals, the VS Code Language Model API, and heuristic estimation.
+
+**Primary: VS Code Language Model API (Extensions)**
+
+If operating as a VS Code extension or chat participant, use the Language Model API for token counting:
+
+```typescript
+import * as vscode from "vscode";
+
+// Window size depends on mode: 128k for Insiders, 64k for standard
+const MODEL_WINDOW = parseInt(process.env.COPILOT_CONTEXT_WINDOW ?? "64000", 10);
+const CHECKPOINT_THRESHOLD = 0.70; // Don't start new issues above this
+const HARD_STOP_THRESHOLD = 0.80;  // Stop immediately, execute shutdown protocol
+
+async function checkContextCapacity(payloadText: string) {
+  const tokens = await vscode.lm.countTokens(payloadText);
+  const ratio = tokens / MODEL_WINDOW;
+  if (ratio >= HARD_STOP_THRESHOLD) return { action: "shutdown", ratio, tokens };
+  if (ratio >= CHECKPOINT_THRESHOLD) return { action: "checkpoint", ratio, tokens };
+  return { action: "continue", ratio, tokens };
+}
+```
+
+**Track what you send**: system instructions + conversation summary + recent turns + selected context (files/snippets). Call `countTokens()` on the assembled payload before each request.
+
+**Secondary: UI Context Meter (Interactive Sessions)**
+
+In Copilot Chat (VS Code), a token usage indicator appears in the chat input area. Hovering it shows an exact token count (e.g., `15K/128K`) with a category breakdown (chat history, files, instructions, etc.). Monitor this meter:
+- **Below 70%**: Continue normally.
+- **70-80%**: Do not start new issues. Finish current work, write checkpoint, and proactively summarize context to stay below 80%. Use rolling summaries to extend the useful working window.
+- **At/above 80%**: Hard stop. Execute the full Capacity Shutdown Protocol immediately (stop, clean git, write checkpoint, request context reset via new thread).
+
+**Note**: VS Code automatically summarizes conversation history when the context fills. If you observe auto-summarization happening, context is already under pressure — immediately checkpoint.
+
+**Secondary: Heuristic Estimation (When API Unavailable)**
+
+When operating as a Copilot agent without direct access to `vscode.lm.countTokens()`:
+
+| Signal | Threshold | Action |
+|--------|-----------|--------|
+| Chat turns (back-and-forth) | > 30 turns | Assume 70%+ capacity. Monitor closely. |
+| Character count of conversation | > 200,000 chars | Assume ~50K tokens (~80% of 64K window). Checkpoint. |
+| Files in context | > 10 files referenced | Significant context consumption. Review necessity. |
+| Response quality degradation | Suggestions become generic or lose project context | Context pressure likely. Checkpoint immediately. |
+| Response truncation | Responses cut short mid-sentence or lose coherence | Near or at capacity. Execute hard reset. |
+| Re-reading files | Agent re-reads files it already processed | Context has been compacted. Checkpoint immediately. |
+
+**Copilot-Specific Context Window Sizes:**
+
+| Mode | Model | Context Window |
+|------|-------|----------------|
+| VS Code Copilot Chat | GPT-4o | 64K tokens |
+| VS Code Insiders | GPT-4o | 128K tokens |
+| GitHub.com Copilot Chat | GPT-4o | 64K tokens |
+| Copilot in CLI | Varies | Check model-specific limits |
+
+**Copilot Shutdown Protocol:**
+
+Copilot agents follow the same two-tier threshold system as Claude Code:
+
+- **At 70%**: Do not start new issues. Finish current work, checkpoint. Proactively summarize context to extend the working window.
+- **At 80%**: Hard stop. Execute the full Capacity Shutdown Protocol (Step 1-5 below) immediately.
+
+Copilot-specific adaptations:
+
+1. **Context reset**: Instead of `/clear`, start a new Copilot Chat thread. Copilot does not have a `/clear` equivalent — a new thread is the reset mechanism.
+2. **Checkpoint handoff**: In the new thread, paste: "Resume from checkpoint: `.checkpoints/{file}`" so the agent reads the checkpoint and continues.
+3. **Proactive summarization** (between 60-70%): Create rolling summaries of completed work and drop older raw turns. This extends the useful working window. VS Code auto-summarization also helps, but the agent should summarize proactively rather than waiting for the system to do it.
 
 #### Universal Heuristics (All Platforms)
 - **Issue count**: After 3 completed issues, stop regardless of token count.
