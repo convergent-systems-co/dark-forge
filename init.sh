@@ -296,7 +296,7 @@ print('OPTIONAL=' + ' '.join(opt))
     done
   fi
   # GOALS.md — create from template if not present in consuming repo
-  GOALS_TEMPLATE="$SCRIPT_DIR/templates/GOALS.md"
+  GOALS_TEMPLATE="$SCRIPT_DIR/governance/templates/GOALS.md"
   GOALS_DST="$PROJECT_ROOT/GOALS.md"
   if [ -f "$GOALS_TEMPLATE" ]; then
     if [ -f "$GOALS_DST" ]; then
@@ -867,7 +867,7 @@ echo "Next steps:"
 if [ "$INSTALL_DEPS" = "false" ] && [ ! -d "$VENV_DIR" ]; then
   echo "  0. Install dependencies:     bash .ai/init.sh --install-deps"
 fi
-echo "  1. Copy a language template:  cp .ai/templates/python/project.yaml project.yaml"
+echo "  1. Copy a language template:  cp .ai/governance/templates/python/project.yaml project.yaml"
 echo "  2. Customize personas and conventions in project.yaml"
 echo "  3. Set governance profile:    governance.policy_profile: default"
 if [ -d "$VENV_DIR" ]; then

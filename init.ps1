@@ -624,7 +624,7 @@ Write-Host "Next steps:" -ForegroundColor Cyan
 if (-not $InstallDeps -and -not (Test-Path $VenvDir)) {
     Write-Host "  0. Install dependencies:     powershell -File .ai\init.ps1 -InstallDeps"
 }
-Write-Host "  1. Copy a language template:  Copy-Item .ai\templates\python\project.yaml project.yaml"
+Write-Host "  1. Copy a language template:  Copy-Item .ai\governance\templates\python\project.yaml project.yaml"
 Write-Host "  2. Customize personas and conventions in project.yaml"
 Write-Host "  3. Set governance profile:    governance.policy_profile: default"
 

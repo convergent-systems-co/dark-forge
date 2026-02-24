@@ -31,7 +31,7 @@ git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
 
 # Verify it was added
 ls .ai/
-# Expected: config.yaml  governance/  init.sh  instructions.md  templates/  ...
+# Expected: config.yaml  governance/  init.sh  instructions.md  ...
 
 # Commit the submodule reference
 git add .ai .gitmodules
@@ -425,7 +425,7 @@ Maximum 3 remediation attempts before escalating to human review.
 
 ### 5.2 Initial Generation
 
-During bootstrap, `init.sh` copies the template from `templates/GOALS.md`:
+During bootstrap, `init.sh` copies the template from `governance/templates/GOALS.md`:
 
 ```bash
 # This happens automatically during bootstrap

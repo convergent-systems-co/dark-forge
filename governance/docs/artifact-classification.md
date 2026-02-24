@@ -27,7 +27,7 @@ All artifacts in the `.ai/` system fall into three categories. Each category has
 | `governance/personas/panels/` | Multi-persona review panel definitions | Load only when panel is invoked |
 | `governance/prompts/` | Single-task prompt templates | Load on-demand per workflow phase |
 | `governance/prompts/workflows/` | Multi-phase orchestration workflows | Load one phase at a time |
-| `templates/` | Language-specific conventions | Load once at session start based on project language |
+| `governance/templates/` | Language-specific conventions | Load once at session start based on project language |
 | `instructions.md` | Base AI instructions | Always loaded (compact, < 500 tokens) |
 | `governance/docs/` | Architecture and design documents | Reference only, not loaded into agent context |
 | `.plans/` | Implementation plans | Load only the active plan for the current task |
@@ -55,7 +55,7 @@ All artifacts in the `.ai/` system fall into three categories. Each category has
 | `governance/schemas/` | JSON Schema definitions for structured outputs | Self-validating (JSON Schema draft 2020-12) |
 | `governance/policy/` | Policy profiles with deterministic rules | YAML structure validated against policy schema |
 | `config.yaml` | System configuration (symlinks, defaults) | YAML structure validated |
-| `templates/*/project.yaml` | Project configuration templates | YAML structure validated |
+| `governance/templates/*/project.yaml` | Project configuration templates | YAML structure validated |
 
 **Versioning:** Semantic versioning in the `profile_version` or `version` field. Breaking changes require major version bump.
 

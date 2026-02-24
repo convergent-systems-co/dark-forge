@@ -40,14 +40,13 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
   init.sh                      Bootstrap script for consuming repos (macOS/Linux)
   init.ps1                     Bootstrap script for consuming repos (Windows)
 
-  templates/                   Language-specific scaffolding
-    go/                        Go conventions and project config
-    python/                    Python conventions and project config
-    node/                      Node.js/TypeScript conventions
-    react/                     React conventions
-    csharp/                    C#/.NET conventions
-
   governance/                  All governance machinery (personas, policy, schemas, etc.)
+    templates/                 Language-specific scaffolding
+      go/                      Go conventions and project config
+      python/                  Python conventions and project config
+      node/                    Node.js/TypeScript conventions
+      react/                   React conventions
+      csharp/                  C#/.NET conventions
     personas/                  AI persona definitions (Markdown)
       architecture/            System design personas
       quality/                 Code review personas
@@ -381,7 +380,7 @@ git commit -m "Pin .ai submodule to v2.0.0"
 
 ### Project-Specific Configuration
 
-1. Copy a language template: `cp .ai/templates/python/project.yaml project.yaml`
+1. Copy a language template: `cp .ai/governance/templates/python/project.yaml project.yaml`
 2. Customize personas, panels, and conventions
 3. Set the governance policy profile:
    ```yaml

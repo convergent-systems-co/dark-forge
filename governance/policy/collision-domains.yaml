@@ -104,7 +104,7 @@ domains:
     description: >
       Language-specific templates for consuming repos.
     paths:
-      - "templates/**"
+      - "governance/templates/**"
     max_concurrent_workers: 3
     risk_level: low
     rationale: >

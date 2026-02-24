@@ -28,7 +28,7 @@ git commit -m "Add .ai governance submodule"
 ### 2. Configure for your stack
 
 ```bash
-cp .ai/templates/python/project.yaml project.yaml   # or go/, node/, react/, csharp/
+cp .ai/governance/templates/python/project.yaml project.yaml   # or go/, node/, react/, csharp/
 ```
 
 Edit `project.yaml` to set your project name, language, and policy profile. See [policy profiles](governance/docs/dark-factory-governance-model.md) for guidance on which profile fits your use case.

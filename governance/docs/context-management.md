@@ -35,7 +35,7 @@ Content loaded once when an agent begins a task session. Stays in context for th
 
 | Content | Source | Loaded When |
 |---------|--------|-------------|
-| Language conventions | `templates/{language}/instructions.md` | Session start, based on `project.yaml` language |
+| Language conventions | `governance/templates/{language}/instructions.md` | Session start, based on `project.yaml` language |
 | Active persona set | Persona files listed in `project.yaml` | Session start |
 | Current plan | `.plans/{active-plan}.md` | Session start if plan exists |
 

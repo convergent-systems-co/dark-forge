@@ -44,23 +44,23 @@ Ask the user which language template to use for `project.yaml`. Available templa
 
 | Template | Path | Language | Defaults |
 |----------|------|----------|----------|
-| Python | `templates/python/project.yaml` | Python | pytest, ruff, mypy, uv |
-| Node | `templates/node/project.yaml` | TypeScript/JS | jest, eslint, prettier |
-| React | `templates/react/project.yaml` | TypeScript/React | jest/vitest, eslint, prettier |
-| Go | `templates/go/project.yaml` | Go | go test, golangci-lint |
-| C# | `templates/csharp/project.yaml` | C# | xUnit, dotnet format |
-| Generic | `templates/project.yaml` | Any | Minimal defaults |
+| Python | `governance/templates/python/project.yaml` | Python | pytest, ruff, mypy, uv |
+| Node | `governance/templates/node/project.yaml` | TypeScript/JS | jest, eslint, prettier |
+| React | `governance/templates/react/project.yaml` | TypeScript/React | jest/vitest, eslint, prettier |
+| Go | `governance/templates/go/project.yaml` | Go | go test, golangci-lint |
+| C# | `governance/templates/csharp/project.yaml` | C# | xUnit, dotnet format |
+| Generic | `governance/templates/project.yaml` | Any | Minimal defaults |
 | Skip | — | — | Do not copy a template |
 
 **Action:** Ask the user: "Which language template should I use for your project? (python, node, react, go, csharp, generic, or skip)"
 
 If the user selects a template (not "skip"):
 ```bash
-cp .ai/templates/{selection}/project.yaml project.yaml
+cp .ai/governance/templates/{selection}/project.yaml project.yaml
 ```
 For "generic":
 ```bash
-cp .ai/templates/project.yaml project.yaml
+cp .ai/governance/templates/project.yaml project.yaml
 ```
 
 Then tell the user: "I've copied the template to `project.yaml` (project root). You can customize it later — it controls which personas, panels, and conventions are active for your project."

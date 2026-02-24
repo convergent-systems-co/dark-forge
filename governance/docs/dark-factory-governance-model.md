@@ -1547,7 +1547,7 @@ FEATURE REQUEST ENTERS SYSTEM
 | `governance/personas/panels/` | Cognitive | Panel definitions (Markdown) |
 | `governance/prompts/` | Cognitive | Prompt templates (Markdown) |
 | `governance/prompts/workflows/` | Cognitive | Workflow definitions (Markdown) |
-| `templates/` | Cognitive | Language-specific scaffolding |
+| `governance/templates/` | Cognitive | Language-specific scaffolding |
 | `governance/schemas/` | Enforcement | JSON Schema definitions |
 | `governance/policy/` | Enforcement | Policy profiles (YAML) |
 | `governance/manifests/` | Audit | Run manifests and governance version manifests |

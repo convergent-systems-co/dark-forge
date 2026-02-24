@@ -83,7 +83,7 @@ Collision domains group related paths to reduce merge risk. Workers in the same 
 | persona-catalog | `governance/personas/**` (excl. panels/agentic) | 2 | Medium |
 | prompts | `governance/prompts/**` | 2 | Medium |
 | documentation | `governance/docs/**`, `README.md`, etc. | 3 | Low |
-| templates | `templates/**` | 3 | Low |
+| templates | `governance/templates/**` | 3 | Low |
 
 **Configuration:** [`governance/policy/collision-domains.yaml`](../policy/collision-domains.yaml)
 
