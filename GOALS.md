@@ -96,6 +96,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #158 | — | Phase 5a Self-Proving Systems | Test governance schema, test-generation panel, proof-of-correctness policy |
 | #167 | #168 | Reduced human touchpoint model (Phase 5e) | Near-full-autonomy policy profile; completes Phase 5e Spec-Driven Interface |
 | #170 | #171 | Conflict detection schema (Phase 5d) | JSON Schema for multi-agent conflict detection; first Phase 5d governance artifact |
+| #173 | #174 | Merge sequencing policy (Phase 5d) | PR ordering rules for multi-agent coordination; second Phase 5d governance artifact |
 
 ## Open Work
 
@@ -162,7 +163,7 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 ### 5d — Multi-Agent Coordination (Blocked)
 
 - [x] Conflict detection schema — JSON Schema for detecting when multiple agents modify overlapping files or governance state (PR #171)
-- [x] Merge sequencing policy — Policy rules for ordering concurrent agent PRs to avoid conflicts and maintain governance consistency (PR #TBD)
+- [x] Merge sequencing policy — Policy rules for ordering concurrent agent PRs to avoid conflicts and maintain governance consistency (PR #174)
 - [ ] Parallel agent session protocol — Specification for spawning, coordinating, and reconciling multiple concurrent agent sessions
 
 > **Blocked by:** Current AI coding tools (Claude Code, GitHub Copilot) operate as single-session agents. Multi-agent coordination requires a runtime orchestrator capable of spawning parallel sessions, which does not exist in current tooling. Governance schemas can be defined now, but execution is blocked.
