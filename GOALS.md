@@ -102,6 +102,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #184 | #187 | Cross-repo issue escalation | Escalation schema, workflow prompt, detection criteria, dedup mechanism, project.yaml config extension, policy rules |
 | #186 | #188 | Issue state validation | Agents verify issues are still open before starting/resuming work; rule in ANCHOR block propagates to all AI tooling |
 | #189 | — | Checkpoint resumption schema and workflow | Formalized checkpoint schema + resumption workflow for Phase 5c |
+| #191 | #192 | Event-driven webhook trigger (Phase 5c) | GitHub Actions workflow dispatching governance sessions on issue/deployment events |
 
 ## Open Work
 
@@ -140,7 +141,7 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 |-----------|------|-----------------|-----------|
 | 5a | Self-Proving Systems | Partially | Can create test governance schemas, test-generation panel definition, proof-of-correctness policy. Cannot build runtime test execution — requires consuming repo integration. |
 | 5b | Self-Evolution | Yes (governance artifacts) | Retrospective aggregation schema, threshold auto-tuning policy, persona effectiveness scoring schema, governance change proposal workflow. All are config/schema artifacts. |
-| 5c | Always-On Orchestration | Partially | GitHub Actions scheduled trigger exists (#74). Cross-session state via checkpoints exists. Missing: event-driven webhook trigger, automatic session resumption from checkpoints. Blocked by Claude Code/Copilot being session-based tools. |
+| 5c | Always-On Orchestration | Partially | GitHub Actions scheduled trigger (#74), event-driven triggers (PR #192), and checkpoint resumption (PR #189) implemented. Remaining: cross-session state persistence. Blocked by Claude Code/Copilot being session-based tools. |
 | 5d | Multi-Agent Coordination | Governance artifacts complete | All governance artifacts defined: conflict detection schema, merge sequencing policy, parallel session protocol. Runtime execution blocked by current single-session AI tooling. |
 | 5e | Spec-Driven Interface | Yes (governance artifacts) | Formal spec schema (richer than GitHub issues), acceptance verification workflow, reduced human touchpoint model. All are config artifacts. |
 

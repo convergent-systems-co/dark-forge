@@ -252,6 +252,62 @@ The Phase 5 roadmap and maturity model are informed by the following industry fr
 | [Bessemer — Roadmap to AI Coding Agents](https://www.bvp.com/atlas/roadmap-to-ai-coding-agents) | Autonomy scale identifying the gap between assisted coding and full agency |
 | [Addy Osmani — The 70% Problem](https://addyo.substack.com/p/the-70-problem-hard-truths-about) | Analysis of where AI coding agents stall; informs achievability assessments |
 
+## Documentation Index
+
+Quick navigation to all documentation in this repository.
+
+### Core Documents
+
+| Document | Purpose |
+|----------|---------|
+| [README.md](README.md) | This file — architecture, setup, and full reference |
+| [GOALS.md](GOALS.md) | Phase tracking, completed work, and open enhancements |
+| [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | Quick-start onboarding for developers |
+| [CLAUDE.md](CLAUDE.md) | AI tool instructions (Claude Code, Copilot, Cursor) |
+
+### Architecture & Design
+
+| Document | Topic |
+|----------|-------|
+| [Governance Model](governance/docs/dark-factory-governance-model.md) | Five governance layers and decision authority |
+| [Artifact Classification](governance/docs/artifact-classification.md) | Cognitive, Enforcement, and Audit artifact types |
+| [Context Management](governance/docs/context-management.md) | JIT loading tiers and checkpoint-based reset protection |
+| [Runtime Feedback](governance/docs/runtime-feedback-architecture.md) | Drift detection and incident-to-DI generation (Phase 4b/5) |
+| [CI Gating Blueprint](governance/docs/ci-gating-blueprint.md) | CI checks, branch protection, and auto-merge |
+| [Repository Configuration](governance/docs/repository-configuration.md) | Settings, CODEOWNERS, and branch protection setup |
+
+### Operational Guides
+
+| Document | Topic |
+|----------|-------|
+| [Autonomy Metrics](governance/docs/autonomy-metrics.md) | Autonomy index, health thresholds, and weekly reporting |
+| [Retrospective Aggregation](governance/docs/retrospective-aggregation.md) | Aggregated retrospective data schema docs |
+| [Threshold Tuning](governance/docs/threshold-tuning.md) | Auto-tuning mechanism and safety bounds |
+| [Copilot Auto-Fix](governance/docs/copilot-auto-fix.md) | Configuring GitHub Copilot auto-fix in governance workflow |
+| [Cross-Repo Escalation](governance/docs/cross-repo-escalation.md) | Cross-repo issue escalation setup and architecture |
+| [Event-Driven Triggers](governance/docs/event-driven-triggers.md) | Event-driven governance session dispatch (Phase 5c) |
+| [Naming Review](governance/docs/naming-review.md) | Persona/panel naming consistency |
+
+### Agentic Prompts
+
+| Prompt | Purpose |
+|--------|---------|
+| [Startup Loop](governance/prompts/startup.md) | Entry point for autonomous operation |
+| [Interactive Bootstrap](governance/prompts/init.md) | Guided setup for consuming repos |
+| [Retrospective](governance/prompts/retrospective.md) | Post-merge process evaluation |
+| [Compliance Checklist](governance/prompts/governance-compliance-checklist.md) | Required governance steps per PR |
+| [Cross-Repo Escalation](governance/prompts/cross-repo-escalation-workflow.md) | Escalation detect-dedup-escalate flow |
+| [Checkpoint Resumption](governance/prompts/checkpoint-resumption-workflow.md) | Session resumption from checkpoints (Phase 5c) |
+| [Plan Template](governance/prompts/templates/plan-template.md) | Standardized plan template for AI and humans |
+
+### Personas & Panels
+
+| Resource | Description |
+|----------|-------------|
+| [Persona/Panel Index](governance/personas/index.md) | Complete reference grid of all 60 personas and 19 panels |
+| [Code Manager](governance/personas/agentic/code-manager.md) | Orchestrator persona — triages, reviews, merges |
+| [Coder](governance/personas/agentic/coder.md) | Executor persona — plans, implements, tests |
+
 ## Why a Git Submodule?
 
 | Approach | Drawback |

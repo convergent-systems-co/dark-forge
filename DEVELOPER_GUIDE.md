@@ -189,7 +189,9 @@ AI context windows are finite. The framework uses tiered loading:
 
 ## Further Reading
 
-- [README.md](README.md) — Full documentation with architecture details
+- [README.md](README.md) — Full documentation with architecture details and [Documentation Index](README.md#documentation-index)
 - [GOALS.md](GOALS.md) — Phase status and completed work tracking
-- [governance/docs/](governance/docs/) — Architecture documents
-- [governance/personas/index.md](governance/personas/index.md) — Persona and panel reference
+- [governance/docs/](governance/docs/) — Architecture and design documents
+- [governance/personas/index.md](governance/personas/index.md) — Persona and panel reference grid
+- [governance/prompts/startup.md](governance/prompts/startup.md) — Agentic loop entry point
+- [governance/docs/repository-configuration.md](governance/docs/repository-configuration.md) — Repository settings and CODEOWNERS setup
