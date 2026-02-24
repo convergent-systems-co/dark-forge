@@ -24,6 +24,7 @@ workflows:
     - dark-factory-governance.yml
   optional:
     - issue-monitor.yml
+    - event-trigger.yml
     - plan-archival.yml
     - propagate-submodule.yml
 

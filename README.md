@@ -24,7 +24,7 @@ See [GOALS.md](GOALS.md) for detailed phase tracking, completed work, and open e
 | 3 | Agentic Orchestration | Personas, panels, workflows with human gates | Implemented |
 | 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Implemented** — CI enforcement live |
 | 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Implemented** — drift detection, auto-remediation, and incident-to-DI governance artifacts complete |
-| 5 | Dark Factory | Full automation — decomposed into sub-phases 5a-5e with achievability assessment | 5a, 5b, 5d, 5e governance artifacts complete; 5c, 5d runtime blocked by platform |
+| 5 | Dark Factory | Full automation — decomposed into sub-phases 5a-5e with achievability assessment | 5a, 5b, 5d, 5e governance artifacts complete; 5c partially complete (event-driven triggers, checkpoint resumption done; cross-session state persistence remaining); 5d runtime blocked by platform |
 
 See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and open enhancements.
 
@@ -132,6 +132,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       retrospective-aggregation.md        Aggregated retrospective data schema docs
       threshold-tuning.md                 Auto-tuning mechanism and safety bounds
       cross-repo-escalation.md             Cross-repo escalation setup and architecture (#184)
+      event-driven-triggers.md             Event-driven governance trigger setup (Phase 5c)
 
   .governance/                 Policy engine runtime
     policy-engine.py           Deterministic evaluation engine (Phase 4b)
@@ -143,6 +144,8 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       dark-factory-governance.yml   Governance review CI (detect + policy engine + review)
       plan-archival.yml             Archives plans to releases on PR merge
       propagate-submodule.yml       Auto-propagation for consuming repos
+      issue-monitor.yml                 Issue evaluation and agent dispatch (manual + event-driven)
+      event-trigger.yml                 Event-driven governance session dispatch (Phase 5c)
       jm-compliance.yml             Enterprise-locked compliance checks
     ISSUE_TEMPLATE/
       feature-request.yml           Structured feature request form

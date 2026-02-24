@@ -159,7 +159,7 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 
 ### 5c — Always-On Orchestration (Partially Achievable)
 
-- [ ] Event-driven webhook trigger — GitHub webhook listener that triggers governance sessions on issue creation, PR events, and deployment status changes
+- [x] Event-driven webhook trigger — GitHub Actions workflow dispatching governance sessions on issue creation, labeling, and deployment status changes (PR #191)
 - [x] Automatic checkpoint resumption — Checkpoint schema and resumption workflow for reliable session recovery after context resets (PR #189)
 - [ ] Cross-session state persistence — Schema and storage strategy for maintaining governance context across multiple agentic sessions
 
