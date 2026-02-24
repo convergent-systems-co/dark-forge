@@ -36,6 +36,8 @@ project_directories:
     description: "Implementation plans for issues and features"
   - path: .panels
     description: "Panel reports — only latest per panel type"
+  - path: .governance-state
+    description: "Cross-session governance state persistence"
 
 # Gitignore patterns for .ai/
 gitignore:

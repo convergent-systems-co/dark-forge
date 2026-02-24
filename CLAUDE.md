@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **Dark Factory Governance Platform** — an AI governance framework for autonomous software delivery, distributed as a git submodule to consuming repositories. It contains no application source code; it is entirely configuration, policy, schemas, and documentation.
 
-Current maturity: **Phase 4b (Autonomous Remediation)** — all governance artifacts implemented. Phase 5 sub-phases (5a-5e) are defined with achievability assessments; 5a (self-proving systems), 5b (self-evolution), and 5e (spec-driven interface) governance artifacts are complete.
+Current maturity: **Phase 4b (Autonomous Remediation)** — all governance artifacts implemented. Phase 5 sub-phases (5a-5e) are defined with achievability assessments; 5a (self-proving systems), 5b (self-evolution), 5c (always-on orchestration), and 5e (spec-driven interface) governance artifacts are complete.
 
 ## Repository Commands
 
@@ -113,5 +113,6 @@ This ensures Claude Code, GitHub Copilot, and Cursor all receive the same base i
 `init.sh` creates these directories in consuming repos (not in the submodule):
 - `.plans/` — Implementation plans for issues and features (accumulated)
 - `.panels/` — Panel review reports (latest only per panel type, overwrite strategy)
+- `.governance-state/` — Cross-session governance state persistence (accumulated)
 
 Directories are configured in `config.yaml` under `project_directories` and can be extended in `project.yaml` (project root).

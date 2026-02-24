@@ -24,7 +24,7 @@ See [GOALS.md](GOALS.md) for detailed phase tracking, completed work, and open e
 | 3 | Agentic Orchestration | Personas, panels, workflows with human gates | Implemented |
 | 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Implemented** — CI enforcement live |
 | 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Implemented** — drift detection, auto-remediation, and incident-to-DI governance artifacts complete |
-| 5 | Dark Factory | Full automation — decomposed into sub-phases 5a-5e with achievability assessment | 5a, 5b, 5d, 5e governance artifacts complete; 5c partially complete (event-driven triggers, checkpoint resumption done; cross-session state persistence remaining); 5d runtime blocked by platform |
+| 5 | Dark Factory | Full automation — decomposed into sub-phases 5a-5e with achievability assessment | 5a-5e governance artifacts complete; 5c and 5d runtime blocked by platform (session-based tooling, no multi-agent orchestrator) |
 
 See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and open enhancements.
 
@@ -98,6 +98,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       checkpoint.schema.json               Session checkpoint state for resumption (Phase 5c)
       orchestrator-config.schema.json      Mass parallelization orchestrator config (Phase 5e)
       integration-manifest.schema.json     Aggregated integration manifest (Phase 5e)
+      session-state.schema.json            Cross-session governance state persistence (Phase 5c)
 
     policy/                    Deterministic policy profiles and supporting rules (YAML)
       default.yaml             Standard risk tolerance
@@ -292,6 +293,7 @@ Quick navigation to all documentation in this repository.
 | [Cross-Repo Escalation](governance/docs/cross-repo-escalation.md) | Cross-repo issue escalation setup and architecture |
 | [Event-Driven Triggers](governance/docs/event-driven-triggers.md) | Event-driven governance session dispatch (Phase 5c) |
 | [Mass Parallelization](governance/docs/mass-parallelization.md) | Multi-agent orchestration with collision domains (Phase 5e) |
+| [Session State Persistence](governance/docs/session-state-persistence.md) | Cross-session governance state storage strategy (Phase 5c) |
 | [Naming Review](governance/docs/naming-review.md) | Persona/panel naming consistency |
 
 ### Agentic Prompts
