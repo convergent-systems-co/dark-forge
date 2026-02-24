@@ -13,7 +13,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 VENV_DIR="$SCRIPT_DIR/.venv"
-REQUIREMENTS="$SCRIPT_DIR/requirements.txt"
+REQUIREMENTS="$SCRIPT_DIR/.governance/requirements.txt"
 INSTALL_DEPS=false
 PYTHON_MIN_MAJOR=3
 PYTHON_MIN_MINOR=12
@@ -407,7 +407,7 @@ if [ "$INSTALL_DEPS" = "true" ]; then
   if [ ! -f "$REQUIREMENTS" ]; then
     echo "  [ERROR] requirements.txt not found at $REQUIREMENTS"
     echo "          Cannot install dependencies without a requirements file."
-    echo "          Either create .ai/requirements.txt or rerun without --install-deps."
+    echo "          Either create a requirements file at $REQUIREMENTS or rerun without --install-deps."
     exit 1
   fi
 

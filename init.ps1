@@ -12,7 +12,7 @@
 
 .PARAMETER InstallDeps
     When specified, creates a Python virtual environment at .ai\.venv and
-    installs all required packages from requirements.txt.
+    installs all required packages from .ai\.governance\requirements.txt.
 
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .ai\init.ps1
@@ -31,7 +31,7 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 $VenvDir = Join-Path $ScriptDir ".venv"
-$RequirementsFile = Join-Path $ScriptDir "requirements.txt"
+$RequirementsFile = Join-Path (Join-Path $ScriptDir ".governance") "requirements.txt"
 $PythonMinMajor = 3
 $PythonMinMinor = 12
 
