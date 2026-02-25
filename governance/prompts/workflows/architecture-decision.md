@@ -103,7 +103,7 @@ Making and documenting an architectural choice using an Architecture Decision Re
 
 ## Phase 3: Trade-offs
 
-> **Invoke panel:** `governance/personas/panels/architecture-review.md`
+> **Invoke panel:** `governance/prompts/reviews/architecture-review.md`
 
 ### Input
 

@@ -1,5 +1,9 @@
 # Panel: Incident Post-Mortem
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/incident-post-mortem.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Analyze incident for root cause and systemic improvements.
 

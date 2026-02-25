@@ -351,7 +351,7 @@ The agent **MUST** execute at least 2 polling attempts separated by at least 2 m
 
 For each Copilot recommendation and any panel emission finding:
 
-1. **Classify severity** using the rules in `governance/personas/panels/copilot-review.md`:
+1. **Classify severity** using the rules in `governance/prompts/reviews/copilot-review.md`:
    - `critical`: Security vulnerability, injection, auth bypass → **must fix**
    - `high`: Bug, incorrect logic, null reference, race condition → **must fix**
    - `medium`: Performance concern, N+1 query → **should fix**

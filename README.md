@@ -47,7 +47,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       node/                    Node.js/TypeScript conventions
       react/                   React conventions
       csharp/                  C#/.NET conventions
-    personas/                  AI persona definitions (Markdown)
+    personas/                  AI persona definitions (Markdown) — DEPRECATED, see prompts/reviews/
       architecture/            System design personas
       quality/                 Code review personas
       compliance/              Security, regulatory, accessibility personas
@@ -59,10 +59,12 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       specialist/              Legacy, incidents, migrations personas
       governance/              Governance Auditor, Policy Evaluator
       agentic/                 Code Manager, Coder
-      panels/                  Multi-persona review panels (see index.md for full list)
+      panels/                  Multi-persona review panels — DEPRECATED, see prompts/reviews/
       index.md                 Persona and panel reference grid
 
     prompts/                   Reusable prompt templates
+      reviews/                 19 consolidated review prompts (replaces personas/panels/)
+      shared-perspectives.md   Canonical definitions for perspectives appearing in 2+ reviews
       startup.md               Agentic improvement loop entry point
       init.md                  Agentic bootstrap prompt (interactive install for consuming repos)
       retrospective.md         Post-merge process evaluation prompt
@@ -309,9 +311,16 @@ Quick navigation to all documentation in this repository.
 
 ### Personas & Panels
 
+> **Note:** As of Issue #220, personas and panels have been consolidated into self-contained
+> review prompts in `governance/prompts/reviews/`. The individual persona and panel files in
+> `governance/personas/` are deprecated. See `governance/docs/RESEARCH.md` for the research
+> supporting this decision.
+
 | Resource | Description |
 |----------|-------------|
-| [Persona/Panel Index](governance/personas/index.md) | Complete reference grid of all 60 personas and 19 panels |
+| [Consolidated Review Prompts](governance/prompts/reviews/) | 19 self-contained review prompts (preferred) |
+| [Shared Perspectives](governance/prompts/shared-perspectives.md) | Canonical definitions for cross-cutting perspectives |
+| [Persona/Panel Index](governance/personas/index.md) | Legacy reference grid — 60 personas and 19 panels _(deprecated)_ |
 | [Code Manager](governance/personas/agentic/code-manager.md) | Orchestrator persona — triages, reviews, merges |
 | [Coder](governance/personas/agentic/coder.md) | Executor persona — plans, implements, tests |
 

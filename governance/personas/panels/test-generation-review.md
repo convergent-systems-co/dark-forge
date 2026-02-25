@@ -1,5 +1,9 @@
 # Panel: Test Generation Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/test-generation-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Evaluate test coverage, verification requirements, and proof-of-correctness criteria for code changes. Emits structured test requirements as JSON that consuming repos validate via their own CI. This panel does not execute tests — it assesses whether the change has adequate test governance.
 

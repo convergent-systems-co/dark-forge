@@ -152,7 +152,8 @@ If the agent repeats itself, forgets decisions, or re-reads files it already rea
 
 - [README.md](README.md) — Full architecture, governance layers, file structure, and [Documentation Index](README.md#documentation-index)
 - [GOALS.md](GOALS.md) — Phase status and completed work
-- [governance/personas/index.md](governance/personas/index.md) — All 60 personas and 19 panels
+- [governance/prompts/reviews/](governance/prompts/reviews/) — 19 consolidated review prompts (preferred, replaces individual persona/panel files)
+- [governance/personas/index.md](governance/personas/index.md) — All 60 personas and 19 panels _(deprecated — see consolidated review prompts)_
 - [governance/docs/dark-factory-governance-model.md](governance/docs/dark-factory-governance-model.md) — Governance layers, policy profiles, and how changes flow through the system
 - [governance/docs/repository-configuration.md](governance/docs/repository-configuration.md) — Repository settings, CODEOWNERS, per-project overrides
 - [governance/docs/context-management.md](governance/docs/context-management.md) — Context tiers, capacity detection, shutdown protocol

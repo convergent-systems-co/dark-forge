@@ -1,5 +1,9 @@
 # Panel: Threat Modeling
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/threat-modeling.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Systematic threat analysis mapping attack surfaces to MITRE ATT&CK, identifying kill chains, and producing actionable detection and mitigation strategies.
 

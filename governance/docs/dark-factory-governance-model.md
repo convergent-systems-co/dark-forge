@@ -112,6 +112,11 @@ The governance model operates on the following existing components:
 | Code Quality | 3 | `governance/personas/quality/` |
 | Special Purpose | 4 | `governance/personas/specialist/` |
 
+> **Note:** As of Issue #220, personas and panels have been consolidated into self-contained
+> review prompts in `governance/prompts/reviews/`. The persona files and panel files in
+> `governance/personas/` are deprecated and will be removed in a future release.
+> See `governance/docs/RESEARCH.md` for the research supporting this architectural decision.
+
 **Panels (16 multi-persona panels):**
 
 | Panel | Participants | Primary Governance Layer |

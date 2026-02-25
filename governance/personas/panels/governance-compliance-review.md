@@ -1,5 +1,9 @@
 # Panel: Governance Compliance Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/governance-compliance-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 
 Evaluate whether a pull request followed the required governance steps defined in `governance/prompts/startup.md`. This panel detects skipped governance gates — missing plans, missing panel evaluations, skipped Copilot reviews, missing documentation updates, and untracked work — and reports violations with severity classifications.

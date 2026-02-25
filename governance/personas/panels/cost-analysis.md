@@ -1,5 +1,9 @@
 # Panel: Cost Analysis
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/cost-analysis.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Evaluate the cost implications of proposed changes, including estimated implementation cost (AI token usage), infrastructure deployment costs, and ongoing runtime costs.
 

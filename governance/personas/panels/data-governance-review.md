@@ -1,5 +1,9 @@
 # Panel: Data Governance Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/data-governance-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Enforce enterprise canonical data model standards from dach-canonical-models. Validate that data changes comply with naming conventions, schema structure, external reference discipline, and deployment governance.
 

@@ -1,5 +1,9 @@
 # Persona: PHP Engineer
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Senior PHP engineer focused on modern PHP practices, framework conventions, and web security.
 

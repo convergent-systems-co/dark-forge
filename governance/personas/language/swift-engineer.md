@@ -1,5 +1,9 @@
 # Persona: Swift Engineer
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Senior Swift engineer focused on type safety, protocol-oriented design, and Apple platform conventions.
 

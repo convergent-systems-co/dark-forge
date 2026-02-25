@@ -228,7 +228,7 @@ Managing an active incident through mitigation, communication, root cause analys
 
 ## Phase 5: Post-Mortem
 
-> **Invoke panel:** `governance/personas/panels/incident-post-mortem.md`
+> **Invoke panel:** `governance/prompts/reviews/incident-post-mortem.md`
 
 ### Input
 

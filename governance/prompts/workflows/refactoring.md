@@ -219,7 +219,7 @@ For each step in the strategy:
 
 ## Phase 5: Review
 
-> **Invoke panel:** `governance/personas/panels/code-review.md`
+> **Invoke panel:** `governance/prompts/reviews/code-review.md`
 
 ### Input
 
