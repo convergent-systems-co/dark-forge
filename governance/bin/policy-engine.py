@@ -686,11 +686,12 @@ def _evaluate_auto_merge_condition(condition: str, confidence: float, risk: str,
     if "ci_checks_passed" in cond:
         return ci_passed
 
-    # Context-dependent conditions — assume pass if not evaluable
+    # Context-dependent conditions — fail-closed: do not auto-merge/remediate
+    # without verifiable safety checks
     if "files_changed_in" in cond or "services_affected" in cond:
-        return True
+        return False
 
-    return True
+    return False
 
 
 def evaluate_auto_remediate(aggregate_confidence, aggregate_risk, policy_flags, emissions, profile, log):
@@ -741,11 +742,11 @@ def _evaluate_auto_remediate_condition(condition: str, confidence: float, risk: 
         prefix = cond.split('"')[1]
         return not any(f["flag"].startswith(prefix) for f in flags)
 
-    # Context-dependent
+    # Context-dependent — fail-closed
     if "files_changed_in" in cond:
-        return True
+        return False
 
-    return True
+    return False
 
 
 # ---------------------------------------------------------------------------

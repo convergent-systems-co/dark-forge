@@ -796,56 +796,56 @@ class TestScenarioCollectPolicyFlags:
 
 
 # ===========================================================================
-# Scenario 28: Auto-merge context-dependent conditions pass by default
+# Scenario 28: Auto-merge context-dependent conditions fail-closed (#236)
 # ===========================================================================
 
 
 class TestScenarioAutoMergeContextDependent:
-    def test_files_changed_in_passes(self):
+    def test_files_changed_in_fails_closed(self):
         log = policy_engine.EvaluationLog(stream=io.StringIO())
         profile = make_profile(auto_merge_conditions=[
             'not files_changed_in ["deploy/"]',
         ])
         result = policy_engine.evaluate_auto_merge(0.95, "low", [], [], True, profile, log)
-        assert result is True
+        assert result is False
 
-    def test_services_affected_passes(self):
+    def test_services_affected_fails_closed(self):
         log = policy_engine.EvaluationLog(stream=io.StringIO())
         profile = make_profile(auto_merge_conditions=[
             "services_affected_count <= 1",
         ])
         result = policy_engine.evaluate_auto_merge(0.95, "low", [], [], True, profile, log)
-        assert result is True
+        assert result is False
 
 
 # ===========================================================================
-# Scenario 29: Auto-remediate context-dependent conditions
+# Scenario 29: Auto-remediate context-dependent conditions fail-closed (#236)
 # ===========================================================================
 
 
 class TestScenarioAutoRemediateContextDependent:
-    def test_files_changed_in_passes(self):
+    def test_files_changed_in_fails_closed(self):
         log = policy_engine.EvaluationLog(stream=io.StringIO())
         profile = make_profile(auto_remediate_conditions=[
             'not files_changed_in ["deploy/"]',
         ])
         result = policy_engine.evaluate_auto_remediate(0.90, "low", [], [], profile, log)
-        assert result is True
+        assert result is False
 
 
 # ===========================================================================
-# Scenario 30: Unknown auto-remediate condition defaults to True
+# Scenario 30: Unknown auto-remediate condition fails-closed (#236)
 # ===========================================================================
 
 
 class TestScenarioAutoRemediateUnknown:
-    def test_unknown_condition_passes(self):
+    def test_unknown_condition_fails_closed(self):
         log = policy_engine.EvaluationLog(stream=io.StringIO())
         profile = make_profile(auto_remediate_conditions=[
             "something_completely_unknown == true",
         ])
         result = policy_engine.evaluate_auto_remediate(0.90, "low", [], [], profile, log)
-        assert result is True
+        assert result is False
 
 
 # ===========================================================================

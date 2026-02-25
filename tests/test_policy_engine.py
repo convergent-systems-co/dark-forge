@@ -638,6 +638,38 @@ class TestEscalationRules:
 # ===========================================================================
 
 
+class TestFailClosedDefaults:
+    """Issue #236: context-dependent conditions must fail-closed."""
+
+    def test_auto_merge_context_dependent_returns_false(self):
+        result = policy_engine._evaluate_auto_merge_condition(
+            'not files_changed_in ["deploy/", "k8s/"]',
+            0.95, "low", [], [], True
+        )
+        assert result is False
+
+    def test_auto_merge_unrecognized_returns_false(self):
+        result = policy_engine._evaluate_auto_merge_condition(
+            'some_future_condition == true',
+            0.95, "low", [], [], True
+        )
+        assert result is False
+
+    def test_auto_remediate_context_dependent_returns_false(self):
+        result = policy_engine._evaluate_auto_remediate_condition(
+            'files_changed_in ["src/"]',
+            0.95, "low", [], []
+        )
+        assert result is False
+
+    def test_auto_remediate_unrecognized_returns_false(self):
+        result = policy_engine._evaluate_auto_remediate_condition(
+            'some_future_condition == true',
+            0.95, "low", [], []
+        )
+        assert result is False
+
+
 # ===========================================================================
 # Emission semantic consistency (issue #234)
 # ===========================================================================
