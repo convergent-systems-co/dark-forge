@@ -239,6 +239,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
           submodules: true
 
       - name: Check for panel validation opt-out
@@ -274,6 +276,19 @@ jobs:
             fi
           fi
           echo "skip_validation=${SKIP_VALIDATION}" >> "$GITHUB_OUTPUT"
+
+      - name: Detect PR modifying governance settings
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          MODIFIED_GOV=$(git diff --name-only "${PR_BASE_SHA}...${PR_HEAD_SHA}" -- project.yaml .ai/project.yaml 2>/dev/null || true)
+          if [ -n "$MODIFIED_GOV" ]; then
+            echo "::warning::PR modifies project.yaml — governance settings may be changing"
+            gh pr comment "$PR_NUMBER" --body "⚠️ **Governance settings change detected:** This PR modifies \`project.yaml\`. Review governance-related settings carefully before merging."
+          fi
 
       - name: Block PR — missing required panel emissions
         if: steps.optout.outputs.skip_validation != 'true'
