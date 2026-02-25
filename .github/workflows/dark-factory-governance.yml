@@ -124,6 +124,41 @@ jobs:
           echo "::warning::Trust boundary: This PR modifies governance emission files. Emissions from the PR branch may be untrusted."
           gh pr comment "$PR_NUMBER" --body "⚠️ **Trust boundary alert:** This PR modifies files in \`governance/emissions/\`. PR-supplied emissions may be untrusted — review the emission content manually before merging."
 
+      - name: Resolve policy profile
+        id: profile
+        env:
+          GOV_ROOT: ${{ needs.detect.outputs.gov_root }}
+        run: |
+          # Read governance.policy_profile from project.yaml (base branch)
+          PROFILE="default"
+          PROJECT_YAML=""
+          if [ -f "project.yaml" ]; then
+            PROJECT_YAML="project.yaml"
+          elif [ -f "${GOV_ROOT}/project.yaml" ]; then
+            PROJECT_YAML="${GOV_ROOT}/project.yaml"
+          fi
+          if [ -n "$PROJECT_YAML" ] && command -v python3 &>/dev/null; then
+            RESOLVED=$(python3 -c "
+          import yaml
+          try:
+              with open('${PROJECT_YAML}') as f:
+                  config = yaml.safe_load(f) or {}
+              print(config.get('governance', {}).get('policy_profile', 'default'))
+          except Exception:
+              print('default')
+          " 2>/dev/null || echo "default")
+            PROFILE="$RESOLVED"
+          fi
+
+          # Validate the profile file exists
+          PROFILE_PATH="${GOV_ROOT}/governance/policy/${PROFILE}.yaml"
+          if [ ! -f "$PROFILE_PATH" ]; then
+            echo "::warning::Profile '${PROFILE}' not found at ${PROFILE_PATH}, falling back to default.yaml"
+            PROFILE_PATH="${GOV_ROOT}/governance/policy/default.yaml"
+          fi
+          echo "profile_path=${PROFILE_PATH}" >> "$GITHUB_OUTPUT"
+          echo "Resolved policy profile: ${PROFILE_PATH}"
+
       - name: Run policy engine
         id: evaluate
         shell: bash
@@ -132,10 +167,11 @@ jobs:
           COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO_NAME: ${{ github.repository }}
+          PROFILE_PATH: ${{ steps.profile.outputs.profile_path }}
         run: |
           python "${GOV_ROOT}/governance/bin/policy-engine.py" \
             --emissions-dir "${GOV_ROOT}/governance/emissions/" \
-            --profile "${GOV_ROOT}/governance/policy/default.yaml" \
+            --profile "$PROFILE_PATH" \
             --output manifest.json \
             --commit-sha "$COMMIT_SHA" \
             --pr-number "$PR_NUMBER" \
