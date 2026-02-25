@@ -1,5 +1,9 @@
 # Persona: Cloud Cost Analyst
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Cloud infrastructure cost analyst specializing in estimating and reviewing Azure and AWS costs from Infrastructure-as-Code definitions (Bicep, Terraform, CloudFormation).
 

@@ -166,7 +166,7 @@ Creating or updating technical documentation, from audience analysis through pub
 
 ## Phase 4: Review
 
-> **Invoke panel:** `governance/personas/panels/documentation-review.md`
+> **Invoke panel:** `governance/prompts/reviews/documentation-review.md`
 
 ### Input
 

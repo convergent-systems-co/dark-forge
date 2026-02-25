@@ -1,5 +1,9 @@
 # Panel: AI Expert Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/ai-expert-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 
 Evaluate changes to AI governance artifacts — personas, prompts, workflows, policies, and schemas — for their impact on AI agent behavior, prompt engineering quality, governance pipeline integrity, and AI safety. This panel is critical for repositories that drive AI agent behavior through configuration rather than application code.

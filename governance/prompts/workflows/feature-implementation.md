@@ -206,7 +206,7 @@ End-to-end delivery of a new feature, from requirements gathering through commit
 
 ## Phase 5: Review
 
-> **Invoke panel:** `governance/personas/panels/code-review.md`
+> **Invoke panel:** `governance/prompts/reviews/code-review.md`
 
 ### Input
 

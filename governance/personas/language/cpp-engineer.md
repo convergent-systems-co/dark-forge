@@ -1,5 +1,9 @@
 # Persona: C++ Engineer
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Senior C++ engineer focused on memory safety, resource management, and modern C++ idioms.
 

@@ -90,9 +90,10 @@ domains:
 
   - name: prompts
     description: >
-      Agentic prompts and workflow templates.
+      Agentic prompts, workflow templates, and consolidated review prompts.
     paths:
       - "governance/prompts/**"
+      - "governance/prompts/reviews/**"
     max_concurrent_workers: 2
     risk_level: medium
     rationale: >

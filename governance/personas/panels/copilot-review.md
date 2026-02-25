@@ -1,5 +1,9 @@
 # Panel: Copilot Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/copilot-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 
 Integrates GitHub Copilot as a formal review panel within the Dark Factory governance pipeline. Copilot feedback is parsed, classified, and emitted as structured output compatible with the policy engine.

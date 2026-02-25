@@ -1,5 +1,9 @@
 # Panel: Testing Strategy Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/testing-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Evaluate test coverage, quality, and testing approach comprehensively.
 

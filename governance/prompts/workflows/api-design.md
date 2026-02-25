@@ -146,7 +146,7 @@ Designing or evolving an API, from requirements through implementation and consu
 
 ## Phase 3: Consumer Review
 
-> **Invoke panel:** `governance/personas/panels/api-design-review.md`
+> **Invoke panel:** `governance/prompts/reviews/api-design-review.md`
 
 ### Input
 

@@ -50,9 +50,13 @@ Every code change flows through these layers in order:
 
 ### Persona and Panel System
 
-- **Personas** (`governance/personas/`) — 60 role definitions across 13 categories. Each defines Role, Evaluate For, Output Format, Principles, Anti-patterns. They are reasoning roles, not model prompts.
-- **Panels** (`governance/personas/panels/`) — 19 multi-persona review workflows. Panels coordinate personas and emit structured JSON conforming to `governance/schemas/panel-output.schema.json`.
+- **Consolidated review prompts** (`governance/prompts/reviews/`) — 19 self-contained review prompts implementing Anthropic's Parallelization (Voting) pattern. Each prompt inlines its participant perspectives with full evaluation criteria, scoring, and output schema. This is the primary location for review definitions.
+- **Shared perspectives** (`governance/prompts/shared-perspectives.md`) — Canonical definitions for the 19 perspectives appearing in 2+ review prompts. Serves as the authoring-time DRY mechanism; compiled prompts have full locality at runtime.
+- **Personas** (`governance/personas/`) — _Deprecated._ 58 role definitions across 13 categories. Superseded by consolidated review prompts. Will be removed in a future release.
+- **Panels** (`governance/personas/panels/`) — _Deprecated._ 19 multi-persona review workflows. Superseded by consolidated review prompts. Will be removed in a future release.
 - **Agentic personas** (`governance/personas/agentic/`) — Code Manager (orchestrator, never writes code) and Coder (executor, follows Code Manager direction).
+
+> See `governance/docs/RESEARCH.md` for the research supporting the persona consolidation decision (Issue #220).
 
 ### Policy Engine
 

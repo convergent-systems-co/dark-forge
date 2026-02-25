@@ -259,7 +259,7 @@ For each step in the execution plan:
 
 ## Phase 5: Validation
 
-> **Invoke panel:** `governance/personas/panels/migration-review.md`
+> **Invoke panel:** `governance/prompts/reviews/migration-review.md`
 
 ### Input
 

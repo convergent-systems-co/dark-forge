@@ -1,5 +1,9 @@
 # Panel: Code Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/code-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Comprehensive code evaluation from multiple engineering perspectives.
 

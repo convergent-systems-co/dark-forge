@@ -1,5 +1,9 @@
 # Panel: Performance Review
 
+> **DEPRECATED:** This panel has been consolidated into `governance/prompts/reviews/performance-review.md`.
+> The new format is a self-contained review prompt with inlined perspectives.
+> This file will be removed in a future release.
+
 ## Purpose
 Comprehensive performance analysis from multiple perspectives.
 

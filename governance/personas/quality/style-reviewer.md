@@ -1,5 +1,9 @@
 # Persona: Reviewer
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Generalist code quality reviewer focused on readability, maintainability, and long-term codebase health. Evaluates code holistically rather than drilling into production-level concerns.
 

@@ -123,3 +123,13 @@ Multi-perspective reviews where several personas collaborate. See `panels/` for 
 | Threat Modeling | `panels/threat-modeling.md` | MITRE Specialist, Security Auditor, Infrastructure Engineer, Adversarial Reviewer, Architect |
 | Cost Analysis | `panels/cost-analysis.md` | FinOps Analyst, FinOps Engineer, Cost Optimizer, Cloud Cost Analyst, LLM Cost Analyst, Infrastructure Engineer |
 | Copilot Review | `panels/copilot-review.md` | GitHub Copilot as a formal review panel — feedback parsing, severity classification, confidence scoring |
+
+---
+
+## Consolidated Review Prompts
+
+> Personas and panels have been consolidated into self-contained review prompts.
+> See `governance/prompts/reviews/` for the 19 consolidated review prompts.
+> See `governance/prompts/shared-perspectives.md` for canonical definitions of the 19 perspectives appearing in 2+ panels.
+>
+> The persona files in this directory are **deprecated** — they remain for reference and backward compatibility during the transition period. The consolidated review prompts in `governance/prompts/reviews/` are the authoritative source.

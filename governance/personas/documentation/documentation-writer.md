@@ -1,5 +1,9 @@
 # Persona: Documentation Writer
 
+> **DEPRECATED:** This persona is now inlined into consolidated review prompts
+> in `governance/prompts/reviews/`. See `governance/prompts/shared-perspectives.md`
+> for the canonical perspective definition. This file will be removed in a future release.
+
 ## Role
 Technical writer creating clear, accurate documentation for developers.
 
