@@ -604,6 +604,29 @@ def _evaluate_escalation_condition(condition: str, confidence: float, risk: str,
         verdicts = {e.get("aggregate_verdict", "approve") for e in emissions}
         return len(verdicts) > 1
 
+    # Pattern: policy_override_requested == true
+    if "policy_override_requested" in cond and "true" in cond:
+        return any(e.get("execution_context", {}).get("policy_override_requested", False) for e in emissions)
+
+    # Pattern: dismissed_finding_severity in ["critical", "high"]
+    if cond.startswith("dismissed_finding_severity in"):
+        levels = _extract_list(cond)
+        for e in emissions:
+            for flag in e.get("policy_flags", []):
+                if flag.get("dismissed", False) and flag.get("severity") in levels:
+                    return True
+        return False
+
+    # Pattern: dismissed_finding_panel == "security-review"
+    if cond.startswith("dismissed_finding_panel =="):
+        panel = cond.split('"')[1]
+        for e in emissions:
+            if e.get("panel_name") == panel:
+                for flag in e.get("policy_flags", []):
+                    if flag.get("dismissed", False):
+                        return True
+        return False
+
     # Context-dependent conditions (files_changed_in, services_affected_count)
     # These require runtime context not available from emissions alone — skip
     if "files_changed_in" in cond or "services_affected" in cond:
@@ -672,10 +695,32 @@ def _evaluate_escalation_sub_condition(sub_cond: str, confidence: float, risk: s
         verdicts = {e.get("aggregate_verdict", "approve") for e in emissions}
         return len(verdicts) > 1
 
+    # Pattern: policy_override_requested == true
+    if "policy_override_requested" in cond and "true" in cond:
+        return any(e.get("execution_context", {}).get("policy_override_requested", False) for e in emissions)
+
+    # Pattern: dismissed_finding_severity in ["critical", "high"]
+    if cond.startswith("dismissed_finding_severity in"):
+        levels = _extract_list(cond)
+        for e in emissions:
+            for flag in e.get("policy_flags", []):
+                if flag.get("dismissed", False) and flag.get("severity") in levels:
+                    return True
+        return False
+
+    # Pattern: dismissed_finding_panel == "security-review"
+    if cond.startswith("dismissed_finding_panel =="):
+        panel = cond.split('"')[1]
+        for e in emissions:
+            if e.get("panel_name") == panel:
+                for flag in e.get("policy_flags", []):
+                    if flag.get("dismissed", False):
+                        return True
+        return False
+
     # Context-dependent patterns
     if any(ctx in cond for ctx in [
         "files_changed_in", "services_affected",
-        "dismissed_finding_severity", "dismissed_finding_panel",
     ]):
         return None
 

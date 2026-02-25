@@ -1039,3 +1039,83 @@ class TestEmissionFreshness:
         emission["timestamp"] = datetime.now(timezone.utc).isoformat()
         warnings = policy_engine.validate_emission_freshness(emission, "", log)
         assert warnings == []
+
+
+# ===========================================================================
+# Reduced touchpoint escalation conditions (issue #242)
+# ===========================================================================
+
+
+class TestReducedTouchpointEscalation:
+    """Tests for policy_override_requested and dismissed_finding_* escalation handlers."""
+
+    def test_policy_override_triggers_escalation(self):
+        """Emission with execution_context.policy_override_requested: true triggers escalation."""
+        log = _log()
+        emission = make_emission(panel_name="code-review")
+        emission["execution_context"] = {"policy_override_requested": True}
+        profile = make_profile(escalation_rules=[
+            {"name": "policy_override", "condition": "policy_override_requested == true", "action": "human_review_required"}
+        ])
+        result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
+        assert result == "human_review_required"
+
+    def test_dismissed_critical_finding_triggers_escalation(self):
+        """Emission with a dismissed critical policy flag triggers escalation."""
+        log = _log()
+        emission = make_emission(
+            panel_name="security-review",
+            policy_flags=[
+                {"flag": "vuln_found", "severity": "critical", "description": "CVE", "dismissed": True},
+            ],
+        )
+        profile = make_profile(escalation_rules=[
+            {"name": "dismissed_critical", "condition": 'dismissed_finding_severity in ["critical", "high"]', "action": "human_review_required"}
+        ])
+        result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
+        assert result == "human_review_required"
+
+    def test_dismissed_finding_panel_match(self):
+        """Dismissed finding on security-review panel triggers escalation."""
+        log = _log()
+        emission = make_emission(
+            panel_name="security-review",
+            policy_flags=[
+                {"flag": "vuln_found", "severity": "high", "description": "CVE", "dismissed": True},
+            ],
+        )
+        profile = make_profile(escalation_rules=[
+            {"name": "dismissed_panel", "condition": 'dismissed_finding_panel == "security-review"', "action": "human_review_required"}
+        ])
+        result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
+        assert result == "human_review_required"
+
+    def test_compound_dismissed_finding_condition(self):
+        """Compound condition: dismissed_finding_severity in [...] and dismissed_finding_panel == 'security-review'."""
+        log = _log()
+        emission = make_emission(
+            panel_name="security-review",
+            policy_flags=[
+                {"flag": "vuln_found", "severity": "critical", "description": "CVE", "dismissed": True},
+            ],
+        )
+        profile = make_profile(escalation_rules=[
+            {"name": "sec_dismiss", "condition": 'dismissed_finding_severity in ["critical", "high"] and dismissed_finding_panel == "security-review"', "action": "human_review_required"}
+        ])
+        result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
+        assert result == "human_review_required"
+
+    def test_no_dismissed_findings_no_escalation(self):
+        """No dismissed findings means no escalation trigger."""
+        log = _log()
+        emission = make_emission(
+            panel_name="security-review",
+            policy_flags=[
+                {"flag": "vuln_found", "severity": "critical", "description": "CVE"},
+            ],
+        )
+        profile = make_profile(escalation_rules=[
+            {"name": "dismissed_critical", "condition": 'dismissed_finding_severity in ["critical", "high"]', "action": "human_review_required"}
+        ])
+        result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
+        assert result is None
