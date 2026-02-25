@@ -25,9 +25,11 @@ Exit codes:
 """
 
 import argparse
+import contextlib
 import datetime
 import json
 import os
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -258,11 +260,6 @@ def compute_weighted_confidence(emissions, profile, log):
             present_weight_sum += weight
         else:
             missing_weight_sum += weight
-
-    if missing_behavior == "redistribute" and present_weight_sum > 0:
-        redistribution_factor = 1.0 / present_weight_sum if present_weight_sum < 1.0 else 1.0 / present_weight_sum
-    else:
-        redistribution_factor = 1.0
 
     for emission in emissions:
         panel_name = emission["panel_name"]
@@ -925,13 +922,11 @@ def _evaluate_auto_remediate_condition(condition: str, confidence: float, risk: 
 
 def _extract_list(condition: str) -> list:
     """Extract a list of quoted strings from a condition like: foo in ["a", "b"]."""
-    import re
     return re.findall(r'"([^"]+)"', condition)
 
 
 def _extract_comparison(condition: str):
     """Extract comparison operator and integer threshold from end of condition."""
-    import re
     match = re.search(r'\)\s*(>=|<=|==|>|<)\s*(\d+)', condition)
     if match:
         return match.group(1), int(match.group(2))
@@ -954,7 +949,6 @@ def _compare(value, op, threshold):
 
 def _slugify(text: str) -> str:
     """Create a short slug from text for log rule IDs."""
-    import re
     slug = re.sub(r'[^a-z0-9]+', '_', text.lower().strip())
     return slug[:50].strip('_')
 
@@ -982,6 +976,14 @@ def generate_manifest(
             "artifact_path": f"governance/emissions/{emission['panel_name']}.json"
         })
 
+    # Extract model_version from first emission's execution_context, fallback to "unknown"
+    model_version = "unknown"
+    for emission in emissions:
+        ec = emission.get("execution_context", {})
+        if ec and ec.get("model_version"):
+            model_version = ec["model_version"]
+            break
+
     manifest = {
         "manifest_version": "1.0.0",
         "manifest_id": manifest_id,
@@ -989,7 +991,7 @@ def generate_manifest(
         "persona_set_commit": commit_sha or ("0" * 40),
         "panel_graph_version": "1.0.0",
         "policy_profile_used": profile.get("profile_name", "unknown"),
-        "model_version": "claude-opus-4-6",
+        "model_version": model_version,
         "aggregate_confidence": aggregate_confidence,
         "risk_level": aggregate_risk,
         "human_intervention": {
@@ -1039,7 +1041,7 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
     log._stream.write(f"  Timestamp: {datetime.datetime.now(datetime.timezone.utc).isoformat()}\n")
     log._stream.write(f"{'='*60}\n\n")
 
-    # Step 1: Load schemas
+    # Step 1: Load and validate emissions
     log._stream.write("--- Step 1: Load and validate emissions ---\n")
     try:
         panel_schema = load_schema("panel-output.schema.json")
@@ -1048,7 +1050,7 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         manifest = generate_manifest([], {}, 0.0, "critical", "block", str(e), log, commit_sha, pr_number, repo)
         return manifest, 1
 
-    # Step 2: Load emissions
+    # Step 1 (continued): Load emissions
     emissions, all_valid, failed_panels = load_emissions(emissions_dir, panel_schema, log)
 
     if not all_valid:
@@ -1078,8 +1080,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
 
     log.record("emissions_validation", "pass", f"{len(emissions)} valid emission(s) loaded")
 
-    # Step 2b: Semantic consistency checks
-    log._stream.write("\n--- Step 1b: Semantic consistency checks ---\n")
+    # Step 2: Semantic consistency checks
+    log._stream.write("\n--- Step 2: Semantic consistency checks ---\n")
     all_consistency_warnings = []
     for emission in emissions:
         warnings = validate_emission_consistency(emission, log)
@@ -1090,8 +1092,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
             f"{len(all_consistency_warnings)} consistency warning(s) detected"
         )
 
-    # Step 2c: Freshness and provenance checks
-    log._stream.write("\n--- Step 1c: Freshness and provenance checks ---\n")
+    # Step 3: Freshness and provenance checks
+    log._stream.write("\n--- Step 3: Freshness and provenance checks ---\n")
     all_freshness_warnings = []
     for emission in emissions:
         warnings = validate_emission_freshness(emission, commit_sha or "", log)
@@ -1102,8 +1104,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
             f"{len(all_freshness_warnings)} freshness warning(s) detected"
         )
 
-    # Step 3: Load profile
-    log._stream.write("\n--- Step 2: Load policy profile ---\n")
+    # Step 4: Load profile
+    log._stream.write("\n--- Step 4: Load policy profile ---\n")
     try:
         profile = load_profile(profile_path)
         log.record("load_profile", "pass", f"Profile '{profile.get('profile_name')}' v{profile.get('profile_version')}")
@@ -1113,8 +1115,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         manifest = generate_manifest(emissions, {}, 0.0, "critical", "block", reason, log, commit_sha, pr_number, repo)
         return manifest, 1
 
-    # Step 4: Check required panels
-    log._stream.write("\n--- Step 3: Check required panels ---\n")
+    # Step 5: Check required panels
+    log._stream.write("\n--- Step 5: Check required panels ---\n")
     missing_required = check_required_panels(emissions, profile, log)
 
     missing_behavior = profile.get("weighting", {}).get("missing_panel_behavior", "redistribute")
@@ -1124,12 +1126,12 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         manifest = generate_manifest(emissions, profile, 0.0, "critical", "block", reason, log, commit_sha, pr_number, repo)
         return manifest, 1
 
-    # Step 5: Compute aggregate confidence
-    log._stream.write("\n--- Step 4: Compute aggregate confidence ---\n")
+    # Step 6: Compute aggregate confidence
+    log._stream.write("\n--- Step 6: Compute aggregate confidence ---\n")
     aggregate_confidence = compute_weighted_confidence(emissions, profile, log)
 
-    # Step 6: Compute aggregate risk
-    log._stream.write("\n--- Step 5: Compute aggregate risk ---\n")
+    # Step 7: Compute aggregate risk
+    log._stream.write("\n--- Step 7: Compute aggregate risk ---\n")
     aggregate_risk = compute_aggregate_risk(emissions, profile, log)
 
     # Dry-run early exit — report what we know and return success.
@@ -1152,7 +1154,7 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         )
         return manifest, 0
 
-    # Step 6b: Phase 4b transition — downgrade missing-panel block when all
+    # Step 7b: Phase 4b transition — downgrade missing-panel block when all
     # present panels approve with sufficient confidence.  This keeps the
     # decision inside the engine rather than in the CI workflow.
     if missing_required and missing_behavior != "block":
@@ -1178,8 +1180,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
                 f"Phase 4b transition not applicable: {'; '.join(reasons)}"
             )
 
-    # Step 7: Collect policy flags
-    log._stream.write("\n--- Step 6: Collect policy flags ---\n")
+    # Step 8: Collect policy flags
+    log._stream.write("\n--- Step 8: Collect policy flags ---\n")
     policy_flags = collect_policy_flags(emissions)
     if policy_flags:
         for flag in policy_flags:
@@ -1187,8 +1189,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
     else:
         log.record("policy_flags", "pass", "No policy flags raised")
 
-    # Step 8: Evaluate block conditions
-    log._stream.write("\n--- Step 7: Evaluate block conditions ---\n")
+    # Step 9: Evaluate block conditions
+    log._stream.write("\n--- Step 9: Evaluate block conditions ---\n")
     blocked, block_reason = evaluate_block_conditions(
         aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log
     )
@@ -1199,8 +1201,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         )
         return manifest, 1
 
-    # Step 9: Evaluate escalation rules
-    log._stream.write("\n--- Step 8: Evaluate escalation rules ---\n")
+    # Step 10: Evaluate escalation rules
+    log._stream.write("\n--- Step 10: Evaluate escalation rules ---\n")
     escalation_result, escalation_reason = evaluate_escalation_rules(
         aggregate_confidence, aggregate_risk, policy_flags, emissions, profile, log
     )
@@ -1217,8 +1219,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         )
         return manifest, 2
 
-    # Step 10: Evaluate auto-merge conditions
-    log._stream.write("\n--- Step 9: Evaluate auto-merge conditions ---\n")
+    # Step 11: Evaluate auto-merge conditions
+    log._stream.write("\n--- Step 11: Evaluate auto-merge conditions ---\n")
     can_auto_merge = evaluate_auto_merge(
         aggregate_confidence, aggregate_risk, policy_flags, emissions, ci_passed, profile, log
     )
@@ -1230,8 +1232,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         )
         return manifest, 0
 
-    # Step 11: Evaluate auto-remediate conditions
-    log._stream.write("\n--- Step 10: Evaluate auto-remediate conditions ---\n")
+    # Step 12: Evaluate auto-remediate conditions
+    log._stream.write("\n--- Step 12: Evaluate auto-remediate conditions ---\n")
     can_auto_remediate = evaluate_auto_remediate(
         aggregate_confidence, aggregate_risk, policy_flags, emissions, profile, log
     )
@@ -1243,8 +1245,8 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         )
         return manifest, 3
 
-    # Step 12: Default to human_review_required
-    log._stream.write("\n--- Step 11: Default decision ---\n")
+    # Step 13: Default to human_review_required
+    log._stream.write("\n--- Step 13: Default decision ---\n")
     reason = f"No auto-merge or auto-remediate path available. Confidence={aggregate_confidence:.4f}, risk={aggregate_risk}"
     log.record("default_decision", "pass", reason)
     manifest = generate_manifest(
@@ -1274,11 +1276,19 @@ def main():
 
     args = parser.parse_args()
 
-    log_stream = sys.stderr
-    if args.log_file:
-        log_stream = open(args.log_file, "w")
+    @contextlib.contextmanager
+    def _open_log(path):
+        """Yield a writable log stream; file handle is closed on exit."""
+        if path:
+            f = open(path, "w")
+            try:
+                yield f
+            finally:
+                f.close()
+        else:
+            yield sys.stderr
 
-    try:
+    with _open_log(args.log_file) as log_stream:
         manifest, exit_code = evaluate(
             emissions_dir=args.emissions_dir,
             profile_path=args.profile,
@@ -1311,10 +1321,6 @@ def main():
         log_stream.write(f"{'='*60}\n")
 
         sys.exit(exit_code)
-
-    finally:
-        if args.log_file and log_stream != sys.stderr:
-            log_stream.close()
 
 
 if __name__ == "__main__":
