@@ -82,7 +82,8 @@ jobs:
             gh pr close "$EXISTING_PR" --delete-branch || true
           fi
 
-          git push -u origin "$BRANCH" --force
+          # Use --force-with-lease instead of --force to prevent overwriting concurrent changes
+          git push -u origin "$BRANCH" --force-with-lease
 
           gh pr create \
             --title "chore: update .ai governance submodule" \

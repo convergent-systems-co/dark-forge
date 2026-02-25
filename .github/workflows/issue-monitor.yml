@@ -156,7 +156,7 @@ jobs:
             - Monitor CI checks and Copilot recommendations
             - Maximum 3 review cycles per PR
             - Update all affected documentation before committing (Step 6.4)
-          allowed_tools: "Bash(git:*),Bash(gh:*),Bash(python:*),Bash(pip:*),Bash(npm:*),Bash(curl:*),Bash(sleep:*),Bash(date:*),Bash(mkdir:*),Bash(chmod:*),View,GlobTool,GrepTool,BatchTool,FileWriteTool,FileEditTool"
+          allowed_tools: "Bash(git:*),Bash(gh:*),Bash(python:*),Bash(sleep:*),Bash(date:*),Bash(mkdir:*),Bash(chmod:*),View,GlobTool,GrepTool,BatchTool,FileWriteTool,FileEditTool"
           max_turns: 50
           model: ${{ vars.CLAUDE_MODEL || 'claude-sonnet-4-20250514' }}
 
