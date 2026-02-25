@@ -40,7 +40,7 @@ Progress update from an executor to its orchestrator.
 | `payload.progress` | Description of what has been done |
 | `payload.blockers` | Any blockers encountered (empty array if none) |
 
-**Valid senders:** Coder → Code Manager, Tester → Code Manager, Code Manager → DevOps Engineer
+**Valid senders:** Coder → Code Manager, Code Manager → DevOps Engineer
 
 ### RESULT
 
@@ -53,7 +53,7 @@ Executor reports completion of assigned work.
 | `payload.test_results` | Test pass/fail summary (if applicable) |
 | `payload.documentation_updated` | List of documentation files updated |
 
-**Valid senders:** Coder → Code Manager, Tester → Code Manager
+**Valid senders:** Coder → Code Manager, Code Manager → DevOps Engineer
 
 ### FEEDBACK
 
@@ -110,6 +110,7 @@ Evaluator rejects submitted work — must be addressed before proceeding.
 flowchart LR
     DE[DevOps Engineer] -->|ASSIGN| CM[Code Manager]
     CM -->|STATUS| DE
+    CM -->|RESULT| DE
     CM -->|ESCALATE| DE
 
     CM -->|ASSIGN| CO[Coder]
@@ -118,7 +119,6 @@ flowchart LR
     CO -->|ESCALATE| CM
 
     CM -->|ASSIGN| TE[Tester]
-    TE -->|RESULT| CM
     TE -->|FEEDBACK| CM
     TE -->|APPROVE| CM
     TE -->|BLOCK| CM
