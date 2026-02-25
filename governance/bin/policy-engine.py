@@ -116,6 +116,46 @@ def load_emissions(emissions_dir: str, schema: dict, log: EvaluationLog):
     return emissions, all_valid
 
 
+def validate_emission_consistency(emission: dict, log: EvaluationLog) -> list:
+    """Check semantic consistency within a single emission.
+
+    Returns a list of warning strings.  These are logged but do not reject
+    the emission — the policy engine's block/escalation rules will catch
+    truly dangerous combinations.
+    """
+    warnings = []
+    panel = emission.get("panel_name", "unknown")
+    findings = emission.get("findings", [])
+    aggregate_verdict = emission.get("aggregate_verdict", "approve")
+    risk_level = emission.get("risk_level", "low")
+    policy_flags = emission.get("policy_flags", [])
+
+    # Rule 1: If any finding has verdict "block", aggregate_verdict should not be "approve"
+    block_findings = [f for f in findings if f.get("verdict") == "block"]
+    if block_findings and aggregate_verdict == "approve":
+        msg = (
+            f"Inconsistency: {panel} has {len(block_findings)} finding(s) with "
+            f"verdict='block' but aggregate_verdict='approve'"
+        )
+        warnings.append(msg)
+        log.record(f"consistency_{panel}", "fail", msg)
+
+    # Rule 2: If critical/high policy flags exist, risk_level should not be "negligible"
+    severe_flags = [f for f in policy_flags if f.get("severity") in ("critical", "high")]
+    if severe_flags and risk_level == "negligible":
+        msg = (
+            f"Inconsistency: {panel} has {len(severe_flags)} critical/high policy "
+            f"flag(s) but risk_level='negligible'"
+        )
+        warnings.append(msg)
+        log.record(f"consistency_{panel}", "fail", msg)
+
+    if not warnings:
+        log.record(f"consistency_{panel}", "pass", "Emission semantically consistent")
+
+    return warnings
+
+
 # ---------------------------------------------------------------------------
 # Policy loading
 # ---------------------------------------------------------------------------
@@ -849,6 +889,18 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         return manifest, 1
 
     log.record("emissions_validation", "pass", f"{len(emissions)} valid emission(s) loaded")
+
+    # Step 2b: Semantic consistency checks
+    log._stream.write("\n--- Step 1b: Semantic consistency checks ---\n")
+    all_consistency_warnings = []
+    for emission in emissions:
+        warnings = validate_emission_consistency(emission, log)
+        all_consistency_warnings.extend(warnings)
+    if all_consistency_warnings:
+        log.record(
+            "consistency_summary", "fail",
+            f"{len(all_consistency_warnings)} consistency warning(s) detected"
+        )
 
     # Step 3: Load profile
     log._stream.write("\n--- Step 2: Load policy profile ---\n")

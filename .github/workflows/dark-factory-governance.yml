@@ -25,13 +25,18 @@ jobs:
     outputs:
       has_emissions: ${{ steps.check.outputs.has_emissions }}
       gov_root: ${{ steps.check.outputs.gov_root }}
+      pr_modified_emissions: ${{ steps.check.outputs.pr_modified_emissions }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
+          fetch-depth: 0
 
       - name: Check for panel emissions
         id: check
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           # Auto-detect governance root: root-level (ai-submodule repo) or .ai/ (consuming repo)
           if [ -d "governance/emissions" ]; then
@@ -41,6 +46,7 @@ jobs:
           else
             echo "has_emissions=false" >> "$GITHUB_OUTPUT"
             echo "gov_root=." >> "$GITHUB_OUTPUT"
+            echo "pr_modified_emissions=false" >> "$GITHUB_OUTPUT"
             echo "No governance directory found at governance/ or .ai/governance/"
             exit 0
           fi
@@ -55,6 +61,15 @@ jobs:
             echo "has_emissions=true" >> "$GITHUB_OUTPUT"
             echo "Found emissions:"
             echo "$EMISSIONS"
+          fi
+
+          # Trust boundary: detect if the PR modifies emission files
+          MODIFIED_EMISSIONS=$(git diff --name-only "${PR_BASE_SHA}...${PR_HEAD_SHA}" -- "${GOV_ROOT}/governance/emissions/" 2>/dev/null || true)
+          if [ -n "$MODIFIED_EMISSIONS" ]; then
+            echo "pr_modified_emissions=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Trust boundary alert: PR modifies emission files: ${MODIFIED_EMISSIONS}"
+          else
+            echo "pr_modified_emissions=false" >> "$GITHUB_OUTPUT"
           fi
 
   # -----------------------------------------------------------
@@ -99,6 +114,15 @@ jobs:
 
       - name: Install dependencies
         run: pip install jsonschema pyyaml
+
+      - name: Trust boundary — flag PR-modified emissions
+        if: needs.detect.outputs.pr_modified_emissions == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "::warning::Trust boundary: This PR modifies governance emission files. Emissions from the PR branch may be untrusted."
+          gh pr comment "$PR_NUMBER" --body "⚠️ **Trust boundary alert:** This PR modifies files in \`governance/emissions/\`. PR-supplied emissions may be untrusted — review the emission content manually before merging."
 
       - name: Run policy engine
         id: evaluate

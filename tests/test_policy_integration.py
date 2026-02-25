@@ -250,6 +250,50 @@ class TestReducedTouchpointIntegration:
 
 
 # ===========================================================================
+# Emission semantic consistency integration tests (issue #234)
+# ===========================================================================
+
+
+class TestEmissionConsistencyIntegration:
+    """Integration tests for semantic consistency checks through the full pipeline."""
+
+    def test_inconsistent_emission_flagged_in_log(self, tmp_path):
+        """Inconsistent emission produces warnings in evaluation log."""
+        emissions = all_required_emissions(confidence=0.92, risk_level="low")
+        # Make one emission inconsistent: block finding + approve verdict
+        emissions[0]["findings"] = [
+            {"persona": "security/reviewer", "verdict": "block", "confidence": 0.95, "rationale": "Critical vuln"},
+        ]
+        emissions[0]["aggregate_verdict"] = "approve"  # inconsistent with block finding
+        _write_emissions(str(tmp_path), emissions)
+        log_stream = io.StringIO()
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path("default"),
+            ci_passed=True, log_stream=log_stream,
+        )
+        log_output = log_stream.getvalue()
+        # Consistency warning should appear in log
+        assert "inconsistency" in log_output.lower() or "consistency" in log_output.lower()
+        # The emission is still processed (warnings, not hard blocks)
+        rules = manifest["decision"]["policy_rules_evaluated"]
+        consistency_rules = [r for r in rules if "consistency" in r.get("rule_id", "")]
+        assert len(consistency_rules) > 0
+
+    def test_consistent_emissions_no_warnings(self, tmp_path):
+        """Fully consistent emissions produce no consistency warnings."""
+        emissions = all_required_emissions(confidence=0.92, risk_level="low")
+        _write_emissions(str(tmp_path), emissions)
+        log_stream = io.StringIO()
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path("default"),
+            ci_passed=True, log_stream=log_stream,
+        )
+        rules = manifest["decision"]["policy_rules_evaluated"]
+        consistency_fails = [r for r in rules if "consistency" in r.get("rule_id", "") and r["result"] == "fail"]
+        assert len(consistency_fails) == 0
+
+
+# ===========================================================================
 # Phase 4b transition integration tests (issue #233)
 # ===========================================================================
 

@@ -639,6 +639,92 @@ class TestEscalationRules:
 
 
 # ===========================================================================
+# Emission semantic consistency (issue #234)
+# ===========================================================================
+
+
+class TestEmissionConsistency:
+    """Tests for validate_emission_consistency()."""
+
+    def test_consistent_emission_no_warnings(self):
+        log = _log()
+        emission = make_emission(aggregate_verdict="approve")
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert warnings == []
+
+    def test_block_finding_with_approve_verdict_warns(self):
+        """Block finding + aggregate_verdict=approve is inconsistent."""
+        log = _log()
+        emission = make_emission(
+            aggregate_verdict="approve",
+            findings=[
+                {"persona": "security/reviewer", "verdict": "block", "confidence": 0.95, "rationale": "Critical vuln"},
+            ],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert len(warnings) == 1
+        assert "block" in warnings[0].lower()
+        assert "approve" in warnings[0].lower()
+
+    def test_block_finding_with_block_verdict_no_warning(self):
+        """Block finding + aggregate_verdict=block is consistent."""
+        log = _log()
+        emission = make_emission(
+            aggregate_verdict="block",
+            findings=[
+                {"persona": "security/reviewer", "verdict": "block", "confidence": 0.95, "rationale": "Critical vuln"},
+            ],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert warnings == []
+
+    def test_critical_flag_with_negligible_risk_warns(self):
+        """Critical policy flag + risk_level=negligible is inconsistent."""
+        log = _log()
+        emission = make_emission(
+            risk_level="negligible",
+            policy_flags=[{"flag": "pii_exposure", "severity": "critical", "description": "PII found"}],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert len(warnings) == 1
+        assert "negligible" in warnings[0].lower()
+
+    def test_critical_flag_with_high_risk_no_warning(self):
+        """Critical policy flag + risk_level=high is consistent."""
+        log = _log()
+        emission = make_emission(
+            risk_level="high",
+            policy_flags=[{"flag": "pii_exposure", "severity": "critical", "description": "PII found"}],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert warnings == []
+
+    def test_low_flag_with_negligible_risk_no_warning(self):
+        """Low severity flag + negligible risk is fine."""
+        log = _log()
+        emission = make_emission(
+            risk_level="negligible",
+            policy_flags=[{"flag": "style_issue", "severity": "low", "description": "Minor style"}],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert warnings == []
+
+    def test_multiple_inconsistencies(self):
+        """Emission with both inconsistencies returns multiple warnings."""
+        log = _log()
+        emission = make_emission(
+            aggregate_verdict="approve",
+            risk_level="negligible",
+            findings=[
+                {"persona": "security/reviewer", "verdict": "block", "confidence": 0.95, "rationale": "Vuln"},
+            ],
+            policy_flags=[{"flag": "pii_exposure", "severity": "critical", "description": "PII"}],
+        )
+        warnings = policy_engine.validate_emission_consistency(emission, log)
+        assert len(warnings) == 2
+
+
+# ===========================================================================
 # Phase 4b transition (issue #233)
 # ===========================================================================
 
