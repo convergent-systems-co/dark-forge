@@ -88,7 +88,7 @@ Report to the user:
 In subsequent sessions, when processing blocked issues:
 1. Check if the canonical issue has been closed
 2. If resolved, remove the `blocked` label from the consuming issue
-3. Re-enter the governance pipeline at Step 4 (Validate Intent) with the unblocked issue
+3. Re-enter the governance pipeline at Phase 2b (Validate Intent) with the unblocked issue
 
 ## Constraints
 

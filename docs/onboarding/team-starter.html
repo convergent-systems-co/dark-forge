@@ -188,7 +188,7 @@
       <h3>Heads up — this is the on-ramp, not the manual</h3>
       <p>
         <strong>This page</strong> gets you running in 10 minutes on Windows at JM. It's opinionated on purpose.<br>
-        <strong>Everything else</strong> — all 60 personas, 19 panels, policy profiles, compliance rules, CI pipeline, runtime feedback, and advanced config — lives in the
+        <strong>Everything else</strong> — all 62 personas (including 4 agentic personas), 19 panels, policy profiles, compliance rules, CI pipeline, runtime feedback, and advanced config — lives in the
         <strong><a href="https://github.com/SET-Apps/ai-submodule/blob/main/README.md" target="_blank">Official README ↗</a></strong>.<br>
         Once you're set up and curious, that's where you go. Bookmark it.
       </p>
@@ -287,11 +287,12 @@
       <div class="step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <div class="step-title">Pick your language template</div>
-          <div class="step-desc">Copy the template for your stack and customize it. This tells the framework what conventions and policy profile to use.</div>
-          <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre><code><span class="comment"># Choose one: python / node / go / csharp / react</span>
-<span class="cmd">Copy-Item</span> <span class="str">.ai\templates\node\project.yaml</span> <span class="str">project.yaml</span></code></pre></div>
-          Open <code>project.yaml</code> and set your project name. Leave everything else as-is for now.
+          <div class="step-title">Pick your language template (optional)</div>
+          <div class="step-desc">Copy a template for your stack, or skip this — the Code Manager will auto-detect your codebase and generate <code>project.yaml</code> during the first agentic session.</div>
+          <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre><code><span class="comment"># Optional: choose one: python / node / go / csharp / react</span>
+<span class="cmd">Copy-Item</span> <span class="str">.ai\templates\node\project.yaml</span> <span class="str">project.yaml</span>
+<span class="comment"># Or skip this — /startup will auto-generate it</span></code></pre></div>
+          If you copied a template, open <code>project.yaml</code> and set your project name. Otherwise, the Code Manager will create it during <code>/startup</code> based on your repo contents.
         </div>
       </div>
 
@@ -310,7 +311,7 @@
           <div class="step-title">Start the agentic loop</div>
           <div class="step-desc">Open your AI tool (Copilot CLI, Claude Code, or Cursor) in this folder and type:</div>
           <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre><code>/startup</code></pre></div>
-          <div class="step-note">🤖 The framework will scan for open issues (if GitHub remote exists) or prompt you for what to build (local mode)</div>
+          <div class="step-note">🤖 Four AI personas activate: DevOps Engineer (triage) → Code Manager (plan) → Coder (implement) → Tester (evaluate). If no <code>project.yaml</code> exists, the Code Manager creates one first.</div>
         </div>
       </div>
 
@@ -449,10 +450,10 @@
 
     <table style="margin-top:20px">
       <tr><th>You say</th><th>What happens</th></tr>
-      <tr><td>"Build me a theme switcher"</td><td>Code Manager writes a plan → Coder implements → Panels review → fixes applied → done</td></tr>
-      <tr><td>"Add Nord and Solarized themes"</td><td>Same pipeline, scoped to the new request. Plans updated.</td></tr>
+      <tr><td>"Build me a theme switcher"</td><td>DevOps Engineer triages → Code Manager plans → Coder implements → Tester evaluates → Security review → merge</td></tr>
+      <tr><td>"Add Nord and Solarized themes"</td><td>Same 5-phase pipeline, scoped to the new request. Plans updated.</td></tr>
       <tr><td>"Update GOALS.md"</td><td>Framework reads what was implemented and rewrites GOALS.md in standard format</td></tr>
-      <tr><td>/startup</td><td>Scans open PRs → open issues → GOALS.md. Picks up where it left off.</td></tr>
+      <tr><td>/startup</td><td>DevOps Engineer scans open PRs → triages issues → Code Manager orchestrates → Coder + Tester loop → merge</td></tr>
     </table>
   </div>
 
@@ -525,11 +526,11 @@
       </div>
       <div class="card">
         <h4><a href="https://github.com/SET-Apps/ai-submodule/blob/main/governance/personas/index.md" target="_blank">👥 Persona Index</a></h4>
-        <p>All 60 personas and 19 panels — who does what</p>
+        <p>All 62 personas (including 4 agentic personas) and 19 panels — who does what</p>
       </div>
       <div class="card">
         <h4><a href="https://github.com/SET-Apps/ai-submodule/blob/main/governance/prompts/startup.md" target="_blank">▶️ Startup Prompt</a></h4>
-        <p>The full 8-step agentic loop protocol</p>
+        <p>The 5-phase multi-agent agentic loop protocol</p>
       </div>
     </div>
   </div>

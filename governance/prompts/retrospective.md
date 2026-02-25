@@ -4,7 +4,7 @@ Run this prompt after merging a PR to evaluate the completed work for process im
 
 ## Instructions
 
-After completing an issue (Step 7g merge), evaluate the work just finished. This is a lightweight self-assessment — keep it concise. Post the findings as a comment on the closed issue.
+After completing an issue (Phase 5a merge), evaluate the work just finished. This is a lightweight self-assessment — keep it concise. Post the findings as a comment on the closed issue.
 
 ## Evaluation Criteria
 

@@ -161,7 +161,7 @@ The governance platform operates through three distinct artifact types:
 
 ### 2.2 Personas and Panels
 
-**Personas** are specialized reasoning roles defined in `governance/personas/`. There are 60 personas across 13 categories (security, architecture, testing, data, compliance, and more). Each defines:
+**Personas** are specialized reasoning roles defined in `governance/personas/`. There are 62 personas across 13 categories (security, architecture, testing, data, compliance, and more), including 4 agentic personas (DevOps Engineer, Code Manager, Coder, Tester). Each defines:
 - **Role** — What the persona evaluates
 - **Evaluate For** — Specific concerns and criteria
 - **Output Format** — Structured findings with severity levels
@@ -303,20 +303,13 @@ Labels drive agentic prioritization:
 
 ### 3.4 Agentic Issue Handling
 
-When the autonomous agent (Code Manager persona) processes issues, it follows this sequence:
+When the autonomous pipeline processes issues, four personas chain through five phases:
 
-1. **Scan** — Lists all open issues via GitHub API
-2. **Filter** — Excludes issues with existing branches, blocked/wontfix/duplicate labels, or recent human edits
-3. **Prioritize** — Sorts by label priority (P0 → P4), then by creation date
-4. **Validate intent** — Checks that the issue description is clear enough to implement; if vague, adds a label and comments asking for clarification
-5. **Create branch** — Uses naming convention: `itsfwcp/{type}/{issue-number}/{description}`
-   ```
-   itsfwcp/feat/42/add-user-auth
-   itsfwcp/fix/57/login-crash-special-chars
-   ```
-6. **Create plan** — Writes implementation plan to `.plans/` using the plan template
-7. **Execute** — Adopts the Coder persona to implement the plan
-8. **Push and create PR** — Commits with conventional messages, creates PR linked to issue
+1. **Phase 1 — Pre-flight & Triage** (DevOps Engineer): Scans issues, filters (excludes blocked/wontfix/duplicate, existing branches, recent human edits), prioritizes by label (P0 → P4), routes to Code Manager
+2. **Phase 2 — Intent & Planning** (Code Manager): Validates intent clarity, ensures `project.yaml` reflects repo state, selects context-appropriate review panels, creates branch (`itsfwcp/{type}/{issue-number}/{description}`) and plan in `.plans/`
+3. **Phase 3 — Implementation** (Coder): Implements the plan, writes tests, updates documentation. Emits structured RESULT to Code Manager
+4. **Phase 4 — Evaluation & Review** (Code Manager + Tester): Tester evaluates independently (must approve before push), Code Manager runs security review, context-specific reviews, monitors PR CI/Copilot loop
+5. **Phase 5 — Merge & Checkpoint** (Code Manager + DevOps Engineer): Merges PR, runs retrospective, writes mandatory checkpoint
 
 ### 3.5 Issue Monitoring (Optional)
 
@@ -481,7 +474,7 @@ GOALS.md is updated as part of the governance workflow:
 - After completing an issue or PR (add to Completed Work)
 - When new work items are identified (add to Open Work)
 - When phase milestones are achieved (update Phase Status)
-- During agentic execution (Step 6 of startup sequence mandates GOALS.md updates)
+- During agentic execution (Phase 3 of startup sequence mandates GOALS.md updates)
 
 **How to update:**
 
@@ -495,7 +488,7 @@ GOALS.md is updated as part of the governance workflow:
 | — | — | Initial governance bootstrap | Setup |
 ```
 
-**Agentic updates:** The autonomous agent is required to update GOALS.md after every implementation. Step 6 of the startup sequence includes:
+**Agentic updates:** The autonomous agent is required to update GOALS.md after every implementation. Phase 3 (Implementation) of the startup sequence includes:
 > "Update ALL affected documentation: GOALS.md, CLAUDE.md, README.md, DEVELOPER_GUIDE.md"
 
 ### 5.5 Phase Progression

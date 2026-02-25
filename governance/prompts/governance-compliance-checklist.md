@@ -4,7 +4,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ## Required Steps
 
-### 1. Plan Created (Step 5 of startup.md)
+### 1. Plan Created (Phase 2d of startup.md)
 
 **Requirement:** Every PR must have an implementation plan in `.plans/` created before implementation began.
 
@@ -21,7 +21,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ---
 
-### 2. Panel Evaluation (Step 7 of startup.md)
+### 2. Panel Evaluation (Phase 4 of startup.md)
 
 **Requirement:** All required panels defined in the active policy profile must produce emissions for the PR.
 
@@ -39,7 +39,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ---
 
-### 3. Copilot Review (Step 7b-7d of startup.md)
+### 3. Copilot Review (Phase 4e of startup.md)
 
 **Requirement:** Copilot recommendations must be fetched, classified, and addressed (implemented or dismissed with rationale).
 
@@ -57,7 +57,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ---
 
-### 4. Documentation Updated (Step 6.4 of startup.md)
+### 4. Documentation Updated (Phase 3a of startup.md)
 
 **Requirement:** Every PR must update affected documentation in the same commit(s) as the code change.
 
@@ -71,7 +71,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 - If the change affects user-facing or governance-facing behavior, at least one documentation file should be modified
 - If no documentation is needed, the commit message body should state: `Docs: no documentation updates required — [reason]`
 
-**Severity if missing:** `medium` — Documentation gaps are recoverable but create knowledge debt. The retrospective (Step 7h) should catch this, but catching it at PR time is better.
+**Severity if missing:** `medium` — Documentation gaps are recoverable but create knowledge debt. The retrospective (Phase 5b) should catch this, but catching it at PR time is better.
 
 **Exceptions:**
 - Pure refactors with no user-facing changes may skip documentation if the commit message explains why
@@ -95,7 +95,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ---
 
-### 6. Review Thread Resolution (Step 7f-bis of startup.md)
+### 6. Review Thread Resolution (Phase 4f of startup.md)
 
 **Requirement:** All review threads must be resolved or outdated before merge.
 
@@ -110,7 +110,7 @@ This checklist defines the required governance steps for every PR in the Dark Fa
 
 ---
 
-### 7. CI Checks Passed (Step 7a of startup.md)
+### 7. CI Checks Passed (Phase 4e of startup.md)
 
 **Requirement:** All CI checks must pass before merge.
 

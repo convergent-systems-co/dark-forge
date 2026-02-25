@@ -22,7 +22,7 @@ GitHub Copilot offers several mechanisms for detecting and fixing code issues. T
    - Enable "Run on each push" and optionally "Run on draft PRs"
 2. No additional configuration needed — it runs automatically on PR events
 
-**Integration with governance:** Already integrated. `governance/prompts/startup.md` Step 7b fetches Copilot review comments, Step 7c classifies them, and Step 7d implements fixes via the Coder persona. This is the current production flow.
+**Integration with governance:** Already integrated. `governance/prompts/startup.md` Phase 4e fetches Copilot review comments, classifies them, and assigns fixes to the Coder persona via the Code Manager. This is the current production flow.
 
 ### 2. Copilot Autofix for Code Scanning (GA)
 
@@ -40,7 +40,7 @@ GitHub Copilot offers several mechanisms for detecting and fixing code issues. T
 
 **Supported languages:** C#, C/C++, Go, Java/Kotlin, Swift, JavaScript/TypeScript, Python, Ruby, Rust.
 
-**Integration with governance:** The governance workflow's JM Compliance checks already run CodeQL. Copilot Autofix PRs would appear as separate PRs that enter the startup.md Step 0 (resolve open PRs) flow. No additional governance integration needed.
+**Integration with governance:** The governance workflow's JM Compliance checks already run CodeQL. Copilot Autofix PRs would appear as separate PRs that enter startup.md Phase 1c (resolve open PRs) flow. No additional governance integration needed.
 
 ### 3. Copilot Coding Agent (GA)
 
@@ -88,7 +88,7 @@ GitHub Copilot offers several mechanisms for detecting and fixing code issues. T
 The existing governance workflow already achieves the goal through a different mechanism:
 
 1. Copilot Code Review runs automatically on PRs (configured via repository ruleset)
-2. The Code Manager (startup.md Step 7b-7d) reads Copilot comments, classifies severity, and directs the Coder to implement fixes
+2. The Code Manager (startup.md Phase 4e) reads Copilot comments, classifies severity, and assigns fixes to the Coder via ASSIGN messages
 3. This loop repeats for up to 3 cycles until all findings are addressed
 
 This is functionally equivalent to "Copilot auto-fix" — the agentic loop acts as the automation layer between Copilot's detection and the fix application.

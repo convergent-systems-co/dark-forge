@@ -14,7 +14,7 @@ Create a JSON Schema for tracking per-persona signal-to-noise ratio across gover
 
 ## 2. Rationale
 
-The governance framework uses 60 personas across 16 panels. Not all personas contribute equally — some may surface findings that are consistently dismissed (noise) while others produce high-signal recommendations. Tracking effectiveness per persona enables data-driven weight adjustment and identifies personas that need refinement.
+The governance framework uses 62 personas across 19 panels. Not all personas contribute equally — some may surface findings that are consistently dismissed (noise) while others produce high-signal recommendations. Tracking effectiveness per persona enables data-driven weight adjustment and identifies personas that need refinement.
 
 | Alternative | Considered | Rejected Because |
 |-------------|-----------|------------------|

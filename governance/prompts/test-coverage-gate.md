@@ -4,8 +4,8 @@
 
 ## When to Execute
 
-- **Always** after Step 6 (Execute) in the startup loop, before pushing the branch
-- **Always** after Step 7d (Implement Recommendations), before pushing review-cycle fixes
+- **Always** after Phase 3 (Implementation) in the startup loop, before pushing the branch
+- **Always** after Phase 4e fixes (Implement Recommendations), before pushing review-cycle fixes
 - **Always** before any `git push` that will trigger CI
 
 ## Prerequisites
@@ -111,7 +111,7 @@ Check that every new or modified source file has corresponding test coverage:
 
 ### 6. Log Result
 
-Record the gate result for the review cycle summary (Step 7e):
+Record the gate result for the review cycle summary (Phase 4e):
 
 ```
 ## Test Coverage Gate
@@ -124,9 +124,9 @@ Record the gate result for the review cycle summary (Step 7e):
 
 ## Integration Points
 
-- **Step 6 (Execute & Push PR):** Run this gate after Step 6.3 (write tests) and before Step 6.6 (push the branch)
-- **Step 7d (Implement Recommendations):** Run this gate after implementing recommendation fixes and before pushing
-- **Step 7f (Push and Re-run Governance):** This gate must have passed before any push in Step 7f
+- **Phase 3 (Implementation):** Run this gate after Phase 3b (Test Coverage Gate) and before Phase 4d (Push PR)
+- **Phase 4e (CI & Copilot Review Loop):** Run this gate after implementing recommendation fixes and before pushing
+- **Phase 4d (Push PR):** This gate must have passed before any push
 
 ## Failure Escalation
 

@@ -29,7 +29,7 @@ Before resuming, verify the checkpoint is usable:
    ```bash
    git branch --list "<branch>"
    ```
-3. **Timestamp is recent** — if the checkpoint is older than 24 hours, the issue landscape may have changed significantly. Consider running a fresh scan (Step 1 of startup.md) instead of resuming.
+3. **Timestamp is recent** — if the checkpoint is older than 24 hours, the issue landscape may have changed significantly. Consider running a fresh scan (Phase 1 of startup.md) instead of resuming.
 
 ### Step 3: Validate Issue State
 
@@ -56,13 +56,13 @@ For each PR in `prs_remaining`:
 gh pr view <number> --json state --jq '.state'
 ```
 - If **MERGED** or **CLOSED**: Remove from the queue.
-- If **OPEN**: Will need to enter Step 7 of startup.md.
+- If **OPEN**: Will need to enter Phase 4 (Evaluation & Review) of startup.md.
 
 For each PR in `prs_created`:
 ```bash
 gh pr view <number> --json state --jq '.state'
 ```
-- If **OPEN**: Enter Step 0 (Resolve Open PRs) of startup.md to complete the review cycle.
+- If **OPEN**: Enter Phase 1c (Resolve Open PRs) of startup.md to complete the review cycle.
 - If **MERGED**: No action needed.
 - If **CLOSED** (not merged): Investigate why — the PR may need to be recreated.
 
@@ -72,10 +72,10 @@ Based on the checkpoint state, determine where to re-enter the startup sequence:
 
 | Checkpoint State | Entry Point |
 |-----------------|-------------|
-| `prs_remaining` is non-empty | Step 0 (Resolve Open PRs) |
+| `prs_remaining` is non-empty | Phase 1c (Resolve Open PRs) |
 | `current_issue` is set and still open | Resume at `current_step` |
-| `current_issue` is closed or null, `issues_remaining` has open issues | Step 4 (Validate Intent) with next remaining issue |
-| All issues closed and no PRs open | Step 1 (Scan Open Issues) for a fresh scan |
+| `current_issue` is closed or null, `issues_remaining` has open issues | Phase 2b (Validate Intent) with next remaining issue |
+| All issues closed and no PRs open | Phase 1d (Scan Open Issues) for a fresh scan |
 
 ### Step 6: Restore Context and Resume
 
@@ -93,7 +93,7 @@ Based on the checkpoint state, determine where to re-enter the startup sequence:
 3. **Account for session limits:**
    - The new session starts its own 3-issue counter at zero.
    - The checkpoint's `issues_completed` array records what was done in the *previous* session — it does not count toward the new session's cap.
-   - However, if the same issue spans multiple sessions (e.g., checkpoint mid-Step 7), completing it counts as 1 issue in the new session.
+   - However, if the same issue spans multiple sessions (e.g., checkpoint mid-Phase 4), completing it counts as 1 issue in the new session.
 
 4. **Enter the startup sequence** at the determined entry point.
 
@@ -101,10 +101,10 @@ Based on the checkpoint state, determine where to re-enter the startup sequence:
 
 | Error | Action |
 |-------|--------|
-| Checkpoint file is missing or corrupt | Fall back to Step 1 of startup.md (fresh scan) |
+| Checkpoint file is missing or corrupt | Fall back to Phase 1 of startup.md (fresh scan) |
 | Git branch from checkpoint no longer exists | Check if the PR was merged; if so, move to next issue. If not, investigate. |
-| All remaining issues are closed | Run Step 1 of startup.md for a fresh scan |
-| Checkpoint is older than 24 hours | Treat as stale; run Step 1 of startup.md instead |
+| All remaining issues are closed | Run Phase 1 of startup.md for a fresh scan |
+| Checkpoint is older than 24 hours | Treat as stale; run Phase 1 of startup.md instead |
 | `git_state: "dirty"` in checkpoint | Resolve git state manually before resuming |
 
 ## Integration with Startup Loop
@@ -129,4 +129,4 @@ Checkpoint files must conform to `governance/schemas/checkpoint.schema.json`. Ke
 | `current_issue` | string/null | No | Issue in progress at shutdown |
 | `current_step` | string | No | Startup step active at shutdown |
 | `git_state` | "clean"/"dirty" | Yes | Must be "clean" for valid resume |
-| `review_cycle` | int/null | No | PR review cycle number if in Step 7 |
+| `review_cycle` | int/null | No | PR review cycle number if in Phase 4 |

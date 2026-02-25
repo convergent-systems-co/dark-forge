@@ -25,6 +25,33 @@ Deep-dive into platform design and internals.
 | [Event-Driven Triggers](architecture/event-driven-triggers.md) | Event-driven governance session dispatch (Phase 5c) |
 | [Formal Specification](architecture/formal-spec.md) | Formal specification of governance invariants |
 
+### Agentic Architecture
+
+The agentic loop uses a 4-agent prompt-chained pipeline. Start it with `/startup` in your AI tool.
+
+| Persona | Pattern | Role |
+|---------|---------|------|
+| [DevOps Engineer](../governance/personas/agentic/devops-engineer.md) | Routing | Session entry, pre-flight, triage, issue routing |
+| [Code Manager](../governance/personas/agentic/code-manager.md) | Orchestrator-Workers | Intent validation, panel selection, review coordination, merge |
+| [Coder](../governance/personas/agentic/coder.md) | Worker | Implementation, tests, documentation |
+| [Tester](../governance/personas/agentic/tester.md) | Evaluator-Optimizer | Independent evaluation, test coverage gate, structured feedback |
+
+```mermaid
+flowchart TD
+    START([/startup]) --> PF[Phase 1: Pre-flight & Triage<br/>DevOps Engineer]
+    PF --> SCAN[Scan & prioritize issues]
+    SCAN -->|ASSIGN| INTENT[Phase 2: Intent & Planning<br/>Code Manager]
+    INTENT --> IMPL[Phase 3: Implementation<br/>Coder]
+    IMPL --> EVAL[Phase 4: Evaluation<br/>Tester]
+    EVAL -->|FEEDBACK| IMPL
+    EVAL -->|APPROVE| REVIEW[Security + Context Reviews<br/>Code Manager]
+    REVIEW --> MERGE[Phase 5: Merge & Checkpoint]
+    MERGE -->|More issues?| SCAN
+    MERGE -->|Session cap or no issues| EXIT([Exit])
+```
+
+Inter-agent communication: [Agent Protocol](../governance/prompts/agent-protocol.md) | Startup: [startup.md](../governance/prompts/startup.md) | Developer Guide: [DEVELOPER_GUIDE.md](../DEVELOPER_GUIDE.md)
+
 ## Configuration
 
 Setup guides for repository and tool integration.

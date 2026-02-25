@@ -257,7 +257,7 @@ When operating as a Copilot agent without direct access to `vscode.lm.countToken
 Copilot agents follow the same two-tier threshold system as Claude Code:
 
 - **At 70%**: Do not start new issues. Finish current work, checkpoint. Proactively summarize context to extend the working window.
-- **At 80%**: Hard stop. Execute the full Capacity Shutdown Protocol (Step 1-5 below) immediately.
+- **At 80%**: Hard stop. Execute the full Capacity Shutdown Protocol (steps 1-5 below) immediately.
 
 Copilot-specific adaptations:
 
@@ -293,7 +293,7 @@ The agent must check context capacity before starting any new issue, and after c
      "issues_completed": ["#5", "#6"],
      "issues_remaining": ["#7", "#8"],
      "current_issue": null,
-     "current_step": "Completed Step 7 for issue #6",
+     "current_step": "Completed Phase 4 for issue #6",
      "git_state": "clean",
      "pending_work": "Issues #7 and #8 need implementation. PRs #13-#15 need governance approval.",
      "prs_created": ["#13", "#14", "#15"],

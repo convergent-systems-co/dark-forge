@@ -93,4 +93,4 @@ This emission is consumed by the policy engine alongside other panel outputs.
 
 ## Usage
 
-The Code Manager invokes this workflow after Step 6 (implementation) and before Step 7 (PR monitoring) in `startup.md`, when a formal spec exists for the change. For changes without formal specs, the standard panel review flow applies directly.
+The Code Manager invokes this workflow after Phase 3 (Implementation) and before Phase 4 (Evaluation & Review) in `startup.md`, when a formal spec exists for the change. For changes without formal specs, the standard panel review flow applies directly.

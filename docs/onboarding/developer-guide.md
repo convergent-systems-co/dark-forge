@@ -29,9 +29,10 @@ git commit -m "Add .ai governance submodule"
 
 ```bash
 cp .ai/governance/templates/python/project.yaml project.yaml   # or go/, node/, react/, csharp/
+# Or skip this — the Code Manager auto-generates project.yaml during /startup
 ```
 
-Edit `project.yaml` to set your project name, language, and policy profile. See [policy profiles](../architecture/governance-model.md) for guidance on which profile fits your use case.
+Edit `project.yaml` to set your project name, language, and policy profile. If you skip this step, the Code Manager will analyze your repo and create `project.yaml` automatically during the first `/startup` session. See [policy profiles](../architecture/governance-model.md) for guidance on which profile fits your use case.
 
 ### 3. Update when the submodule changes
 
@@ -40,12 +41,56 @@ git submodule update --remote .ai
 git add .ai && git commit -m "Update .ai submodule"
 ```
 
-## Common Operations
+## Starting the Agentic Loop
 
-**Start the agentic loop** — The Code Manager scans issues, plans, implements, reviews, and merges autonomously:
+Run `/startup` in your AI tool (Claude Code, Copilot, Cursor). This activates the 4-agent pipeline:
+
 ```
 /startup
 ```
+
+The pipeline chains four agents through five phases, looping until the session cap is hit:
+
+```mermaid
+flowchart TD
+    START([/startup]) --> PF[Phase 1: Pre-flight & Triage<br/>DevOps Engineer]
+    PF -->|Submodule check, repo config,<br/>resolve open PRs| SCAN[Scan & prioritize issues]
+    SCAN -->|ASSIGN highest priority| INTENT[Phase 2: Intent & Planning<br/>Code Manager]
+    INTENT -->|Validate intent, ensure project.yaml,<br/>select panels, create plan| IMPL[Phase 3: Implementation<br/>Coder]
+    IMPL -->|Code, tests, structured RESULT| EVAL[Phase 4: Evaluation & Review<br/>Tester + Code Manager]
+
+    EVAL --> TEST{Tester evaluates}
+    TEST -->|FEEDBACK| IMPL
+    TEST -->|APPROVE| SEC[Security Review]
+    SEC --> CTX[Context-Specific Reviews]
+    CTX --> PR[Push PR → CI + Copilot loop]
+    PR --> POLICY{Policy Engine}
+
+    POLICY -->|auto_merge| MERGE[Phase 5: Merge & Checkpoint<br/>Code Manager + DevOps Engineer]
+    POLICY -->|human_review| HUMAN[Escalate to human]
+    POLICY -->|block| BLOCK[Block — notify user]
+
+    MERGE --> RETRO[Retrospective]
+    RETRO --> CP[Mandatory Checkpoint]
+    CP -->|Session cap reached?| EXIT([Exit — request /clear])
+    CP -->|More issues?| SCAN
+    CP -->|No issues?| GOALS[GOALS.md fallback]
+    GOALS -->|Actionable item?| INTENT
+    GOALS -->|Nothing left| EXIT
+```
+
+**What happens when you run `/startup`:**
+
+1. **DevOps Engineer** checks submodule freshness, verifies repo configuration, resolves any open PRs, then scans and prioritizes issues
+2. **Code Manager** validates the issue's intent, auto-manages `project.yaml`, selects review panels based on codebase type, and creates a plan
+3. **Coder** implements the plan, writes tests, and emits a structured RESULT
+4. **Tester** independently evaluates the work — sends FEEDBACK (up to 3 cycles) or APPROVE
+5. **Code Manager** runs security review, context-specific panels, pushes the PR, monitors CI/Copilot
+6. After merge, writes a checkpoint and loops back for the next issue (max 3 per session)
+
+See [startup.md](governance/prompts/startup.md) for the full protocol and [agent-protocol.md](governance/prompts/agent-protocol.md) for inter-agent communication.
+
+## Common Operations
 
 **Write a plan before coding** — Every non-trivial change needs a plan:
 ```bash
@@ -111,11 +156,11 @@ If the agent repeats itself, forgets decisions, or re-reads files it already rea
 
 | Situation | What to Say |
 |-----------|-------------|
-| Open PRs need resolution | `Start at Step 0 — resolve open PRs` |
-| Fresh issue scan | `Start at Step 1 — scan open issues` |
+| Open PRs need resolution | `Start at Phase 1 — resolve open PRs` |
+| Fresh issue scan | `Start at Phase 1 — scan open issues` |
 | Specific issue | `Work on issue #N` |
-| PR needs review cycle | `Resume PR #N at Step 7` |
-| Fall back to GOALS.md | `Start at Step 8 — check GOALS.md` |
+| PR needs review cycle | `Resume PR #N at Phase 4` |
+| Fall back to GOALS.md | `Check GOALS.md for open work items` |
 
 ## Diagnostic Commands
 
@@ -153,7 +198,7 @@ If the agent repeats itself, forgets decisions, or re-reads files it already rea
 - [README.md](README.md) — Full architecture, governance layers, file structure, and [Documentation Index](README.md#documentation-index)
 - [GOALS.md](GOALS.md) — Phase status and completed work
 - [governance/prompts/reviews/](governance/prompts/reviews/) — 19 consolidated review prompts (preferred, replaces individual persona/panel files)
-- [governance/personas/index.md](governance/personas/index.md) — All 60 personas and 19 panels _(deprecated — see consolidated review prompts)_
+- [governance/personas/index.md](governance/personas/index.md) — All 62 personas (including 4 agentic: DevOps Engineer, Code Manager, Coder, Tester) and 19 panels _(deprecated — see consolidated review prompts)_
 - [docs/architecture/governance-model.md](../architecture/governance-model.md) — Governance layers, policy profiles, and how changes flow through the system
 - [docs/configuration/repository-setup.md](../configuration/repository-setup.md) — Repository settings, CODEOWNERS, per-project overrides
 - [docs/architecture/context-management.md](../architecture/context-management.md) — Context tiers, capacity detection, shutdown protocol

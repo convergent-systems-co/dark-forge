@@ -9,7 +9,7 @@
 
 ## When to Execute
 
-This workflow should be invoked by the Code Manager during **Step 6** of the startup sequence (before committing changes) and during **Step 7c** (reviewing recommendations). It applies to every PR that modifies governance artifacts.
+This workflow should be invoked by the Code Manager during **Phase 3** (Implementation, before committing changes) and during **Phase 4e** (CI & Copilot Review Loop, reviewing recommendations). It applies to every PR that modifies governance artifacts.
 
 **Trigger conditions (any one is sufficient):**
 - A schema file (`governance/schemas/*.json`) is modified (not created)

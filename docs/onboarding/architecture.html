@@ -109,6 +109,18 @@
       <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--border)"></div>
     </div>
 
+    <!-- DEVOPS ENGINEER -->
+    <div class="node actor" style="width:260px;border-color:var(--accent)">
+      <div class="label">🔧 DevOps Engineer</div>
+      <div class="sublabel">Session entry — pre-flight, triage, routing</div>
+    </div>
+
+    <!-- arrow -->
+    <div style="height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div style="width:2px;height:32px;background:var(--border)"></div>
+      <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--border)"></div>
+    </div>
+
     <!-- CODE MANAGER + side audit trail -->
     <div style="display:flex;align-items:center;gap:0;width:100%;max-width:860px;justify-content:center">
       <div style="flex:1;display:flex;justify-content:flex-end;align-items:center;padding-right:16px">
@@ -117,7 +129,7 @@
 
       <div class="node orchestrator" style="width:260px">
         <div class="label">🧠 Code Manager</div>
-        <div class="sublabel">Orchestrator — writes plan, assigns work</div>
+        <div class="sublabel">Orchestrator — validates intent, selects panels, assigns work</div>
       </div>
 
       <!-- side dashed line to .plans/ -->
@@ -140,7 +152,19 @@
     <!-- CODER -->
     <div class="node executor" style="width:260px">
       <div class="label">⌨️ Coder</div>
-      <div class="sublabel">Executor — implements, writes tests</div>
+      <div class="sublabel">Worker — implements plan, writes tests</div>
+    </div>
+
+    <!-- arrow -->
+    <div style="height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div style="width:2px;height:32px;background:var(--border)"></div>
+      <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--border)"></div>
+    </div>
+
+    <!-- TESTER -->
+    <div class="node executor" style="width:260px;border-color:#22c55e;background:rgba(34,197,94,0.07)">
+      <div class="label">🧪 Tester</div>
+      <div class="sublabel">Independent evaluator — must approve before push</div>
     </div>
 
     <!-- arrow -->
@@ -224,9 +248,10 @@
 
   <!-- LEGEND -->
   <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:rgba(91,141,238,0.2);border-color:var(--accent)"></div> You / Coder (actors)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(91,141,238,0.2);border-color:var(--accent)"></div> DevOps Engineer (session entry) / Developer</div>
     <div class="legend-item"><div class="legend-dot" style="background:rgba(124,58,237,0.15);border-color:var(--accent2)"></div> Code Manager (orchestrator)</div>
-    <div class="legend-item"><div class="legend-dot" style="background:rgba(249,115,22,0.1);border-color:var(--orange)"></div> Review Panels (19 total)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(91,141,238,0.2);border-color:var(--accent)"></div> Coder (worker) / Tester (evaluator)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:rgba(249,115,22,0.1);border-color:var(--orange)"></div> Review Panels (19 total, dynamically selected)</div>
     <div class="legend-item"><div class="legend-dot" style="background:rgba(250,204,21,0.1);border-color:var(--yellow)"></div> Policy Engine (deterministic)</div>
     <div class="legend-item"><div class="legend-dot" style="background:rgba(34,197,94,0.1);border-color:var(--green)"></div> GitHub (remote mode)</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--surface2);border-color:var(--muted);border-style:dashed"></div> .plans/ (audit trail)</div>

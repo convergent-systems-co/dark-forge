@@ -961,51 +961,79 @@ Execution Governance emission data, aggregated over time, informs Evolution Gove
 
 ### 10.4 Complete System Data Flow
 
-```
-+------------------------------------------------------------------+
-|                    DARK FACTORY GOVERNANCE                        |
-|                                                                  |
-|  RAW REQUEST                                                     |
-|       |                                                          |
-|       v                                                          |
-|  +----+----+  Validated   +----------+  Cognitive  +-----------+ |
-|  | LAYER 1 |  Intent Pkg  | LAYER 2  |  Exec Plan | LAYER 3   | |
-|  | Intent  +------------->| Cognitive+----------->| Execution | |
-|  | Gov.    |              | Gov.     |            | Gov.      | |
-|  +----+----+              +----+-----+            +-----+-----+ |
-|       ^                        ^                        |       |
-|       |                        | Re-route               |       |
-|       |                        +-----------+            |       |
-|       |                                                 |       |
-|       |   Remediation DI                                |       |
-|       +<--------------------------+                     |       |
-|                                   |                     |       |
-|                            +------+-----+               |       |
-|                            | LAYER 4    |<--------------+       |
-|                            | Runtime    |  Emission baselines   |
-|                            | Gov.       |                       |
-|                            +------+-----+                       |
-|                                   |                             |
-|                                   | Threshold proposals         |
-|                                   v                             |
-|                            +------+-----+                       |
-|                            | LAYER 5    |                       |
-|                            | Evolution  +---- Schema/Policy --->|
-|                            | Gov.       |     updates to all    |
-|                            +------------+     layers            |
-|                                                                  |
-|  OUTPUTS:                                                        |
-|  - Run Manifests (per unit of work)                              |
-|  - Policy Decisions (auto_merge / human_review / block)          |
-|  - Audit Trail (complete decision lineage)                       |
-|  - Remediation DIs (autonomous feedback)                         |
-|  - Governance Versions (evolution history)                       |
-+------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    REQ[Raw Request] --> L1[Layer 1: Intent Governance]
+    L1 -->|Validated Intent Pkg| L2[Layer 2: Cognitive Governance]
+    L2 -->|Cognitive Exec Plan| L3[Layer 3: Execution Governance]
+    L3 -->|Emission baselines| L4[Layer 4: Runtime Governance]
+    L4 -->|Remediation DI| L1
+    L2 -->|Re-route| L2
+    L4 -->|Threshold proposals| L5[Layer 5: Evolution Governance]
+    L5 -->|Schema/Policy updates| L1
+    L5 -->|Schema/Policy updates| L2
+    L5 -->|Schema/Policy updates| L3
+
+    subgraph Outputs
+        RM[Run Manifests]
+        PD[Policy Decisions]
+        AT[Audit Trail]
+        RD[Remediation DIs]
+        GV[Governance Versions]
+    end
+    L3 --> RM & PD & AT
+    L4 --> RD
+    L5 --> GV
 ```
 
 ---
 
 ## 11. Role Definitions
+
+The agentic pipeline uses a 4-agent prompt-chained architecture implementing Anthropic's orchestration patterns:
+
+| Agent | Pattern | Role |
+|-------|---------|------|
+| DevOps Engineer | Routing | Session lifecycle, pre-flight, issue triage, routing |
+| Code Manager | Orchestrator-Workers | Intent validation, panel selection, review coordination, merge |
+| Coder | Worker | Implementation, test coverage, structured output |
+| Tester | Evaluator-Optimizer | Independent evaluation, test verification, feedback |
+
+See [Agent Protocol](../../governance/prompts/agent-protocol.md) for inter-agent communication contract and [startup.md](../../governance/prompts/startup.md) for the 5-phase pipeline.
+
+### 11.0 DevOps Engineer Persona -- Session Entry Point
+
+The DevOps Engineer is the session entry point for the Dark Factory agentic loop. It owns session lifecycle, infrastructure pre-flight, issue triage, and routing. It determines *what* work needs to be done and delegates *how* to the Code Manager. The DevOps Engineer never writes code, reviews implementations, or makes merge decisions.
+
+This persona implements Anthropic's **Routing** pattern — classifying incoming work and directing it to the appropriate downstream agent.
+
+**Responsibilities:**
+
+| Responsibility | Description |
+|----------------|-------------|
+| Session Lifecycle | Context capacity enforcement, 3-issue session cap, mandatory checkpoints, shutdown protocol |
+| Pre-flight Checks | Submodule freshness (with pin support), repo configuration, workflow health |
+| Issue Triage | Scan, filter, prioritize open issues; re-evaluate `refine` labels |
+| PR Resolution | Resolve open PRs before scanning new issues |
+| Routing | Emit ASSIGN messages to Code Manager with issue context and priority |
+| GOALS.md Fallback | Convert unchecked GOALS.md items to issues when no actionable issues remain |
+
+**Authority Boundaries:**
+
+The DevOps Engineer can:
+- Manage session lifecycle (context capacity, checkpoints, shutdown)
+- Route issues to the Code Manager
+- Run all pre-flight infrastructure verification
+- Create issues for ad-hoc work and GOALS.md items
+- Create cross-repo escalation issues
+
+The DevOps Engineer cannot:
+- Write or modify code
+- Review implementations or make merge decisions
+- Invoke governance panels
+- Communicate directly with Coder or Tester (all routing goes through Code Manager)
+
+See [devops-engineer.md](../../governance/personas/agentic/devops-engineer.md) for the full persona definition.
 
 ### 11.1 Code Manager Persona -- Primary Orchestrator
 
@@ -1039,32 +1067,15 @@ The Code Manager cannot:
 
 **Operational Model:**
 
-```
-                    +------------------+
-                    |  CODE MANAGER    |
-                    |  (Orchestrator)  |
-                    +--------+---------+
-                             |
-            +----------------+----------------+
-            |                |                |
-            v                v                v
-     +------+------+  +-----+------+  +------+------+
-     | Intent      |  | Workflow   |  | Runtime     |
-     | Validation  |  | Routing    |  | Monitoring  |
-     +------+------+  +-----+------+  +------+------+
-            |                |                |
-            v                v                v
-     +------+------+  +-----+------+  +------+------+
-     | DI Queue    |  | Panel      |  | DI          |
-     | Management  |  | Activation |  | Generation  |
-     +-------------+  +-----+------+  +-------------+
-                             |
-                             v
-                    +--------+---------+
-                    | Emission         |
-                    | Collection &     |
-                    | Policy Trigger   |
-                    +------------------+
+```mermaid
+flowchart TD
+    CM[Code Manager<br/>Orchestrator] --> IV[Intent Validation]
+    CM --> WR[Workflow Routing]
+    CM --> RM[Runtime Monitoring]
+    IV --> DQ[DI Queue Management]
+    WR --> PA[Panel Activation]
+    RM --> DG[DI Generation]
+    PA --> EC[Emission Collection &<br/>Policy Trigger]
 ```
 
 ### 11.2 Coder Persona -- Execution Agent
@@ -1097,38 +1108,51 @@ The Coder cannot:
 - Modify governance artifacts (personas, policies, schemas)
 - Override panel findings
 
-**Relationship to Code Manager:**
+**Relationship to Code Manager and Tester:**
 
-```
-    +------------------+
-    |  CODE MANAGER    |
-    |  (assigns work,  |
-    |   monitors       |
-    |   quality)       |
-    +--------+---------+
-             |
-             | Assigns DI + Cognitive Plan
-             |
-             v
-    +--------+---------+
-    |     CODER        |
-    |  (executes work, |
-    |   produces       |
-    |   artifacts)     |
-    +--------+---------+
-             |
-             | Code + Tests + Artifacts
-             |
-             v
-    +--------+---------+
-    |  PANELS          |
-    |  (review work,   |
-    |   produce        |
-    |   emissions)     |
-    +------------------+
+```mermaid
+flowchart TD
+    CM[Code Manager<br/>assigns work, monitors quality] -->|ASSIGN: DI + Plan| CO[Coder<br/>executes work, produces artifacts]
+    CO -->|RESULT: Code + Tests| CM
+    CM -->|ASSIGN: review| TE[Tester<br/>evaluates independently]
+    TE -->|FEEDBACK| CM -->|FEEDBACK| CO
+    TE -->|APPROVE| CM
+    CM --> PA[Panels<br/>review work, produce emissions]
 ```
 
-### 11.3 Panel Participants
+See [coder.md](../../governance/personas/agentic/coder.md) for the full persona definition.
+
+### 11.3 Tester Persona -- Independent Evaluator
+
+The Tester is the independent evaluator implementing Anthropic's **Evaluator-Optimizer** pattern. It assesses the Coder's output against acceptance criteria, test coverage requirements, and documentation standards. The Tester's approval is a mandatory gate before any review panels execute.
+
+**Responsibilities:**
+
+| Responsibility | Description |
+|----------------|-------------|
+| Test Verification | Run test suite, verify coverage thresholds, check for regressions |
+| Acceptance Criteria | Evaluate implementation against the issue's acceptance criteria |
+| Documentation Check | Verify that documentation matches the implementation |
+| Structured Feedback | Emit typed FEEDBACK or APPROVE messages per Agent Protocol |
+
+**Authority Boundaries:**
+
+The Tester can:
+- APPROVE or FEEDBACK on implementation quality
+- Block progression to review panels until criteria are met
+- Request specific changes or additional test coverage
+
+The Tester cannot:
+- Modify code directly
+- Be overridden by the Coder (the Tester's judgment is independent)
+- Skip evaluation (every implementation must be evaluated)
+- Communicate directly with DevOps Engineer
+
+**Feedback Loop:** The Tester can send up to 3 rounds of FEEDBACK before the Code Manager escalates to human review. This prevents infinite loops while ensuring quality.
+
+See [tester.md](../../governance/personas/agentic/tester.md) for the full persona definition.
+
+### 11.4 Panel Participants
 
 Each panel consists of specialist personas that produce both Markdown reasoning and structured emissions. Panel participants operate within Layer 3 (Execution Governance) and have the authority to:
 
@@ -1436,100 +1460,44 @@ Each step can be adopted independently. Steps 1-4 are additive with zero risk. S
 
 ### A.2 Persona-to-Governance-Layer Mapping
 
-```
-+---------------------+--------------------------------------------------+
-| GOVERNANCE LAYER    | ACTIVE PERSONAS                                  |
-+---------------------+--------------------------------------------------+
-|                     |                                                  |
-| L1: Intent          | Code Manager (primary)                           |
-|                     | Product Manager (requirements validation)        |
-|                     |                                                  |
-+---------------------+--------------------------------------------------+
-|                     |                                                  |
-| L2: Cognitive       | Code Manager (routing)                           |
-|                     | Architect (design workflow routing)               |
-|                     | Tech Lead (process coordination)                 |
-|                     |                                                  |
-+---------------------+--------------------------------------------------+
-|                     |                                                  |
-| L3: Execution       | Coder (implementation)                           |
-|                     | All panel participants (16 panels)                |
-|                     | Test Engineer (test validation)                  |
-|                     | Policy Engine (automated, not a persona)          |
-|                     |                                                  |
-+---------------------+--------------------------------------------------+
-|                     |                                                  |
-| L4: Runtime         | Incident Commander (critical incidents)           |
-|                     | SRE (SLO monitoring)                             |
-|                     | Observability Engineer (anomaly detection)        |
-|                     | Code Manager (DI generation)                     |
-|                     |                                                  |
-+---------------------+--------------------------------------------------+
-|                     |                                                  |
-| L5: Evolution       | Refactor Specialist (change evaluation)           |
-|                     | Systems Architect (compatibility assessment)      |
-|                     | Tech Lead (process governance)                   |
-|                     | Minimalist Engineer (complexity evaluation)       |
-|                     | Code Manager (version management)                |
-|                     |                                                  |
-+---------------------+--------------------------------------------------+
-```
+| Governance Layer | Agentic Agents | Review Personas |
+|-----------------|----------------|-----------------|
+| **Session** (pre-pipeline) | DevOps Engineer (pre-flight, triage, routing) | — |
+| **L1: Intent** | Code Manager (validation, routing) | Product Manager (requirements) |
+| **L2: Cognitive** | Code Manager (panel selection, orchestration) | Architect, Tech Lead (via review prompts) |
+| **L3: Execution** | Coder (implementation), Tester (evaluation) | All panel participants (19 panels), Policy Engine |
+| **L4: Runtime** | Code Manager (DI generation) | Incident Commander, SRE, Observability Engineer |
+| **L5: Evolution** | Code Manager (version management) | Refactor Specialist, Systems Architect, Tech Lead, Minimalist Engineer |
 
 ### A.3 Decision Flow for a Feature Request
 
-```
-FEATURE REQUEST ENTERS SYSTEM
-          |
-          v
-[L1] Code Manager validates intent
-          |
-     +----+----+
-     |         |
-  ACCEPT    REJECT --> structured feedback --> resubmit
-     |
-     v
-[L2] Panel graph routes to feature-implementation workflow
-     |
-     +-- Selects: Product Manager, Architect, Tech Lead,
-     |            Test Engineer, Code Review Panel
-     |
-     +-- Risk check: data_sensitivity=high?
-     |       |
-     |    YES --> add Security Review, Data Design Review
-     |
-     v
-[L3] Coder executes Phase 1-6
-     |
-     +-- Phase 1: Product Manager -> [FEAT-1] requirements
-     +-- Phase 2: Architect -> [FEAT-2] design          -- GATE
-     +-- Phase 3: Coder -> [FEAT-3] implementation
-     +-- Phase 4: Test Engineer -> [FEAT-4] test report
-     +-- Phase 5: Code Review Panel -> [FEAT-5] verdict  -- GATE
-     |       |
-     |       +--> Structured Emission (JSON)
-     |       +--> Markdown Reasoning (cognitive artifact)
-     |
-     +-- Phase 6: Policy Evaluation
-             |
-        +----+----+----+
-        |    |    |    |
-      auto  auto  human block
-      merge remed review
-        |              |
-        v              v
-     MERGED       ESCALATED
-        |              |
-        v              v
-[L4] Runtime monitoring begins
-     |
-     +-- Metrics baseline established from L3 emissions
-     +-- Drift detection active
-     +-- SLO monitoring active
-     |
-     (if anomaly detected)
-     |
-     v
-[L4] Generate Remediation DI --> feeds back to [L1]
+```mermaid
+flowchart TD
+    FR[Feature Request Enters System] --> L1{L1: Code Manager<br/>validates intent}
+    L1 -->|ACCEPT| L2[L2: Code Manager selects panels<br/>based on codebase type]
+    L1 -->|REJECT| FB[Structured feedback] --> RS[Resubmit]
+    RS --> L1
+
+    L2 --> RISK{Risk check:<br/>data_sensitivity=high?}
+    RISK -->|YES| SEC[Add Security Review,<br/>Data Design Review]
+    SEC --> L3
+    RISK -->|NO| L3
+
+    L3[L3: Coder implements] --> TEST[Tester evaluates independently]
+    TEST -->|FEEDBACK| L3
+    TEST -->|APPROVE| SR[Security Review]
+    SR --> CR[Context-Specific Review Panels]
+    CR --> PE{Policy Engine<br/>Evaluation}
+
+    PE -->|auto_merge| MERGED[MERGED]
+    PE -->|auto_remediate| REMED[Auto-remediate] --> L3
+    PE -->|human_review| ESCALATED[ESCALATED]
+    PE -->|block| BLOCKED[BLOCKED]
+
+    MERGED --> L4[L4: Runtime monitoring begins]
+    L4 --> DRIFT{Anomaly detected?}
+    DRIFT -->|YES| DI[Generate Remediation DI] --> L1
+    DRIFT -->|NO| MONITOR[Continue monitoring]
 ```
 
 ---

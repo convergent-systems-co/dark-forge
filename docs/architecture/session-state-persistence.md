@@ -28,7 +28,7 @@ Persistent state is stored in **`.governance-state/`** in the consuming reposito
 | Branch-based storage | Complicates merge flow; state needs to be on the working branch |
 | Environment variables | Too limited for structured data; not portable across sessions |
 
-Git tracking provides: version history, merge conflict visibility, diff-based review, and zero additional infrastructure. State updates are committed by the agent as part of the session lifecycle (during Step 7i checkpoint or at session end).
+Git tracking provides: version history, merge conflict visibility, diff-based review, and zero additional infrastructure. State updates are committed by the agent as part of the session lifecycle (during Phase 5c checkpoint or at session end).
 
 ## Lifecycle
 
@@ -42,7 +42,7 @@ When `init.sh` runs (or an agent bootstraps a consuming repo), if `.governance-s
 
 ### Session Start (Read)
 
-At the beginning of each agentic session (startup.md Step 1):
+At the beginning of each agentic session (startup.md Phase 1):
 
 1. Read `.governance-state/state.json` if it exists
 2. Load `known_issues` to provide context for issue scanning
@@ -52,7 +52,7 @@ At the beginning of each agentic session (startup.md Step 1):
 
 ### Session End (Write)
 
-At session shutdown (Step 7i checkpoint or Context Capacity Shutdown Protocol):
+At session shutdown (Phase 5c checkpoint or Context Capacity Shutdown Protocol):
 
 1. Update `metrics_history.snapshots` with the current session's metrics summary
 2. Update `work_queue.known_issues` with context from issues processed this session

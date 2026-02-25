@@ -51,7 +51,7 @@ Derived statistics across all runs in the period:
 
 ### Data Collection
 
-Retrospective data is collected during Step 7h of the startup sequence. Currently, retrospectives are posted as issue comments. To populate this schema:
+Retrospective data is collected during Phase 5b (Retrospective) of the startup sequence. Currently, retrospectives are posted as issue comments. To populate this schema:
 
 1. Parse retrospective comments from closed issues
 2. Cross-reference with run manifests for panel data

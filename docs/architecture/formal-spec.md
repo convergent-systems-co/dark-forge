@@ -103,7 +103,7 @@ Pre-classifies the change to route it to the correct policy profile and panels:
 
 ### For Agents (Code Manager)
 
-1. When validating intent (Step 4 of startup.md), translate the issue into a formal spec
+1. When validating intent (Phase 2b of startup.md), translate the issue into a formal spec
 2. Use completion conditions to determine when implementation is done
 3. Use acceptance criteria to scope the plan
 4. Use risk classification to select the appropriate policy profile
