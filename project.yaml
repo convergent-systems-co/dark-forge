@@ -6,7 +6,7 @@ framework: null
 
 governance:
   policy_profile: "default"
-  parallel_coders: 5
+  parallel_coders: 6
 
 conventions:
   git:
