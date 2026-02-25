@@ -315,11 +315,13 @@ class TestScenarioInvalidProfile:
 class TestScenarioMixedEmissions:
     """One valid emission and one invalid emission file."""
 
-    def test_partial_invalid_blocks(self, tmp_path):
+    def test_partial_invalid_required_blocks(self, tmp_path):
+        """Invalid emission for a required panel still blocks (issue #244)."""
         good = make_emission(panel_name="code-review", confidence_score=0.90)
         with open(str(tmp_path / "code-review.json"), "w") as f:
             json.dump(good, f)
-        with open(str(tmp_path / "bad-panel.json"), "w") as f:
+        # security-review is a required panel — invalid emission must block
+        with open(str(tmp_path / "security-review.json"), "w") as f:
             f.write('{"panel_name": "bad"}')  # Missing required fields
         manifest, exit_code = policy_engine.evaluate(
             str(tmp_path), _profile_path("default"),
@@ -327,6 +329,23 @@ class TestScenarioMixedEmissions:
         )
         assert exit_code == 1
         assert manifest["decision"]["action"] == "block"
+
+    def test_partial_invalid_optional_does_not_block(self, tmp_path):
+        """Invalid emission for an optional panel does not block (issue #244)."""
+        good = make_emission(panel_name="code-review", confidence_score=0.90)
+        with open(str(tmp_path / "code-review.json"), "w") as f:
+            json.dump(good, f)
+        # bad-panel is NOT a required panel — invalid emission should not block
+        with open(str(tmp_path / "bad-panel.json"), "w") as f:
+            f.write('{"panel_name": "bad"}')  # Missing required fields
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path("default"),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code != 1, (
+            f"Optional panel failure should not block. "
+            f"Decision: {manifest['decision']['rationale']}"
+        )
 
 
 # ===========================================================================
@@ -654,11 +673,12 @@ class TestScenarioLoadEmissions:
     def test_non_directory_returns_empty(self, tmp_path):
         log = policy_engine.EvaluationLog(stream=io.StringIO())
         schema = {"type": "object"}
-        emissions, valid = policy_engine.load_emissions(
+        emissions, valid, failed = policy_engine.load_emissions(
             str(tmp_path / "not-a-dir"), schema, log
         )
         assert emissions == []
         assert valid is False
+        assert failed == []
 
 
 # ===========================================================================

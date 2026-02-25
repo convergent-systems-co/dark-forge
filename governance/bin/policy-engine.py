@@ -84,17 +84,24 @@ def load_schema(name: str):
 # ---------------------------------------------------------------------------
 
 def load_emissions(emissions_dir: str, schema: dict, log: EvaluationLog):
-    """Load and validate all JSON emissions from a directory."""
+    """Load and validate all JSON emissions from a directory.
+
+    Returns:
+        (emissions, all_valid, failed_panels) where *failed_panels* is a list
+        of panel names (derived from the file stem) whose files failed
+        validation or could not be read.
+    """
     emissions = []
+    failed_panels = []
     emissions_path = Path(emissions_dir)
     if not emissions_path.is_dir():
         log.record("load_emissions", "fail", f"Emissions directory not found: {emissions_dir}")
-        return emissions, False
+        return emissions, False, failed_panels
 
     json_files = sorted(emissions_path.glob("*.json"))
     if not json_files:
         log.record("load_emissions", "fail", f"No JSON files found in {emissions_dir}")
-        return emissions, False
+        return emissions, False, failed_panels
 
     all_valid = True
     for fpath in json_files:
@@ -110,13 +117,15 @@ def load_emissions(emissions_dir: str, schema: dict, log: EvaluationLog):
             )
         except (ValidationError, json.JSONDecodeError) as e:
             all_valid = False
+            failed_panels.append(fpath.stem)
             err = e.message if hasattr(e, "message") else str(e)
             log.record(f"validate_emission_{fpath.stem}", "fail", f"{fpath.name}: {err}")
         except OSError as e:
             all_valid = False
+            failed_panels.append(fpath.stem)
             log.record(f"validate_emission_{fpath.stem}", "fail", f"{fpath.name}: file access error: {e}")
 
-    return emissions, all_valid
+    return emissions, all_valid, failed_panels
 
 
 def validate_emission_consistency(emission: dict, log: EvaluationLog) -> list:
@@ -966,14 +975,25 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         return manifest, 1
 
     # Step 2: Load emissions
-    emissions, all_valid = load_emissions(emissions_dir, panel_schema, log)
+    emissions, all_valid, failed_panels = load_emissions(emissions_dir, panel_schema, log)
 
     if not all_valid:
-        reason = "One or more emissions failed schema validation"
-        log.record("emissions_validation", "fail", reason)
+        # Load profile to determine which panels are required vs optional
         profile = load_profile(profile_path) if os.path.exists(profile_path) else {}
-        manifest = generate_manifest(emissions, profile, 0.0, "critical", "block", reason, log, commit_sha, pr_number, repo)
-        return manifest, 1
+        required = set(profile.get("required_panels", []))
+        failed_required = [p for p in failed_panels if p in required]
+
+        if failed_required:
+            reason = f"Required panel emission(s) failed schema validation: {', '.join(failed_required)}"
+            log.record("emissions_validation", "fail", reason)
+            manifest = generate_manifest(emissions, profile, 0.0, "critical", "block", reason, log, commit_sha, pr_number, repo)
+            return manifest, 1
+        else:
+            # Only optional emissions failed — warn and continue
+            log.record(
+                "emissions_validation", "warn",
+                f"Optional panel emission(s) failed validation (excluded): {', '.join(failed_panels)}"
+            )
 
     if not emissions:
         reason = "No valid emissions found"

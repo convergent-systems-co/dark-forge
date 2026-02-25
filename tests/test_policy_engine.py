@@ -964,8 +964,9 @@ class TestEmissionLoadingExceptions:
         bad_file.write_text('{"valid": true}')
         bad_file.chmod(0o000)
         try:
-            emissions, valid = policy_engine.load_emissions(str(tmp_path), schema, log)
+            emissions, valid, failed = policy_engine.load_emissions(str(tmp_path), schema, log)
             assert valid is False
+            assert "unreadable" in failed
             # Check that the error message mentions file access
             entries = log.entries
             fail_entries = [e for e in entries if e["result"] == "fail"]
@@ -979,8 +980,9 @@ class TestEmissionLoadingExceptions:
         schema = policy_engine.load_schema("panel-output.schema.json")
         bad_file = tmp_path / "bad.json"
         bad_file.write_text('not json')
-        emissions, valid = policy_engine.load_emissions(str(tmp_path), schema, log)
+        emissions, valid, failed = policy_engine.load_emissions(str(tmp_path), schema, log)
         assert valid is False
+        assert "bad" in failed
 
     def test_validation_error_still_caught(self, tmp_path):
         """ValidationError should still be caught and reported."""
@@ -988,8 +990,9 @@ class TestEmissionLoadingExceptions:
         schema = policy_engine.load_schema("panel-output.schema.json")
         bad_file = tmp_path / "invalid.json"
         bad_file.write_text('{"panel_name": 123}')  # panel_name should be string
-        emissions, valid = policy_engine.load_emissions(str(tmp_path), schema, log)
+        emissions, valid, failed = policy_engine.load_emissions(str(tmp_path), schema, log)
         assert valid is False
+        assert "invalid" in failed
 
 
 # ===========================================================================
@@ -1119,3 +1122,111 @@ class TestReducedTouchpointEscalation:
         ])
         result, _ = policy_engine.evaluate_escalation_rules(0.90, "low", [], [emission], profile, log)
         assert result is None
+
+
+# ===========================================================================
+# Optional emission validation (issue #244)
+# ===========================================================================
+
+
+class TestOptionalEmissionValidation:
+    """Issue #244: invalid optional panel emission should not block merge."""
+
+    def _write_emission(self, directory, panel_name, content):
+        """Helper to write a JSON emission file."""
+        import json as _json
+        fpath = directory / f"{panel_name}.json"
+        fpath.write_text(_json.dumps(content))
+
+    def _valid_emission(self, panel_name):
+        """Return a valid emission dict for the given panel."""
+        return make_emission(panel_name=panel_name)
+
+    def test_invalid_optional_emission_does_not_block(self, tmp_path):
+        """Malformed JSON for an optional panel should not block when all
+        required panel emissions are valid."""
+        import json as _json
+        import os
+
+        # Write valid emissions for all 6 required panels
+        for panel in [
+            "code-review", "security-review", "threat-modeling",
+            "cost-analysis", "documentation-review", "data-governance-review",
+        ]:
+            self._write_emission(tmp_path, panel, self._valid_emission(panel))
+
+        # Write an INVALID emission for an optional panel (not in required_panels)
+        bad_file = tmp_path / "optional-panel.json"
+        bad_file.write_text("not valid json at all")
+
+        # Build a minimal profile on disk
+        profile_path = tmp_path / "profile.yaml"
+        import yaml as _yaml
+        profile_path.write_text(_yaml.dump(make_profile()))
+
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path),
+            str(profile_path),
+            ci_passed=True,
+            log_stream=io.StringIO(),
+        )
+
+        # Should NOT block — exit_code 0 = auto_merge, 2 = human_review, 3 = remediate
+        assert exit_code != 1, (
+            f"Expected non-block exit code but got 1. "
+            f"Decision: {manifest.get('decision', {}).get('rationale', 'unknown')}"
+        )
+
+    def test_invalid_required_emission_still_blocks(self, tmp_path):
+        """Malformed JSON for a required panel must still block."""
+        import json as _json
+        import yaml as _yaml
+
+        # Write valid emissions for 5 of 6 required panels
+        for panel in [
+            "code-review", "threat-modeling",
+            "cost-analysis", "documentation-review", "data-governance-review",
+        ]:
+            self._write_emission(tmp_path, panel, self._valid_emission(panel))
+
+        # Write INVALID emission for required panel security-review
+        bad_file = tmp_path / "security-review.json"
+        bad_file.write_text("not valid json")
+
+        profile_path = tmp_path / "profile.yaml"
+        profile_path.write_text(_yaml.dump(make_profile()))
+
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path),
+            str(profile_path),
+            ci_passed=True,
+            log_stream=io.StringIO(),
+        )
+
+        assert exit_code == 1, (
+            f"Expected block (exit code 1) but got {exit_code}. "
+            f"Decision: {manifest.get('decision', {}).get('rationale', 'unknown')}"
+        )
+        assert "security-review" in manifest["decision"]["rationale"]
+
+    def test_load_emissions_returns_failed_panels(self, tmp_path):
+        """load_emissions should return the list of panel names that failed."""
+        import json as _json
+        log = _log()
+        schema = policy_engine.load_schema("panel-output.schema.json")
+
+        # Write one valid emission
+        self._write_emission(tmp_path, "code-review", self._valid_emission("code-review"))
+
+        # Write two invalid emissions
+        (tmp_path / "bad-panel-a.json").write_text("bad json")
+        (tmp_path / "bad-panel-b.json").write_text('{"panel_name": 123}')
+
+        emissions, all_valid, failed_panels = policy_engine.load_emissions(
+            str(tmp_path), schema, log
+        )
+
+        assert all_valid is False
+        assert len(emissions) == 1
+        assert emissions[0]["panel_name"] == "code-review"
+        assert sorted(failed_panels) == ["bad-panel-a", "bad-panel-b"]
