@@ -39,6 +39,9 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
   config.yaml                  Symlink and sync configuration
   init.sh                      Bootstrap script for consuming repos (macOS/Linux)
   init.ps1                     Bootstrap script for consuming repos (Windows)
+  bin/                         Executable scripts
+    issue-monitor.sh           Local issue monitor daemon (macOS/Linux)
+    issue-monitor.ps1          Local issue monitor daemon (Windows)
 
   governance/                  All governance machinery (personas, policy, schemas, etc.)
     templates/                 Language-specific scaffolding
@@ -137,9 +140,14 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       copilot-auto-fix.md                 Copilot auto-fix configuration guide
       retrospective-aggregation.md        Aggregated retrospective data schema docs
       threshold-tuning.md                 Auto-tuning mechanism and safety bounds
-      cross-repo-escalation.md             Cross-repo escalation setup and architecture (#184)
-      event-driven-triggers.md             Event-driven governance trigger setup (Phase 5c)
-      mass-parallelization.md              Mass parallelization model architecture (Phase 5e)
+      cross-repo-escalation.md            Cross-repo escalation setup and architecture (#184)
+      event-driven-triggers.md            Event-driven governance trigger setup (Phase 5c)
+      mass-parallelization.md             Mass parallelization model architecture (Phase 5e)
+      session-state-persistence.md        Cross-session state storage strategy (Phase 5c)
+      DECISIONS.md                        Architectural decision records (ADR-001 through ADR-011)
+      RESEARCH.md                         51-source research file (consolidation, MCP skills, multi-agent)
+      TECHNIQUE_COMPARE.md                Technique comparison research deliverable
+      onboarding/                         Team onboarding guides (HTML)
 
   .governance/                 Policy engine runtime
     policy-engine.py           Deterministic evaluation engine (Phase 4b)
