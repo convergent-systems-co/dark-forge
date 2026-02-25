@@ -66,15 +66,15 @@ flowchart TD
     CTX --> PR[Push PR → CI + Copilot loop]
     PR --> POLICY{Policy Engine}
 
-    POLICY -->|auto_merge| MERGE[Phase 5: Merge & Checkpoint<br/>Code Manager + DevOps Engineer]
+    POLICY -->|auto_merge| MERGE[Phase 5: Merge & Loop<br/>Code Manager + DevOps Engineer]
     POLICY -->|human_review| HUMAN[Escalate to human]
     POLICY -->|block| BLOCK[Block — notify user]
 
     MERGE --> RETRO[Retrospective]
-    RETRO --> CP[Mandatory Checkpoint]
-    CP -->|Session cap reached?| EXIT([Exit — request /clear])
-    CP -->|More issues?| SCAN
-    CP -->|No issues?| GOALS[GOALS.md fallback]
+    RETRO --> DECIDE{Hard-stop?}
+    DECIDE -->|Yes — session cap or context pressure| EXIT([Checkpoint → Exit — request /clear])
+    DECIDE -->|No — more issues| SCAN
+    DECIDE -->|No — no issues| GOALS[GOALS.md fallback]
     GOALS -->|Actionable item?| INTENT
     GOALS -->|Nothing left| EXIT
 ```
@@ -86,7 +86,7 @@ flowchart TD
 3. **Coder** implements the plan, writes tests, and emits a structured RESULT
 4. **Tester** independently evaluates the work — sends FEEDBACK (up to 3 cycles) or APPROVE
 5. **Code Manager** runs security review, context-specific panels, pushes the PR, monitors CI/Copilot
-6. After merge, writes a checkpoint and loops back for the next issue (max 3 per session)
+6. After merge, loops back to Phase 1 for the next batch — checkpoints only on hard-stop (max 5 per session)
 
 See [startup.md](../../governance/prompts/startup.md) for the full protocol and [agent-protocol.md](../../governance/prompts/agent-protocol.md) for inter-agent communication.
 
@@ -189,7 +189,7 @@ If the agent repeats itself, forgets decisions, or re-reads files it already rea
 
 **Stale checkpoint (>24h)** — The agent treats these as stale and runs a fresh scan. This is expected.
 
-**Agent stops after 3 issues** — Hard safety limit. Checkpoint → `/clear` → resume from checkpoint.
+**Agent stops after N issues** (N = `governance.parallel_coders`, default 5) — Hard safety limit. Checkpoint → `/clear` → resume from checkpoint.
 
 **Auto-merge fails** — Verify `allow_auto_merge` is enabled and CODEOWNERS is populated. Run `bash .ai/bin/init.sh` to apply settings.
 

@@ -46,12 +46,12 @@ For each planned issue (sequentially, since Copilot does not support parallel Ta
 4. Monitor CI checks: `gh pr checks <pr-number> --watch --fail-fast`
 5. Address any failures, then re-push.
 
-## Phase 5: Merge & Checkpoint
+## Phase 5: Merge & Loop
 
 1. Merge: `gh pr merge <pr-number> --squash --delete-branch`
 2. Close issue with comment.
-3. Write a checkpoint to `.checkpoints/` after completing all issues.
-4. If 5 issues completed or context feels degraded, stop and checkpoint.
+3. If no hard-stop condition (5 issues completed, context pressure): return to Phase 1 immediately.
+4. If hard-stop: write checkpoint to `.checkpoints/`, execute shutdown protocol, request `/clear`.
 
 ## Context Capacity
 

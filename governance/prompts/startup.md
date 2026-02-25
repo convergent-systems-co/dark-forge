@@ -20,7 +20,7 @@ Watch for these signals that context is filling up:
 ### Hard Limits
 
 - **Maximum N issues per session** (where N = `governance.parallel_coders` from `project.yaml`, default 5) — parallel dispatch means Coder subagents use their own context, not the main session's
-- **Mandatory checkpoint after completing all parallel work** — write a single checkpoint covering all issues before requesting `/clear`
+- **Checkpoint only on hard-stop** — checkpoints are written only when a session cap or context pressure triggers the Shutdown Protocol, not between batches
 - **Two-tier capacity threshold**: at ~70%, do not dispatch new Coder agents (wait for in-flight ones to complete, merge, checkpoint, request `/clear`); at ~80%, stop immediately and execute the full shutdown protocol regardless of current step
 
 ### When Triggered
@@ -70,8 +70,9 @@ flowchart TD
     C1 -->|RESULT| P4[Phase 4: Collect & Review]
     C2 -->|RESULT| P4
     C3 -->|RESULT| P4
-    P4 -->|APPROVE| P5[Phase 5: Merge & Checkpoint]
+    P4 -->|APPROVE| P5[Phase 5: Merge & Loop]
     P4 -->|FEEDBACK| P3
+    P5 -->|No hard-stop| P1
     P5 -->|Session cap or context pressure| STOP[Shutdown Protocol]
 ```
 
@@ -81,7 +82,7 @@ flowchart TD
 | 2 | Code Manager | Orchestrator | Validate intent and create plans for **all** selected issues |
 | 3 | Code Manager | Parallelization | Spawn up to N Coder agents via `Task` tool with `isolation: "worktree"` (N = `governance.parallel_coders`, default 5) |
 | 4 | Code Manager + Tester | Evaluator-Optimizer | Collect results as each Coder finishes; evaluate, push PR, monitor CI |
-| 5 | Code Manager + DevOps Engineer | — | Merge all PRs, retrospective, checkpoint |
+| 5 | Code Manager + DevOps Engineer | — | Merge all PRs, retrospective, loop or shutdown |
 
 ---
 
@@ -384,7 +385,7 @@ gh api graphql -f query='
 
 ---
 
-## Phase 5: Merge & Checkpoint
+## Phase 5: Merge & Loop
 
 **Personas:** Code Manager (merge), DevOps Engineer (checkpoint)
 
@@ -405,15 +406,15 @@ Per `governance/prompts/retrospective.md`:
 3. Post findings on closed issue
 4. Update plan status to `completed`
 
-### 5c: Mandatory Checkpoint
+### 5c: Loop or Shutdown
 
-**Not optional. Execute after all parallel work completes.**
+After all parallel work from this batch is merged, decide whether to **continue** or **stop**:
 
-1. Write checkpoint to `.checkpoints/{timestamp}-session.json`
-2. Record all completed issues in `issues_completed` array
-3. **If N issues completed** (where N = `governance.parallel_coders`): execute Shutdown Protocol.
-4. **If context pressure**: execute Shutdown Protocol regardless of count.
-5. **Otherwise**: return to Phase 1 for the next batch.
+1. **Check hard-stop conditions** (any one triggers Shutdown Protocol):
+   - N or more issues/PRs completed this session (cumulative across all batches), where N = `governance.parallel_coders`
+   - Any context pressure signal (see Detection Signals above)
+2. **If a hard-stop condition is met**: execute the Shutdown Protocol — checkpoint, clean git, report, and tell the user to run `/clear`. The next `/startup` will auto-restore from the checkpoint. Do not ask the user to "restart the loop" or take any other action beyond `/clear`.
+3. **If NO hard-stop condition is met**: **return to Phase 1 immediately**. Do not write a checkpoint. Do not request `/clear`. Do not pause for user input. Do not summarize or ask permission to continue. Just loop — the agent keeps working autonomously until a hard-stop condition or exit condition is reached.
 
 ### 5d: GOALS.md Fallback
 
@@ -437,7 +438,7 @@ If no actionable issues remain after Phase 1d:
 - **Issue for every work item** — issues are the audit trail
 - **Maximum N issues per session** (where N = `governance.parallel_coders`, default 5) — parallel execution is more context-efficient since Coder subagents have their own context windows
 - **Maximum 3 review cycles per PR** — then escalate
-- **Mandatory checkpoint after all issues complete** — write one checkpoint covering all parallel work
+- **Checkpoint only on hard-stop** — checkpoints are written only when a session cap or context pressure triggers the Shutdown Protocol, not between batches
 - **Context capacity is a hard constraint** — shutdown immediately on any signal
 - **Security review always produces a report** — even when no findings exist
 - **Context-specific reviews based on codebase** — Code Manager selects panels dynamically

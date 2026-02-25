@@ -45,7 +45,7 @@ flowchart TD
     IMPL --> EVAL[Phase 4: Evaluation<br/>Tester]
     EVAL -->|FEEDBACK| IMPL
     EVAL -->|APPROVE| REVIEW[Security + Context Reviews<br/>Code Manager]
-    REVIEW --> MERGE[Phase 5: Merge & Checkpoint]
+    REVIEW --> MERGE[Phase 5: Merge & Loop]
     MERGE -->|More issues?| SCAN
     MERGE -->|Session cap or no issues| EXIT([Exit])
 ```

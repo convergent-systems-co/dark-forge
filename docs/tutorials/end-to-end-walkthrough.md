@@ -309,7 +309,7 @@ When the autonomous pipeline processes issues, four personas chain through five 
 2. **Phase 2 — Intent & Planning** (Code Manager): Validates intent clarity, ensures `project.yaml` reflects repo state, selects context-appropriate review panels, creates branch (`itsfwcp/{type}/{issue-number}/{description}`) and plan in `.plans/`
 3. **Phase 3 — Implementation** (Coder): Implements the plan, writes tests, updates documentation. Emits structured RESULT to Code Manager
 4. **Phase 4 — Evaluation & Review** (Code Manager + Tester): Tester evaluates independently (must approve before push), Code Manager runs security review, context-specific reviews, monitors PR CI/Copilot loop
-5. **Phase 5 — Merge & Checkpoint** (Code Manager + DevOps Engineer): Merges PR, runs retrospective, writes mandatory checkpoint
+5. **Phase 5 — Merge & Loop** (Code Manager + DevOps Engineer): Merges PR, runs retrospective, loops back or checkpoints on hard-stop
 
 ### 3.5 Issue Monitoring (Optional)
 
