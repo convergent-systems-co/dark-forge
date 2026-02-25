@@ -540,3 +540,200 @@ class TestProfileWeightSums:
         assert "data-governance-review" in weights
         optional_names = [p["panel"] for p in optional]
         assert "data-governance-review" in optional_names
+
+
+# ===========================================================================
+# Cross-profile emission matrix tests (issue #251)
+# ===========================================================================
+
+
+# Required panels differ per profile — each scenario must supply the correct set.
+PROFILE_REQUIRED_PANELS = {
+    "default": [
+        "code-review", "security-review", "threat-modeling",
+        "cost-analysis", "documentation-review", "data-governance-review",
+    ],
+    "fin_pii_high": [
+        "code-review", "security-review", "data-design-review",
+        "testing-review", "threat-modeling", "cost-analysis",
+        "documentation-review", "data-governance-review",
+    ],
+    "infrastructure_critical": [
+        "code-review", "security-review", "architecture-review",
+        "threat-modeling", "cost-analysis", "documentation-review",
+    ],
+    "reduced_touchpoint": [
+        "code-review", "security-review", "threat-modeling",
+        "cost-analysis", "documentation-review", "data-governance-review",
+    ],
+}
+
+ALL_PROFILES = list(PROFILE_REQUIRED_PANELS.keys())
+
+
+class TestCrossProfileMatrix:
+    """Cross-profile tests verifying the same emissions produce differentiated decisions.
+
+    Each scenario is run against all 4 policy profiles. The parametrized expected
+    outcomes capture the documented behavioral differences between profiles:
+
+    - default: standard risk tolerance, auto-merge at confidence >= 0.85
+    - fin_pii_high: auto-merge disabled, missing_panel_behavior=block, strict risk
+    - infrastructure_critical: auto-merge requires >= 0.90 + context conditions (fail-closed)
+    - reduced_touchpoint: lower thresholds (>= 0.75), accepts medium risk for auto-merge
+    """
+
+    # --- Scenario 1: happy_path -----------------------------------------------
+    # All panels approve, confidence=0.92, risk=low, no flags.
+    # Profiles differ on merge thresholds and whether auto-merge is enabled.
+
+    @pytest.mark.parametrize("profile_name, expected_action, expected_exit", [
+        ("default", "auto_merge", 0),
+        ("fin_pii_high", "auto_remediate", 3),
+        ("infrastructure_critical", "human_review_required", 2),
+        ("reduced_touchpoint", "auto_merge", 0),
+    ])
+    def test_happy_path(self, tmp_path, profile_name, expected_action, expected_exit):
+        """confidence=0.92, risk=low, all approve, no flags."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.92, risk_level="low", panels=panels)
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == expected_exit, (
+            f"{profile_name}: expected exit {expected_exit}, got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == expected_action
+
+    # --- Scenario 2: medium_risk -----------------------------------------------
+    # One panel reports high risk → aggregate risk depends on profile rules.
+    # fin_pii_high: any high → critical. default/reduced_touchpoint: 1 high → medium.
+    # infrastructure_critical: no matching rule → max_risk=high.
+
+    @pytest.mark.parametrize("profile_name, expected_action, expected_exit", [
+        ("default", "auto_remediate", 3),
+        ("fin_pii_high", "human_review_required", 2),
+        ("infrastructure_critical", "human_review_required", 2),
+        ("reduced_touchpoint", "auto_merge", 0),
+    ])
+    def test_medium_risk(self, tmp_path, profile_name, expected_action, expected_exit):
+        """One high-risk panel; profiles differ on risk aggregation and merge tolerance."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.92, risk_level="low", panels=panels)
+        # Make the first panel high-risk
+        emissions[0]["risk_level"] = "high"
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == expected_exit, (
+            f"{profile_name}: expected exit {expected_exit}, got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == expected_action
+
+    # --- Scenario 3: critical_risk ---------------------------------------------
+    # One panel reports critical risk → all profiles escalate to human review.
+    # Verifies universal critical-risk handling regardless of profile permissiveness.
+
+    @pytest.mark.parametrize("profile_name", ALL_PROFILES)
+    def test_critical_risk(self, tmp_path, profile_name):
+        """One critical-risk panel; all profiles should escalate to human_review_required."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.92, risk_level="low", panels=panels)
+        emissions[0]["risk_level"] = "critical"
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == 2, (
+            f"{profile_name}: expected exit 2 (human_review_required), got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == "human_review_required"
+
+    # --- Scenario 4: disagreement -----------------------------------------------
+    # One panel issues request_changes. default escalates (panel_disagreement rule),
+    # fin_pii_high has no disagreement rule so falls to auto_remediate,
+    # infrastructure_critical falls to human_review (context-dependent conditions),
+    # reduced_touchpoint auto-merge fails (not all approve) but auto_remediate passes.
+
+    @pytest.mark.parametrize("profile_name, expected_action, expected_exit", [
+        ("default", "human_review_required", 2),
+        ("fin_pii_high", "auto_remediate", 3),
+        ("infrastructure_critical", "human_review_required", 2),
+        ("reduced_touchpoint", "auto_remediate", 3),
+    ])
+    def test_disagreement(self, tmp_path, profile_name, expected_action, expected_exit):
+        """One panel request_changes; profiles differ on disagreement handling."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.92, risk_level="low", panels=panels)
+        emissions[0]["aggregate_verdict"] = "request_changes"
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == expected_exit, (
+            f"{profile_name}: expected exit {expected_exit}, got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == expected_action
+
+    # --- Scenario 5: low_confidence --------------------------------------------
+    # confidence=0.60 is below most profiles' escalation thresholds.
+    # reduced_touchpoint has no low-confidence escalation and auto_remediates.
+
+    @pytest.mark.parametrize("profile_name, expected_action, expected_exit", [
+        ("default", "human_review_required", 2),
+        ("fin_pii_high", "human_review_required", 2),
+        ("infrastructure_critical", "human_review_required", 2),
+        ("reduced_touchpoint", "auto_remediate", 3),
+    ])
+    def test_low_confidence(self, tmp_path, profile_name, expected_action, expected_exit):
+        """confidence=0.60; most profiles escalate, reduced_touchpoint auto-remediates."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.60, risk_level="low", panels=panels)
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == expected_exit, (
+            f"{profile_name}: expected exit {expected_exit}, got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == expected_action
+
+    # --- Scenario 6: critical_flag ----------------------------------------------
+    # Critical non-remediable policy flag → all profiles must block.
+    # Verifies universal critical-flag blocking regardless of profile permissiveness.
+
+    @pytest.mark.parametrize("profile_name", ALL_PROFILES)
+    def test_critical_flag(self, tmp_path, profile_name):
+        """Critical non-remediable flag; all profiles must block."""
+        panels = PROFILE_REQUIRED_PANELS[profile_name]
+        emissions = all_required_emissions(confidence=0.92, risk_level="low", panels=panels)
+        emissions[0]["policy_flags"] = [
+            {
+                "flag": "vuln_critical",
+                "severity": "critical",
+                "description": "Critical CVE",
+                "auto_remediable": False,
+            },
+        ]
+        _write_emissions(str(tmp_path), emissions)
+        manifest, exit_code = policy_engine.evaluate(
+            str(tmp_path), _profile_path(profile_name),
+            ci_passed=True, log_stream=io.StringIO(),
+        )
+        assert exit_code == 1, (
+            f"{profile_name}: expected exit 1 (block), got {exit_code} "
+            f"(action={manifest['decision']['action']})"
+        )
+        assert manifest["decision"]["action"] == "block"
