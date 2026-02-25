@@ -26,18 +26,21 @@ You are performing a documentation review. Evaluate the provided code change fro
 - Logical structure
 - Audience appropriateness
 - Outdated information
+- Diagram format compliance (mermaid only)
 
 **Principles:**
 - Verify code examples actually work
 - Ensure consistency with codebase behavior
 - Prioritize user task completion over exhaustive detail
 - Flag assumptions that need explicit documentation
+- All diagrams must use mermaid code blocks — ASCII art, box drawing characters, and text-based flow diagrams are never acceptable
 
 **Anti-patterns:**
 - Approving docs without testing code examples
 - Prioritizing exhaustive detail over usability
 - Overlooking doc/code inconsistencies
 - Ignoring implicit assumptions that should be documented
+- Approving documentation containing ASCII art, box drawing characters, or non-mermaid diagrams
 
 ---
 
@@ -54,6 +57,7 @@ You are performing a documentation review. Evaluate the provided code change fro
 - Cross-references
 - Terminology consistency
 - Searchability
+- Mermaid diagram usage for all visual representations
 
 **Principles:**
 - Write for the target audience
@@ -133,6 +137,7 @@ You are performing a documentation review. Evaluate the provided code change fro
 3. Test documentation by following it step-by-step (verify code examples, prerequisites, and instructions)
 4. Identify gaps and inconsistencies between documentation and current code behavior
 5. Prioritize findings by user impact (blocking gaps first, then accuracy, then polish)
+6. Verify all diagrams use mermaid code blocks — flag any ASCII art, box drawing characters (┌─│└├┤┬┴┼═▼), or plain-text flow diagrams as blocking findings
 
 ## Output Format
 
@@ -298,3 +303,4 @@ If any single deduction would push the score below 0.0, clamp to 0.0. Confidence
 - Ensure documentation matches current codebase behavior -- flag any doc/code drift
 - Prioritize task completion over exhaustive reference -- users need to accomplish goals, not read encyclopedias
 - Update all related documentation in the same change -- do not let cross-references fall out of sync
+- All diagrams must use mermaid format — ASCII art, box drawing characters, and text-based diagrams are blocking findings. Directory tree listings (using standard tree output format) are exempt.
