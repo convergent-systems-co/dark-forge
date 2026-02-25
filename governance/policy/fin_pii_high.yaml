@@ -13,16 +13,17 @@ description: >
 weighting:
   model: weighted_average
   weights:
-    code-review: 0.15
-    security-review: 0.30
-    architecture-review: 0.10
-    testing-review: 0.15
+    code-review: 0.10
+    security-review: 0.25
+    architecture-review: 0.05
+    testing-review: 0.10
     performance-review: 0.05
     copilot-review: 0.05
     documentation-review: 0.05
     threat-modeling: 0.05
     cost-analysis: 0.05
     data-design-review: 0.15
+    data-governance-review: 0.10
   missing_panel_behavior: block
 
 risk_aggregation:
@@ -149,6 +150,7 @@ required_panels:
   - threat-modeling
   - cost-analysis
   - documentation-review
+  - data-governance-review
 
 optional_panels:
   - panel: architecture-review

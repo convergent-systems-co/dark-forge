@@ -12,16 +12,17 @@ description: >
 weighting:
   model: weighted_average
   weights:
-    code-review: 0.15
-    security-review: 0.20
-    architecture-review: 0.25
+    code-review: 0.10
+    security-review: 0.18
+    architecture-review: 0.20
     testing-review: 0.10
-    performance-review: 0.10
-    production-readiness-review: 0.15
+    performance-review: 0.07
+    production-readiness-review: 0.10
     copilot-review: 0.05
     documentation-review: 0.05
     threat-modeling: 0.05
     cost-analysis: 0.05
+    data-governance-review: 0.05
   missing_panel_behavior: redistribute
 
 risk_aggregation:
@@ -144,3 +145,5 @@ optional_panels:
     trigger: test_files_changed == true
   - panel: copilot-review
     trigger: always
+  - panel: data-governance-review
+    trigger: files_changed_in ["db/", "migrations/", "schema/", "data/"]

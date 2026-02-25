@@ -136,11 +136,11 @@ class TestDefaultProfileIntegration:
 class TestFinPiiHighIntegration:
     def test_always_human_review(self, tmp_path):
         """Auto-merge is disabled → should never get exit code 0."""
-        # Use fin_pii_high required panels
+        # Use fin_pii_high required panels (including data-governance-review per #231)
         panels = [
             "code-review", "security-review", "data-design-review",
             "testing-review", "threat-modeling", "cost-analysis",
-            "documentation-review",
+            "documentation-review", "data-governance-review",
         ]
         emissions = all_required_emissions(confidence=0.95, risk_level="low", panels=panels)
         _write_emissions(str(tmp_path), emissions)
@@ -157,6 +157,7 @@ class TestFinPiiHighIntegration:
         panels = [
             "code-review", "security-review", "data-design-review",
             "testing-review", "threat-modeling", "cost-analysis",
+            "data-governance-review",
             # Missing documentation-review
         ]
         emissions = all_required_emissions(confidence=0.95, risk_level="low", panels=panels)
@@ -299,7 +300,7 @@ class TestCompoundBlockIntegration:
         panels = [
             "code-review", "security-review", "data-design-review",
             "testing-review", "threat-modeling", "cost-analysis",
-            "documentation-review",
+            "documentation-review", "data-governance-review",
         ]
         emissions = all_required_emissions(confidence=0.95, risk_level="low", panels=panels)
         _write_emissions(str(tmp_path), emissions)
@@ -309,3 +310,45 @@ class TestCompoundBlockIntegration:
         )
         # Should not block — context-dependent compound conditions return False
         assert manifest["decision"]["action"] != "block" or "missing" in manifest["decision"]["rationale"].lower()
+
+
+# ===========================================================================
+# Weight sum validation (issues #231, #232)
+# ===========================================================================
+
+
+class TestProfileWeightSums:
+    """Verify all policy profile weights sum to 1.0."""
+
+    @pytest.mark.parametrize("profile_name", [
+        "default", "fin_pii_high", "infrastructure_critical", "reduced_touchpoint",
+    ])
+    def test_weights_sum_to_one(self, profile_name):
+        import yaml
+        path = REPO_ROOT / "governance" / "policy" / f"{profile_name}.yaml"
+        with open(path) as f:
+            profile = yaml.safe_load(f)
+        weights = profile.get("weighting", {}).get("weights", {})
+        total = sum(weights.values())
+        assert abs(total - 1.0) < 0.001, f"{profile_name} weights sum to {total}, expected 1.0"
+
+    def test_fin_pii_high_has_data_governance_review(self):
+        import yaml
+        path = REPO_ROOT / "governance" / "policy" / "fin_pii_high.yaml"
+        with open(path) as f:
+            profile = yaml.safe_load(f)
+        required = profile.get("required_panels", [])
+        weights = profile.get("weighting", {}).get("weights", {})
+        assert "data-governance-review" in required
+        assert "data-governance-review" in weights
+
+    def test_infrastructure_critical_has_data_governance_review(self):
+        import yaml
+        path = REPO_ROOT / "governance" / "policy" / "infrastructure_critical.yaml"
+        with open(path) as f:
+            profile = yaml.safe_load(f)
+        weights = profile.get("weighting", {}).get("weights", {})
+        optional = profile.get("optional_panels", [])
+        assert "data-governance-review" in weights
+        optional_names = [p["panel"] for p in optional]
+        assert "data-governance-review" in optional_names
