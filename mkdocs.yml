@@ -79,6 +79,7 @@ nav:
     - Repository Setup: configuration/repository-setup.md
     - CI Gating: configuration/ci-gating.md
     - Copilot Integration: configuration/copilot-integration.md
+    - Slash Commands: configuration/slash-commands.md
   - Governance:
     - Artifact Classification: governance/artifact-classification.md
     - Acceptance Verification: governance/acceptance-verification.md
