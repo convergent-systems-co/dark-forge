@@ -179,6 +179,43 @@
       "type": "integer",
       "description": "Panel execution duration in milliseconds.",
       "minimum": 0
+    },
+    "execution_trace": {
+      "type": "object",
+      "description": "Evidence of actual code evaluation during panel review. Records which files the LLM read and which specific code sections it analyzed, linking findings to concrete code locations.",
+      "properties": {
+        "files_read": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths the panel agent read during review."
+        },
+        "diff_lines_analyzed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of diff lines analyzed."
+        },
+        "analysis_duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Approximate time spent on analysis in milliseconds."
+        },
+        "grounding_references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "line": { "type": "integer" },
+              "finding_id": { "type": "string" }
+            },
+            "required": ["file", "finding_id"],
+            "additionalProperties": false
+          },
+          "description": "Links findings to specific code locations."
+        }
+      },
+      "required": ["files_read"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

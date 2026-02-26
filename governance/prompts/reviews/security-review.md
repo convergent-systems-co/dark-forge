@@ -219,6 +219,17 @@ When producing findings, apply these redaction rules:
 
 ---
 
+## Execution Trace
+
+To provide evidence of actual code evaluation, include an `execution_trace` object in your structured emission:
+
+- **`files_read`** (required) — List every file you read during this review. Include the full relative path for each file (e.g., `src/auth/login.ts`, `infrastructure/main.bicep`). Do not omit files — this is the audit record of what was actually evaluated.
+- **`diff_lines_analyzed`** — Count the total number of diff lines (added + removed + modified) you analyzed.
+- **`analysis_duration_ms`** — Approximate wall-clock time spent on the analysis in milliseconds.
+- **`grounding_references`** — For each finding, link it to a specific code location. Each entry must include `file` (file path) and `finding_id` (matching the finding's persona or a unique identifier). Include `line` (line number) when the finding maps to a specific line.
+
+The `execution_trace` field is optional in the schema but **strongly recommended** for auditability. When present, it provides verifiable evidence that the panel agent actually read and analyzed the code rather than producing a generic assessment.
+
 ## Structured Emission
 
 All output must include a JSON block between emission markers, validated against [`governance/schemas/panel-output.schema.json`](../../schemas/panel-output.schema.json).
