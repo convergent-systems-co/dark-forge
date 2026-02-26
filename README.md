@@ -180,34 +180,36 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
 
 ## How It Works
 
-### Agentic Pipeline (5-Agent Prompt Chain)
+### Agentic Pipeline (5-Phase Parallel Workflow)
 
-The platform uses a 5-agent prompt-chained pipeline implementing Anthropic's orchestration patterns:
+The platform uses a 5-agent prompt-chained pipeline implementing Anthropic's orchestration patterns. The Code Manager dispatches **parallel Coder agents** — each running in an isolated git worktree with its own context window — enabling concurrent work on multiple issues per session.
 
 | Agent | Pattern | Role |
 |-------|---------|------|
 | **DevOps Engineer** | Routing | Session entry, pre-flight checks, issue triage, routing |
-| **Code Manager** | Orchestrator-Workers | Intent validation, panel selection, review coordination, merge |
-| **Coder** | Worker | Implementation, test coverage, structured output |
-| **IaC Engineer** | Worker | Infrastructure execution: Bicep/Terraform, security-first defaults |
+| **Code Manager** | Orchestrator-Workers | Intent validation, panel selection, parallel dispatch, review coordination, merge |
+| **Coder** | Worker | Implementation, test coverage, structured output (runs in isolated worktree) |
+| **IaC Engineer** | Worker | Infrastructure execution: Bicep/Terraform, security-first defaults (runs in isolated worktree) |
 | **Tester** | Evaluator-Optimizer | Independent evaluation, test verification, structured feedback |
 
 ```mermaid
-flowchart LR
-    A[Issue] --> B[DevOps Engineer<br/>Routing]
-    B --> C[Code Manager<br/>Orchestrator]
-    C --> D[Coder<br/>Worker]
-    C -->|Infrastructure changes only| IAC[IaC Engineer<br/>Worker]
-    D --> E[Tester<br/>Evaluator]
-    IAC --> E
-    E -->|Feedback| D
-    E -->|Approve| F[Security Review]
-    F --> G[Context Reviews]
-    G --> H[Policy Engine]
-    H --> I[Merge / Block]
+flowchart TD
+    P1[Phase 1: Pre-flight & Triage<br/>DevOps Engineer]
+    P1 -->|ASSIGN batch| P2[Phase 2: Parallel Planning<br/>Code Manager]
+    P2 -->|Plans for all issues| P3[Phase 3: Parallel Dispatch<br/>Code Manager]
+    P3 -->|worktree| C1[Coder Agent 1]
+    P3 -->|worktree| C2[Coder Agent 2]
+    P3 -->|worktree| CN[Coder Agent N]
+    C1 -->|RESULT| P4[Phase 4: Collect & Review<br/>Code Manager + Tester]
+    C2 -->|RESULT| P4
+    CN -->|RESULT| P4
+    P4 -->|APPROVE| P5[Phase 5: Merge & Loop<br/>Code Manager + DevOps]
+    P4 -->|FEEDBACK| P3
+    P5 -->|More issues| P1
+    P5 -->|Session cap or context pressure| STOP[Shutdown Protocol]
 ```
 
-Inter-agent communication uses typed messages (`ASSIGN`, `STATUS`, `RESULT`, `FEEDBACK`, `ESCALATE`, `APPROVE`, `BLOCK`) per the [Agent Protocol](governance/prompts/agent-protocol.md).
+Inter-agent communication uses typed messages (`ASSIGN`, `STATUS`, `RESULT`, `FEEDBACK`, `ESCALATE`, `APPROVE`, `BLOCK`, `CANCEL`) per the [Agent Protocol](governance/prompts/agent-protocol.md). Up to N Coder agents run concurrently (N = `governance.parallel_coders` from `project.yaml`, default 5).
 
 ### Governance Layers (Phase 4a)
 
@@ -238,7 +240,7 @@ Security, regulatory compliance, and code quality are embedded at every governan
 | Layer | Compliance Mechanism |
 |-------|---------------------|
 | Intent | Risk classification at intake; PII/financial flags trigger `fin_pii_high` profile |
-| Cognitive | Security Auditor and Compliance Officer personas activated for regulated changes |
+| Cognitive | Security-review and data-governance-review panels activated for regulated changes |
 | Execution | Policy engine enforces compliance scores, blocks PII exposure, requires security panel |
 | Runtime | Drift detection monitors compliance regression; incidents generate remediation DIs |
 | Evolution | Backward compatibility checks; breaking changes require migration plans |
@@ -259,6 +261,17 @@ The framework uses JIT (Just-In-Time) loading to minimize AI context window usag
 | 1 | Language conventions + active personas | ~2,000 tokens | Session duration |
 | 2 | Current workflow phase + panel context | ~3,000 tokens | Released per phase |
 | 3 | Policies, schemas, docs | 0 tokens | Queried on-demand |
+
+**Parallel dispatch model:** Coder agents spawned via `Task` tool with `isolation: "worktree"` get their own context windows — they don't consume the main session's context. This allows the Code Manager to dispatch up to N concurrent workers while staying within budget.
+
+**Hard stop at 80% context capacity.** When approaching this limit:
+
+1. Stop all work immediately — do not start new tasks
+2. Clean git state (commit, stash, or abort in-progress merges)
+3. Write a checkpoint to `governance/checkpoints/` with current task, completed work, remaining work, and git state
+4. Report to user and request `/clear`
+
+Checkpoints enable session continuity — the next `/startup` auto-restores from the latest checkpoint, re-validates issue state, and resumes the pipeline.
 
 See `docs/architecture/context-management.md` for the full strategy including checkpoint-based reset protection and instruction decomposition.
 
