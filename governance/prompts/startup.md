@@ -341,6 +341,28 @@ gh pr list --state open --json number,title,author,headRefName,createdAt,reviews
 gh issue list --state open --json number,title,labels,assignees,body --limit 50
 ```
 
+#### Issue Body Size Check (Context Exhaustion Defense)
+
+**Constant:** `MAX_ISSUE_BODY_CHARS = 15000` (approximately 3,750 tokens at 4 chars/token)
+
+Before processing any issue, check the length of its `body` field. An oversized issue body can exhaust the agent's context window in a single read, wasting the entire session. This check must occur **before** the issue body content is loaded into context for evaluation.
+
+For each issue returned by the query above:
+
+1. Check `body` length: if `body` is longer than 15,000 characters, the issue is **oversized**
+2. **Skip** the issue — do not include it in the actionable queue
+3. **Label** the issue `oversized-body` (advisory, non-blocking on failure):
+   ```bash
+   gh issue edit <number> --add-label "oversized-body"
+   ```
+   If labeling fails (e.g., label does not exist, permission error), log a warning and continue — the skip is the critical action, not the label.
+4. **Log a warning:**
+   ```
+   Warning: Issue #<number> skipped — body exceeds MAX_ISSUE_BODY_CHARS (15000). Character count: <length>. Labeled 'oversized-body'.
+   ```
+
+Issues that pass the size check proceed to actionable filtering below.
+
 An issue is **actionable** if:
 - No branch matching `itsfwcp/*/*` or `feature/*`
 - Not labeled `blocked`, `wontfix`, `duplicate`
