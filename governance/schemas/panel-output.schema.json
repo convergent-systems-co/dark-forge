@@ -138,6 +138,12 @@
       },
       "minItems": 1
     },
+    "execution_status": {
+      "type": "string",
+      "description": "Status of the panel execution. Defaults to 'success' if omitted (backward compatible).",
+      "enum": ["success", "timeout", "error", "fallback"],
+      "default": "success"
+    },
     "aggregate_verdict": {
       "type": "string",
       "enum": ["approve", "request_changes", "block"],

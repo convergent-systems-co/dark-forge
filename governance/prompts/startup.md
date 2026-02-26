@@ -643,6 +643,18 @@ If any plausibility check fails, set `requires_human_review: true` on the emissi
 
 **Hallucination Detection**: After collecting panel emissions, validate grounding: (1) Any finding with severity 'medium' or above that lacks an `evidence` block is flagged as potentially hallucinated. The Code Manager should request re-review for ungrounded findings. (2) Emissions with zero findings that also lack `execution_trace` are treated as no-analysis and trigger re-review.
 
+**Panel Execution Timeout Handling**: For each panel invocation, observe a wall-clock timeout (default 5 minutes; overrides in `governance/policy/panel-timeout.yaml`). If a panel does not produce an emission within the timeout:
+
+1. Log a warning identifying the panel and elapsed time.
+2. Attempt 1 retry (configurable via `max_retries` in `panel-timeout.yaml`).
+3. On second failure: load the baseline emission from `governance/emissions/{panel-name}.json` if available.
+4. Mark the baseline emission with `"execution_status": "fallback"` to distinguish it from a live panel result.
+5. Apply the `fallback_confidence_cap` from `panel-timeout.yaml` (default 0.50) to the emission's `confidence_score`.
+6. Continue the evaluation pipeline with the capped fallback emission — downstream policy rules in `default.yaml` (`panel_execution` section) will prevent fallback emissions from triggering auto-merge.
+7. Track consecutive failures per panel type against the circuit breaker configuration (`governance/policy/circuit-breaker.yaml` `panel_execution` section). If a panel trips the circuit breaker, use baseline and escalate to human review.
+
+If no baseline emission exists and the panel cannot execute, treat the panel as missing. The policy engine's `required_panel_missing` block rule will apply.
+
 ### 4d: Push PR & Monitoring Loop
 
 1. Push the branch

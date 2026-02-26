@@ -31,3 +31,15 @@ circuit_breaker:
     P2: 60
     P3: 240
     P4: 1440
+
+  # Panel execution failure tracking
+  # Separate from remediation loop circuit breaker
+  panel_execution:
+    # Consecutive execution failures per panel type before tripping
+    failure_threshold: 3
+    # Successful execution resets the counter
+    success_threshold: 1
+    # Cooldown before retrying a tripped panel
+    cooldown_period_minutes: 15
+    # Action when circuit opens for a panel
+    open_action: "use_baseline_and_escalate"

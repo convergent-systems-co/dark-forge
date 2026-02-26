@@ -383,6 +383,129 @@ def _evaluate_risk_condition(condition: str, risk_levels: dict, risk_counts: dic
     return False
 
 
+def load_panel_timeout_config(profile):
+    """Load panel timeout configuration referenced by the profile.
+
+    Returns a dict with timeout settings or sensible defaults if the
+    config cannot be loaded.
+    """
+    panel_exec = profile.get("panel_execution", {})
+    timeout_path = panel_exec.get("timeout_config", "")
+    defaults = {
+        "default_timeout_minutes": 5,
+        "max_retries": 1,
+        "fallback_strategy": "baseline",
+        "fallback_confidence_cap": 0.50,
+        "max_fallbacks_per_pr": 2,
+        "per_panel_overrides": {},
+    }
+    if not timeout_path:
+        return defaults
+    try:
+        # Resolve relative to the repo root (two levels up from engine/)
+        here = Path(__file__).resolve().parent
+        candidates = [
+            here.parent.parent / timeout_path,
+            here.parent / timeout_path,
+            Path(timeout_path),
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                with open(candidate) as f:
+                    raw = yaml.safe_load(f)
+                return raw.get("panel_timeout", defaults)
+    except Exception:
+        pass
+    return defaults
+
+
+def apply_execution_status_adjustments(emissions, panel_timeout_config, log):
+    """Process execution_status on each emission.
+
+    - ``fallback`` or ``timeout``: cap ``confidence_score`` at the configured
+      ``fallback_confidence_cap`` (default 0.50).
+    - ``error`` with no fallback available: the emission is flagged as
+      degraded — downstream logic treats it as a missing panel.
+
+    Returns:
+        (adjusted_emissions, fallback_count, error_panels)
+        where *fallback_count* is the number of fallback/timeout emissions and
+        *error_panels* is a list of panel names with unrecoverable errors.
+    """
+    cap = panel_timeout_config.get("fallback_confidence_cap", 0.50)
+    fallback_count = 0
+    error_panels = []
+
+    for emission in emissions:
+        status = emission.get("execution_status", "success")
+        panel = emission.get("panel_name", "unknown")
+
+        if status in ("fallback", "timeout"):
+            original = emission["confidence_score"]
+            emission["confidence_score"] = min(original, cap)
+            fallback_count += 1
+            log.record(
+                f"execution_status_{panel}",
+                "warn",
+                f"Panel '{panel}' execution_status='{status}': "
+                f"confidence capped {original:.3f} -> {emission['confidence_score']:.3f} (cap={cap})"
+            )
+        elif status == "error":
+            error_panels.append(panel)
+            log.record(
+                f"execution_status_{panel}",
+                "fail",
+                f"Panel '{panel}' execution_status='error': treated as missing panel"
+            )
+        else:
+            log.record(
+                f"execution_status_{panel}",
+                "pass",
+                f"Panel '{panel}' execution_status='{status}'"
+            )
+
+    return emissions, fallback_count, error_panels
+
+
+def evaluate_panel_execution_rules(fallback_count, profile, log):
+    """Evaluate panel_execution rules from the profile.
+
+    Returns ``"require_human_review"`` if any rule triggers human review,
+    ``None`` otherwise.
+    """
+    panel_exec = profile.get("panel_execution", {})
+    rules = panel_exec.get("rules", [])
+
+    for rule in rules:
+        desc = rule.get("description", "")
+        condition = rule.get("condition", "")
+        action = rule.get("action", "")
+
+        triggered = False
+        # Pattern: any_emission_status == "fallback"
+        if 'any_emission_status == "fallback"' in condition and fallback_count > 0:
+            triggered = True
+        # Pattern: count(emission_status == "fallback") > N
+        if "count(emission_status" in condition:
+            try:
+                threshold = int(condition.split(">")[1].strip())
+                if fallback_count > threshold:
+                    triggered = True
+            except (ValueError, IndexError):
+                pass
+
+        if triggered:
+            log.record(
+                f"panel_execution_{_slugify(desc)}",
+                "warn",
+                f"Panel execution rule triggered: {desc} -> {action}"
+            )
+            if action in ("require_human_review", "block_auto_merge"):
+                return "require_human_review"
+
+    return None
+
+
 def collect_policy_flags(emissions):
     """Collect all policy flags from all emissions."""
     flags = []
@@ -1126,6 +1249,27 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         manifest = generate_manifest(emissions, profile, 0.0, "critical", "block", reason, log, commit_sha, pr_number, repo)
         return manifest, 1
 
+    # Step 5b: Apply execution_status adjustments (panel timeout/fallback)
+    log._stream.write("\n--- Step 5b: Apply execution status adjustments ---\n")
+    panel_timeout_config = load_panel_timeout_config(profile)
+    emissions, fallback_count, error_panels = apply_execution_status_adjustments(
+        emissions, panel_timeout_config, log
+    )
+    # Treat error panels (no fallback) as missing required panels
+    # Remove error emissions from the list so downstream logic sees them as absent
+    if error_panels:
+        error_set = set(error_panels)
+        emissions = [e for e in emissions if e.get("panel_name") not in error_set]
+        required_set = set(profile.get("required_panels", []))
+        error_required = [p for p in error_panels if p in required_set]
+        if error_required:
+            missing_required = list(set(missing_required) | set(error_required))
+            log.record(
+                "execution_status_missing",
+                "fail",
+                f"Error panels added to missing required: {', '.join(error_required)}"
+            )
+
     # Step 6: Compute aggregate confidence
     log._stream.write("\n--- Step 6: Compute aggregate confidence ---\n")
     aggregate_confidence = compute_weighted_confidence(emissions, profile, log)
@@ -1157,7 +1301,12 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
     # Step 7b: Phase 4b transition — downgrade missing-panel block when all
     # present panels approve with sufficient confidence.  This keeps the
     # decision inside the engine rather than in the CI workflow.
-    if missing_required and missing_behavior != "block":
+    # Note: panels that failed with execution_status="error" are NOT eligible
+    # for downgrade — they represent genuine execution failures.
+    error_panel_set = set(error_panels) if error_panels else set()
+    downgradable_missing = [p for p in missing_required if p not in error_panel_set]
+    non_downgradable_missing = [p for p in missing_required if p in error_panel_set]
+    if downgradable_missing and missing_behavior != "block":
         all_approve = all(
             e.get("aggregate_verdict") == "approve" for e in emissions
         )
@@ -1165,10 +1314,10 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
         if all_approve and aggregate_confidence >= phase_4b_threshold:
             log.record(
                 "phase_4b_transition", "pass",
-                f"Missing panels [{', '.join(missing_required)}] downgraded — "
+                f"Missing panels [{', '.join(downgradable_missing)}] downgraded — "
                 f"all present panels approve, confidence={aggregate_confidence:.4f} >= {phase_4b_threshold}"
             )
-            missing_required = []  # allow evaluation to continue
+            missing_required = non_downgradable_missing  # keep error panels as missing
         else:
             reasons = []
             if not all_approve:
@@ -1218,6 +1367,18 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
             "human_review_required", escalation_reason, log, commit_sha, pr_number, repo
         )
         return manifest, 2
+
+    # Step 10b: Evaluate panel execution rules (fallback emissions)
+    if fallback_count > 0:
+        log._stream.write("\n--- Step 10b: Evaluate panel execution rules ---\n")
+        panel_exec_result = evaluate_panel_execution_rules(fallback_count, profile, log)
+        if panel_exec_result == "require_human_review":
+            reason = f"Panel execution fallback detected: {fallback_count} emission(s) used fallback/timeout"
+            manifest = generate_manifest(
+                emissions, profile, aggregate_confidence, aggregate_risk,
+                "human_review_required", reason, log, commit_sha, pr_number, repo
+            )
+            return manifest, 2
 
     # Step 11: Evaluate auto-merge conditions
     log._stream.write("\n--- Step 11: Evaluate auto-merge conditions ---\n")

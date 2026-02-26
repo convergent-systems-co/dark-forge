@@ -117,6 +117,21 @@ plausibility_checks:
     min_panels: 3
     action: "flag_for_human_review"
 
+# Panel Execution Resilience
+# Handles panel timeout, retry, and fallback behavior
+panel_execution:
+  timeout_config: "governance/policy/panel-timeout.yaml"
+  rules:
+    - description: "Fallback emissions cannot trigger auto-merge"
+      condition: any_emission_status == "fallback"
+      action: require_human_review
+    - description: "More than 2 fallback emissions require human review"
+      condition: count(emission_status == "fallback") > 2
+      action: block_auto_merge
+    - description: "Timeout emissions are treated as fallback if baseline exists"
+      condition: emission_status == "timeout" and baseline_exists
+      action: use_baseline_with_cap
+
 # Auto-remediate Rules
 # Conditions under which automated remediation is attempted before blocking.
 auto_remediate:
