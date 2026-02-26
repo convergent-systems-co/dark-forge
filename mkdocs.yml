@@ -1,6 +1,8 @@
 site_name: Dark Factory Governance Framework
 site_description: AI governance framework for autonomous software delivery
 site_url: https://set-apps.github.io/ai-submodule
+repo_url: https://github.com/SET-Apps/ai-submodule
+repo_name: SET-Apps/ai-submodule
 
 theme:
   name: material
