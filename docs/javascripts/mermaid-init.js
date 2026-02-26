@@ -1,8 +1,21 @@
 // Initialize Mermaid.js for MkDocs Material
-// Handles both instant navigation (Material's document$ observable)
-// and standard page loads (DOMContentLoaded fallback)
+// fence_div_format outputs <div class="mermaid"><code>...</code></div>
+// Mermaid.js expects <div class="mermaid">raw text</div> (no <code> wrapper)
+// This script strips the <code> wrapper before Mermaid processes the elements
 function initMermaid() {
-  if (!document.querySelector(".mermaid")) return;
+  var elements = document.querySelectorAll("div.mermaid");
+  if (!elements.length) return;
+
+  // Strip <code> wrappers that fence_div_format may insert
+  elements.forEach(function (el) {
+    var code = el.querySelector("code");
+    if (code) {
+      el.textContent = code.textContent;
+    }
+    // Mark as unprocessed so Mermaid picks it up on re-runs
+    el.removeAttribute("data-processed");
+  });
+
   mermaid.initialize({
     startOnLoad: false,
     theme: "base",
