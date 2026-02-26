@@ -58,6 +58,10 @@ nav:
   - Getting Started:
     - Simple Explainer: onboarding/eli5.md
     - Developer Guide: onboarding/developer-guide.md
+    - AI-Assisted Install: onboarding/ai-assisted-install.md
+    - Windows Onboarding: onboarding/windows-onboarding.md
+    - Architecture Visual: onboarding/architecture-visual.md
+    - Risks & Mitigation: onboarding/risks-mitigation.md
     - End-to-End Walkthrough: tutorials/end-to-end-walkthrough.md
   - Architecture:
     - Governance Model: architecture/governance-model.md
