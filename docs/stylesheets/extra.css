@@ -1,12 +1,12 @@
 /* Nord Dark Theme for Dark Factory Governance Platform */
 /* Nord palette: https://www.nordtheme.com/ */
 
-/* -- Nord color definitions -- */
-/* Polar Night (dark backgrounds) */
-/* #2E3440 nord0 - darkest */
-/* #3B4252 nord1 */
-/* #434C5E nord2 */
-/* #4C566A nord3 - lightest dark */
+/* -- Nord color definitions (20% darker for deeper contrast) -- */
+/* Polar Night (dark backgrounds — original → darkened) */
+/* #2E3440 → #252A33 nord0 - darkest */
+/* #3B4252 → #2F3542 nord1 */
+/* #434C5E → #363D4B nord2 */
+/* #4C566A → #3D4555 nord3 - lightest dark */
 
 /* Snow Storm (light text) */
 /* #D8DEE9 nord4 */
@@ -29,10 +29,10 @@
 /* Register nord as a custom color scheme */
 [data-md-color-scheme="nord"] {
   /* Core backgrounds */
-  --md-default-bg-color: #2E3440;
-  --md-default-bg-color--light: #3B4252;
-  --md-default-bg-color--lighter: #434C5E;
-  --md-default-bg-color--lightest: #4C566A;
+  --md-default-bg-color: #252A33;
+  --md-default-bg-color--light: #2F3542;
+  --md-default-bg-color--lighter: #363D4B;
+  --md-default-bg-color--lightest: #3D4555;
 
   /* Core text */
   --md-default-fg-color: #ECEFF4;
@@ -50,12 +50,12 @@
   /* Accent (Frost cyan) */
   --md-accent-fg-color: #88C0D0;
   --md-accent-fg-color--transparent: #88C0D01A;
-  --md-accent-bg-color: #2E3440;
-  --md-accent-bg-color--light: #3B4252;
+  --md-accent-bg-color: #252A33;
+  --md-accent-bg-color--light: #2F3542;
 
   /* Code blocks */
   --md-code-fg-color: #ECEFF4;
-  --md-code-bg-color: #3B4252;
+  --md-code-bg-color: #2F3542;
   --md-code-hl-color: #88C0D030;
   --md-code-hl-number-color: #B48EAD;
   --md-code-hl-special-color: #D08770;
@@ -75,14 +75,14 @@
   --md-typeset-a-color: #88C0D0;
 
   /* Navigation sidebar */
-  --md-typeset-table-color: #4C566A40;
+  --md-typeset-table-color: #3D455540;
 
   /* Admonitions */
-  --md-admonition-bg-color: #3B4252;
+  --md-admonition-bg-color: #2F3542;
 
   /* Footer */
-  --md-footer-bg-color: #2E3440;
-  --md-footer-bg-color--dark: #2E3440;
+  --md-footer-bg-color: #252A33;
+  --md-footer-bg-color--dark: #1E2229;
   --md-footer-fg-color: #D8DEE9;
   --md-footer-fg-color--light: #D8DEE9BF;
   --md-footer-fg-color--lighter: #D8DEE980;
@@ -92,12 +92,12 @@
 
 /* Header bar */
 [data-md-color-scheme="nord"] .md-header {
-  background-color: #3B4252;
+  background-color: #2F3542;
 }
 
 /* Sidebar navigation */
 [data-md-color-scheme="nord"] .md-sidebar {
-  background-color: #2E3440;
+  background-color: #252A33;
 }
 
 [data-md-color-scheme="nord"] .md-nav__link--active,
@@ -107,25 +107,25 @@
 
 /* Search bar */
 [data-md-color-scheme="nord"] .md-search__input {
-  background-color: #434C5E;
+  background-color: #363D4B;
   color: #ECEFF4;
 }
 
 /* Tables */
 [data-md-color-scheme="nord"] .md-typeset table:not([class]) th {
-  background-color: #3B4252;
+  background-color: #2F3542;
   color: #88C0D0;
 }
 
 [data-md-color-scheme="nord"] .md-typeset table:not([class]) tr:hover {
-  background-color: #3B425280;
+  background-color: #2F354280;
 }
 
 /* Inline code */
 [data-md-color-scheme="nord"] .md-typeset code {
-  background-color: #3B4252;
+  background-color: #2F3542;
   color: #88C0D0;
-  border-color: #434C5E;
+  border-color: #363D4B;
 }
 
 /* Links */
@@ -139,11 +139,11 @@
 
 /* Scrollbar (webkit) */
 [data-md-color-scheme="nord"] ::-webkit-scrollbar-track {
-  background: #2E3440;
+  background: #252A33;
 }
 
 [data-md-color-scheme="nord"] ::-webkit-scrollbar-thumb {
-  background: #4C566A;
+  background: #3D4555;
 }
 
 [data-md-color-scheme="nord"] ::-webkit-scrollbar-thumb:hover {
