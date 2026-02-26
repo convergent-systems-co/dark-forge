@@ -591,6 +591,14 @@ The Code Manager invokes the panels selected in Phase 2c. Each review:
 - Critical/high findings → create GitHub issues, ASSIGN to Coder
 - All reviews must complete before proceeding
 
+**Plausibility Validation**: Before accepting panel emissions for merge decisions, verify:
+
+1. If the PR touches more than 3 files, at least one finding (even informational) must exist across all panels. Zero findings on a non-trivial PR is anomalous.
+2. If any panel emission lacks `execution_trace`, cap its effective confidence at 0.70 for auto-merge evaluation.
+3. If 3 or more panels produce identical `confidence_score` values, flag as anomalous and require human review.
+
+If any plausibility check fails, set `requires_human_review: true` on the emission and do not auto-merge. See `plausibility_checks` in `governance/policy/default.yaml` for the enforced thresholds.
+
 ### 4d: Push PR & Monitoring Loop
 
 1. Push the branch
