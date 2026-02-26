@@ -96,5 +96,7 @@ nav:
   - Research:
     - Overview: research/README.md
     - Technique Comparison: research/technique-comparison.md
+  - Guides:
+    - GitHub Pages Setup: guides/github-pages-setup.md
   - Decisions: decisions/README.md
   - Contributing: contributing.md

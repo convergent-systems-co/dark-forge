@@ -45,6 +45,29 @@ conventions:
     commit_style: "conventional"  # conventional, gitmoji, freeform
     pr_template: true
 
+# Azure Portal dashboards
+# See governance/templates/dashboards/README.md for usage and placeholder reference
+dashboards:
+  enabled: false
+  # environments:
+  #   - dev
+  #   - stg
+  #   - uat
+  #   - prod
+  # azure:
+  #   subscription_id: ""
+  #   resource_group_prefix: ""
+  #   location: "eastus2"
+  #   app_insights_name_pattern: "appi-{app}-{env}"
+  #   aks_cluster_name_pattern: "aks-{app}-{env}"
+
+# GitHub Pages documentation site
+# See docs/guides/github-pages-setup.md for setup instructions
+github_pages:
+  enabled: false
+  # theme: "material"
+  # url: "https://your-org.github.io/your-repo"
+
 # Project-specific instructions (appended to base instructions.md)
 instructions: |
   - This project uses a monorepo structure with packages in /packages
