@@ -58,7 +58,7 @@
             },
             "plan_path": {
               "type": "string",
-              "description": "Path to the plan file in governance/plans/ directory."
+              "description": "Path to the plan file in .governance/plans/ directory."
             },
             "evidence": {
               "type": "string",

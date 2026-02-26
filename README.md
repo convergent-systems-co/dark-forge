@@ -268,7 +268,7 @@ The framework uses JIT (Just-In-Time) loading to minimize AI context window usag
 
 1. Stop all work immediately — do not start new tasks
 2. Clean git state (commit, stash, or abort in-progress merges)
-3. Write a checkpoint to `governance/checkpoints/` with current task, completed work, remaining work, and git state
+3. Write a checkpoint to `.governance/checkpoints/` with current task, completed work, remaining work, and git state
 4. Report to user and request `/clear`
 
 Checkpoints enable session continuity — the next `/startup` auto-restores from the latest checkpoint, re-validates issue state, and resumes the pipeline.

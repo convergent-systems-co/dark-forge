@@ -1,6 +1,6 @@
 # Plan Template
 
-Use this template when creating implementation plans. All plans must be saved to the `governance/plans/` directory with a descriptive filename (e.g., `governance/plans/add-user-authentication.md`).
+Use this template when creating implementation plans. All plans must be saved to `governance/plans/` (ai-submodule) or `.governance/plans/` (consuming repos) with a descriptive filename (e.g., `.governance/plans/add-user-authentication.md`).
 
 Both AI agents and human engineers use this template. Every section is required. If a section is not applicable, state "N/A" with a brief explanation.
 

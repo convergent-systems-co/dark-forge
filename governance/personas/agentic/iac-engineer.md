@@ -20,7 +20,7 @@ The Code Manager routes work to the IaC Engineer (instead of the Coder) when:
 
 - **Receive ASSIGN messages from Code Manager** — accept infrastructure tasks with plan references, scope constraints, and acceptance criteria
 - Create feature branches following the repository's branch naming convention
-- Write a detailed implementation plan to `governance/plans/` before writing infrastructure code
+- Write a detailed implementation plan to `.governance/plans/` (consuming repos) or `governance/plans/` (ai-submodule) before writing infrastructure code
 - **Generate Bicep/Terraform** following enterprise standards (see JM Standards below)
 - **Apply deterministic naming** using the naming convention engine
 - **Enforce security defaults** — deny-by-default networking, RBAC-only auth, managed identities, TLS 1.2+
@@ -257,7 +257,7 @@ When Terraform is required (multi-cloud, non-Azure, or project preference):
 
 ## Output Format
 
-- Implementation plan (Markdown in `governance/plans/` directory)
+- Implementation plan (Markdown in `.governance/plans/` for consuming repos, or `governance/plans/` for ai-submodule)
 - Bicep/Terraform files on a feature branch
 - Per-environment parameter files
 - `bicepconfig.json` if not present
@@ -272,7 +272,7 @@ When Terraform is required (multi-cloud, non-Azure, or project preference):
   "target_agent": "code-manager",
   "correlation_id": "issue-{N}",
   "payload": {
-    "summary": "Implemented infrastructure for X per plan governance/plans/{N}-description.md",
+    "summary": "Implemented infrastructure for X per plan .governance/plans/{N}-description.md",
     "artifacts": ["infra/main.bicep", "infra/dev_parameters.bicepparam", "infra/prod_parameters.bicepparam"],
     "test_results": "Bicep linting passed. Template validated.",
     "documentation_updated": ["docs/infrastructure/resource-inventory.md"]

@@ -209,7 +209,7 @@
       </div>
       <div class="card">
         <h4>🗂️ Plans as Audit Trail</h4>
-        <p>Every decision is written to <code>.plans/</code>. Team members can see exactly why a change was made and how it evolved.</p>
+        <p>Every decision is written to <code>.governance/plans/</code>. Team members can see exactly why a change was made and how it evolved.</p>
       </div>
       <div class="card">
         <h4>🌐 Local or GitHub</h4>
@@ -278,7 +278,7 @@
         <div class="step-num">3</div>
         <div class="step-body">
           <div class="step-title">Bootstrap the framework</div>
-          <div class="step-desc">Run the init script. It creates symlinks for all AI tools, sets up <code>.plans/</code> and <code>.panels/</code> folders, copies governance workflows, and generates CODEOWNERS.</div>
+          <div class="step-desc">Run the init script. It creates symlinks for all AI tools, sets up <code>.governance/plans/</code> and <code>.governance/panels/</code> folders, copies governance workflows, and generates CODEOWNERS.</div>
           <div class="code-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button><pre><code><span class="cmd">powershell</span> <span class="flag">-ExecutionPolicy Bypass -File</span> <span class="str">.ai\bin\init.ps1</span> <span class="flag">-InstallDeps</span></code></pre></div>
           <div class="step-note">⚡ <code>-InstallDeps</code> creates a Python venv and installs <code>jsonschema</code> + <code>pyyaml</code> automatically</div>
         </div>
@@ -351,8 +351,7 @@
             <li class="indent new">CLAUDE.md  <span class="comment">&nbsp;← symlink</span></li>
             <li class="indent new">.cursorrules  <span class="comment">&nbsp;← symlink</span></li>
             <li class="indent new">project.yaml  <span class="comment">&nbsp;← you configure this</span></li>
-            <li class="indent new">.plans/  <span class="comment">&nbsp;← audit trail folder</span></li>
-            <li class="indent new">.checkpoints/  <span class="comment">&nbsp;← session state</span></li>
+            <li class="indent new">.governance/  <span class="comment">&nbsp;← plans, panels, checkpoints, state</span></li>
             <li class="indent warn">CODEOWNERS  <span class="comment">&nbsp;← generated, check for conflicts</span></li>
             <li class="indent">src/</li>
             <li class="indent">tests/</li>
@@ -389,7 +388,7 @@
         <td><span class="impact-low">Low</span></td>
       </tr>
       <tr>
-        <td>.plans/ &nbsp;.checkpoints/</td>
+        <td>.governance/</td>
         <td>New folders. Add to <code>.gitignore</code> if you don't want plans committed (or let them accumulate — Thomas recommends keeping them initially).</td>
         <td><span class="impact-low">Low</span></td>
       </tr>
@@ -419,7 +418,7 @@
       <div class="mode-card">
         <h4>💻 Local Mode <span class="tag tag-yellow">No remote needed</span></h4>
         <ul>
-          <li>Plans written to <code>.plans/</code></li>
+          <li>Plans written to <code>.governance/plans/</code></li>
           <li>Panels run and evaluate code</li>
           <li>Code generated and tested</li>
           <li class="no">No GitHub issues created</li>
@@ -430,7 +429,7 @@
       <div class="mode-card">
         <h4>☁️ Remote Mode <span class="tag tag-green">Full pipeline</span></h4>
         <ul>
-          <li>Plans written to <code>.plans/</code></li>
+          <li>Plans written to <code>.governance/plans/</code></li>
           <li>Panels run and evaluate code</li>
           <li>Code generated and tested</li>
           <li>GitHub issues created automatically</li>

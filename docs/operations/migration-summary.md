@@ -82,7 +82,7 @@
 3. **Implement manifest generation** — Produce run-manifest.schema.json artifacts in CI
 4. **Execute proposed renames** — If approved, rename persona directories per naming-review.md
 5. **Implement instruction decomposition** — Split instructions.md per context-management.md
-6. **Add checkpoint system** — Implement `governance/checkpoints/` for context reset recovery
+6. **Add checkpoint system** — Implement `.governance/checkpoints/` for context reset recovery
 
 ### Phase 5 (Future)
 

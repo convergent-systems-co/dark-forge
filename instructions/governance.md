@@ -25,7 +25,7 @@ If any required panel is missing from `governance/emissions/`, the change is **n
 
 When no GitHub remote is available (local-only development):
 
-- **Plan-first is still mandatory** — Write a plan to `governance/plans/` before any implementation.
+- **Plan-first is still mandatory** — Write a plan to `.governance/plans/` (consuming repos) or `governance/plans/` (ai-submodule) before any implementation.
 - **Panel evaluation still applies** — Run the policy engine locally:
   ```bash
   python governance/bin/policy-engine.py \

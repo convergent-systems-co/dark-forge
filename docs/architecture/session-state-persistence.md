@@ -2,22 +2,24 @@
 
 ## Purpose
 
-Cross-session state persistence provides governance memory that accumulates across multiple agentic sessions. While checkpoints (`governance/checkpoints/`) handle per-session save/restore, persistent state captures long-lived context: metrics trends, threshold tuning history, persona weight adjustments, work queue state, and governance decisions.
+Cross-session state persistence provides governance memory that accumulates across multiple agentic sessions. While checkpoints (`.governance/checkpoints/` in consuming repos, `governance/checkpoints/` in ai-submodule) handle per-session save/restore, persistent state captures long-lived context: metrics trends, threshold tuning history, persona weight adjustments, work queue state, and governance decisions.
 
 This document defines the storage strategy for cross-session state. The data format is defined in `governance/schemas/session-state.schema.json`.
 
 ## Storage Location
 
-Persistent state is stored in **`.governance-state/`** in the consuming repository root (not inside the `.ai` submodule). This directory is:
+Persistent state is stored in **`.governance/state/`** in the consuming repository root (not inside the `.ai` submodule). This directory is:
 
-- **Created by `init.sh`** alongside `governance/plans/` and `.panels/`
+- **Created by `init.sh`** alongside `.governance/plans/` and `.governance/panels/`
 - **Git-tracked** — state changes are committed as part of the governance lifecycle
 - **One file per state type**: `state.json` (the primary state document)
 
 ```
-.governance-state/
+.governance/state/
 └── state.json          # Cross-session governance state
 ```
+
+> **Migration:** Legacy path `.governance-state/` is automatically migrated to `.governance/state/` by `init.sh`.
 
 ### Why Git-Tracked?
 
@@ -34,7 +36,7 @@ Git tracking provides: version history, merge conflict visibility, diff-based re
 
 ### Initialization
 
-When `init.sh` runs (or an agent bootstraps a consuming repo), if `.governance-state/` does not exist:
+When `init.sh` runs (or an agent bootstraps a consuming repo), if `.governance/state/` does not exist:
 
 1. Create the directory
 2. Generate an initial `state.json` with empty collections and a new `state_id`
@@ -44,7 +46,7 @@ When `init.sh` runs (or an agent bootstraps a consuming repo), if `.governance-s
 
 At the beginning of each agentic session (startup.md Phase 1):
 
-1. Read `.governance-state/state.json` if it exists
+1. Read `.governance/state/state.json` if it exists
 2. Load `known_issues` to provide context for issue scanning
 3. Load `current_weights` to apply persona weight adjustments
 4. Load `current_overrides` to apply threshold tuning
@@ -77,7 +79,7 @@ Multiple agent sessions may run concurrently (Phase 5d). The state file uses a *
 2. At session end, before writing:
    - `git pull --rebase` to incorporate any state changes from other sessions
    - If `state.json` has a merge conflict: use a JSON-aware merge (arrays are concatenated, objects are deep-merged, scalars use the newer value)
-   - If JSON-aware merge fails: write the session's state to `.governance-state/state-{session-id}.json` as a sidecar and log a warning for manual reconciliation
+   - If JSON-aware merge fails: write the session's state to `.governance/state/state-{session-id}.json` as a sidecar and log a warning for manual reconciliation
 3. Commit and push
 
 ### Conflict Resolution Rules
@@ -120,7 +122,7 @@ Migration scripts (when needed) will be placed in `bin/migrate-session-state.py`
 
 | System | Integration Point |
 |--------|-------------------|
-| **Checkpoints** (`governance/checkpoints/`) | Session end writes both a checkpoint and a state update |
+| **Checkpoints** (`.governance/checkpoints/`) | Session end writes both a checkpoint and a state update |
 | **Autonomy metrics** (`autonomy-metrics.schema.json`) | Metrics reports are referenced by `report_id` in `metrics_history.snapshots` |
 | **Persona effectiveness** (`persona-effectiveness.schema.json`) | Effectiveness reports trigger `persona_weights` updates |
 | **Retrospective aggregation** (`retrospective-aggregation.schema.json`) | Retrospectives trigger `threshold_tuning` updates |

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://set-apps.github.io/ai-submodule/schemas/session-state.schema.json",
   "title": "Cross-Session Governance State",
-  "description": "Persistent governance state accumulated across multiple agentic sessions. Unlike checkpoints (ephemeral, per-session save/restore), this state represents long-lived governance memory: metrics trends, threshold tuning history, persona weight adjustments, and work queue context. Stored in .governance-state/ and tracked by git.",
+  "description": "Persistent governance state accumulated across multiple agentic sessions. Unlike checkpoints (ephemeral, per-session save/restore), this state represents long-lived governance memory: metrics trends, threshold tuning history, persona weight adjustments, and work queue context. Stored in .governance/state/ and tracked by git.",
   "type": "object",
   "required": [
     "schema_version",

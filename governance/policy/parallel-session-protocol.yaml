@@ -247,11 +247,11 @@ handoff:
   mechanisms:
     - name: checkpoint_broadcast
       description: >
-        Completed session writes a checkpoint to governance/checkpoints/. Other
+        Completed session writes a checkpoint to .governance/checkpoints/. Other
         sessions read checkpoints to understand what work has been done
         and what remains.
       format: "json"
-      path_pattern: "governance/checkpoints/{timestamp}-{branch}.json"
+      path_pattern: ".governance/checkpoints/{timestamp}-{branch}.json"
 
     - name: main_branch_signal
       description: >

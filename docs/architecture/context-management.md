@@ -37,7 +37,7 @@ Content loaded once when an agent begins a task session. Stays in context for th
 |---------|--------|-------------|
 | Language conventions | `governance/templates/{language}/instructions.md` | Session start, based on `project.yaml` language |
 | Active persona set | Persona files listed in `project.yaml` | Session start |
-| Current plan | `governance/plans/{active-plan}.md` | Session start if plan exists |
+| Current plan | `.governance/plans/{active-plan}.md` (consuming repos) or `governance/plans/{active-plan}.md` (ai-submodule) | Session start if plan exists |
 
 **Total Tier 1 budget: ~2,000 tokens**
 
@@ -289,7 +289,7 @@ Copilot agents follow the same two-tier threshold system as Claude Code:
 Copilot-specific adaptations:
 
 1. **Context reset**: Instead of `/clear`, start a new Copilot Chat thread. Copilot does not have a `/clear` equivalent — a new thread is the reset mechanism.
-2. **Checkpoint handoff**: In the new thread, paste: "Resume from checkpoint: `governance/checkpoints/{file}`" so the agent reads the checkpoint and continues.
+2. **Checkpoint handoff**: In the new thread, paste: "Resume from checkpoint: `.governance/checkpoints/{file}`" so the agent reads the checkpoint and continues.
 3. **Proactive summarization** (between 60-70%): Create rolling summaries of completed work and drop older raw turns. This extends the useful working window. VS Code auto-summarization also helps, but the agent should summarize proactively rather than waiting for the system to do it.
 
 #### Universal Heuristics (All Platforms)
@@ -312,7 +312,7 @@ The agent must check context capacity before starting any new issue, and after c
    - Commit any pending changes with a `wip:` prefix if needed
    - Abort any in-progress merges (`git merge --abort`) or rebases (`git rebase --abort`)
    - Verify `git status` shows `nothing to commit, working tree clean`
-3. **Write a checkpoint** to `governance/checkpoints/{timestamp}-{branch}.json`:
+3. **Write a checkpoint** to `.governance/checkpoints/{timestamp}-{branch}.json`:
    ```json
    {
      "timestamp": "2026-02-21T14:30:00Z",
@@ -343,7 +343,7 @@ When resuming from a checkpoint:
 
 1. **Tier 0 pinning**: Base instructions are re-injected at every agent turn as system-level context. They are never part of the conversation history that gets truncated.
 
-2. **Checkpoint artifacts**: At each workflow gate, the agent writes a checkpoint file to `governance/checkpoints/`. Contains: current state, decisions made, findings so far. If context resets, the agent reads the checkpoint to resume.
+2. **Checkpoint artifacts**: At each workflow gate, the agent writes a checkpoint file to `.governance/checkpoints/`. Contains: current state, decisions made, findings so far. If context resets, the agent reads the checkpoint to resume.
 
 3. **Context budget monitoring**: Track approximate token usage per tier. When Tier 2 exceeds budget, the agent must:
    - Write current findings to a checkpoint

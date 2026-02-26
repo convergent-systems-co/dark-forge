@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://set-apps.github.io/ai-submodule/schemas/checkpoint.schema.json",
   "title": "SessionCheckpoint",
-  "description": "Schema for agentic session checkpoint files written to governance/checkpoints/ during the Context Capacity Shutdown Protocol. These files enable session resumption after context resets.",
+  "description": "Schema for agentic session checkpoint files written to .governance/checkpoints/ during the Context Capacity Shutdown Protocol. These files enable session resumption after context resets.",
   "type": "object",
   "required": [
     "timestamp",

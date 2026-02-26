@@ -14,7 +14,7 @@ Get your first AI-governed project running in under 10 minutes. No prior experie
 |---------|-------------|
 | **A Virtual Engineering Team** | Drop a `.ai` submodule into any repo and get a full AI team: planner, coder, security reviewer, data governance reviewer, and more — all automated. |
 | **Governed by Panels** | Every code change goes through review panels. If panels pass, it auto-merges. If they fail, it fixes itself and tries again. |
-| **Plans as Audit Trail** | Every decision is written to `governance/plans/`. Team members can see exactly why a change was made and how it evolved. |
+| **Plans as Audit Trail** | Every decision is written to `.governance/plans/`. Team members can see exactly why a change was made and how it evolved. |
 | **Local or GitHub** | Works offline with no GitHub remote (local mode) or fully connected with issue tracking, PRs, and auto-merge (remote mode). |
 
 ---
@@ -55,7 +55,7 @@ git submodule add git@github.com:SET-Apps/ai-submodule.git .ai
 
 ### Step 3 — Bootstrap the framework
 
-Run the init script. It creates symlinks for all AI tools, sets up `governance/plans/` and `.panels/` folders, copies governance workflows, and generates CODEOWNERS.
+Run the init script. It creates symlinks for all AI tools, sets up `.governance/plans/` and `.governance/panels/` folders, copies governance workflows, and generates CODEOWNERS.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .ai\bin\init.ps1 -InstallDeps
@@ -101,7 +101,7 @@ Open your AI tool (Copilot CLI, Claude Code, or Cursor) in this folder and type:
 | `.ai/` | Submodule — git tracks it as **one commit pointer**. Won't clutter `git status` or diffs. | **Low** |
 | `CLAUDE.md` / `.cursorrules` | Symlinks at root (or file copies on Windows without Developer Mode). Visible but inert. | **Low** |
 | `project.yaml` | Single config file you own. Name your project, set policy profile. | **Low** |
-| `governance/plans/` / `governance/checkpoints/` | New folders for audit trail and session state. | **Low** |
+| `.governance/plans/` / `.governance/checkpoints/` | New folders for audit trail and session state. | **Low** |
 | `.github/workflows/` (5 new YAMLs) | Governance CI runs on every PR. Won't break existing workflows but **adds CI time**. | **Medium** |
 | `CODEOWNERS` | Generated fresh. **Will overwrite** your existing CODEOWNERS if you have one. | **Check first** |
 
@@ -116,7 +116,7 @@ The framework auto-detects whether you have a GitHub remote. Both modes run the 
 
 === "Local Mode"
 
-    - Plans written to `governance/plans/`
+    - Plans written to `.governance/plans/`
     - Panels run and evaluate code
     - Code generated and tested
     - No GitHub issues created
@@ -126,7 +126,7 @@ The framework auto-detects whether you have a GitHub remote. Both modes run the 
 
 === "Remote Mode"
 
-    - Plans written to `governance/plans/`
+    - Plans written to `.governance/plans/`
     - Panels run and evaluate code
     - Code generated and tested
     - GitHub issues created automatically
@@ -185,7 +185,7 @@ git commit -m "chore: update .ai submodule"
 | Context is full / agent repeating itself | Say: *"Write a checkpoint and stop"* → `/clear` → *"Resume from checkpoint"* |
 | Dirty git state | `git add -A && git commit -m "wip: recovery"` then `/startup` |
 | PR stuck / CI failing | Say: *"Resume PR #N"* — agent re-enters the review loop |
-| Don't know where you are | `git status` · `git branch --show-current` · `ls governance/checkpoints/` |
+| Don't know where you are | `git status` · `git branch --show-current` · `ls .governance/checkpoints/` |
 
 ---
 

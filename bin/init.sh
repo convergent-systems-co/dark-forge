@@ -384,11 +384,30 @@ print('code-review security-review threat-modeling cost-analysis documentation-r
     echo "  [OK] All required panel emissions present"
   fi
 
-  # Project directories — create governance/plans/, .panels/, governance/checkpoints/ in consuming repo
+  # Project directories — create .governance/plans/, .governance/panels/, .governance/checkpoints/, .governance/state/ in consuming repo
   echo ""
   echo "Creating project directories..."
+
+  # Migration: move old scattered dirs to .governance/
+  migrate_old_dir() {
+    local old_path="$1" new_path="$2"
+    if [ -d "$PROJECT_ROOT/$old_path" ] && [ ! -d "$PROJECT_ROOT/$new_path" ]; then
+      mkdir -p "$PROJECT_ROOT/$new_path"
+      if [ -n "$(ls -A "$PROJECT_ROOT/$old_path" 2>/dev/null)" ]; then
+        cp -r "$PROJECT_ROOT/$old_path"/* "$PROJECT_ROOT/$new_path/" 2>/dev/null || true
+      fi
+      echo "  [MIGRATE] Moved $old_path/ → $new_path/"
+      echo "            Old directory preserved. Remove manually after verifying: rm -rf $old_path"
+    fi
+  }
+
+  migrate_old_dir "governance/plans" ".governance/plans"
+  migrate_old_dir "governance/checkpoints" ".governance/checkpoints"
+  migrate_old_dir ".panels" ".governance/panels"
+  migrate_old_dir ".governance-state" ".governance/state"
+
   # Read directory list from config if Python is available, otherwise use defaults
-  PROJECT_DIRS="governance/plans .panels governance/checkpoints"
+  PROJECT_DIRS=".governance/plans .governance/panels .governance/checkpoints .governance/state"
   if [ -n "$PYTHON_CMD" ]; then
     CONFIG_DIRS=$("$PYTHON_CMD" -c "
 import yaml, os, sys
@@ -404,7 +423,7 @@ for f in sys.argv[1:]:
             for k, v in data.items():
                 if k != 'project_directories':
                     config[k] = v
-dirs = config.get('project_directories', [{'path': 'governance/plans'}, {'path': '.panels'}, {'path': 'governance/checkpoints'}])
+dirs = config.get('project_directories', [{'path': '.governance/plans'}, {'path': '.governance/panels'}, {'path': '.governance/checkpoints'}, {'path': '.governance/state'}])
 print(' '.join(d.get('path', '') for d in dirs if d.get('path')))
 " "$AI_DIR/config.yaml" "$AI_DIR/project.yaml" "$PROJECT_ROOT/project.yaml" 2>/dev/null) && PROJECT_DIRS="$CONFIG_DIRS"
     # stderr suppressed: fallback to PROJECT_DIRS default on failure

@@ -94,6 +94,6 @@ ${notes}
 
 ---
 
-**Data sources:** Run manifests (`governance/schemas/run-manifest.schema.json`), session checkpoints (`governance/checkpoints/`), GitHub issue/PR API.
+**Data sources:** Run manifests (`governance/schemas/run-manifest.schema.json`), session checkpoints (`.governance/checkpoints/`), GitHub issue/PR API.
 **Thresholds:** `governance/policy/autonomy-thresholds.yaml`
 **Schema:** `governance/schemas/autonomy-metrics.schema.json`

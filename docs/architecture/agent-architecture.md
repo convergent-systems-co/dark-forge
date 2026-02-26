@@ -299,7 +299,7 @@ Key properties:
 When a multi-agent orchestrator exists, messages are written to the file system:
 
 ```
-.governance-state/agent-messages/
+.governance/state/agent-messages/
   {correlation_id}/
     {timestamp}-{source}-{target}-{type}.json
 ```
@@ -313,7 +313,7 @@ Each file contains the full message schema as JSON. The orchestrator reads the d
 | Message logging | Inline markers | Task tool dispatch/return | File-based |
 | Agent switching | Persona load in same context | Task tool with worktree isolation | Separate agent processes |
 | Parallelism | One issue at a time | Up to N concurrent Coders | Fully concurrent |
-| State sharing | Shared context window | Code Manager in main, Coders in worktrees | `.governance-state/` directory |
+| State sharing | Shared context window | Code Manager in main, Coders in worktrees | `.governance/state/` directory |
 | Failure recovery | Checkpoint + resume | Code Manager retries or skips failed agents | Orchestrator retry with message replay |
 
 ---
@@ -349,7 +349,7 @@ sequenceDiagram
     Note over CM: Phase 2 — Planning
     CM->>CM: Validate intent for each issue
     CM->>CM: Select review panels per issue
-    CM->>CM: Create plans in governance/plans/
+    CM->>CM: Create plans in .governance/plans/
 
     Note over CM,CO: Phase 3 — Parallel Dispatch
     CM->>CO: Task(worktree, background) per issue
@@ -407,7 +407,7 @@ If the Tester rejects a Coder's work repeatedly:
 When any context pressure signal is detected (80% threshold):
 1. Stop all work immediately
 2. Clean git state (commit, stash, or abort)
-3. Write checkpoint to `governance/checkpoints/`
+3. Write checkpoint to `.governance/checkpoints/` (consuming repos) or `governance/checkpoints/` (ai-submodule)
 4. Report to user and request `/clear`
 5. Next session restores from checkpoint with issue state re-validation
 

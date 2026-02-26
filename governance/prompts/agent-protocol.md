@@ -262,10 +262,10 @@ Task(
 
 ### Phase B: Multi-Session (Future — Phase 5d Runtime)
 
-When a multi-agent orchestrator exists, messages are written to `.governance-state/agent-messages/`:
+When a multi-agent orchestrator exists, messages are written to `.governance/state/agent-messages/`:
 
 ```
-.governance-state/agent-messages/
+.governance/state/agent-messages/
   {correlation_id}/
     {timestamp}-{source}-{target}-{type}.json
 ```
@@ -281,7 +281,7 @@ The protocol supports three execution modes with identical semantics:
 | Message logging | Inline markers | Task tool dispatch/return | File-based |
 | Agent switching | Persona load within same context | Task tool with worktree isolation | Separate agent processes |
 | Parallelism | Sequential (one issue at a time) | Up to 5 concurrent Coders | Fully concurrent |
-| State sharing | Shared context window | Code Manager in main, Coders in worktrees | `.governance-state/` directory |
+| State sharing | Shared context window | Code Manager in main, Coders in worktrees | `.governance/state/` directory |
 | Failure recovery | Checkpoint + resume | Code Manager retries or skips failed agents | Orchestrator retry with message replay |
 
 The structured message format is identical in all modes — only the transport changes.

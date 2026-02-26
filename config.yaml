@@ -32,14 +32,14 @@ workflows:
 # These are created with .gitkeep files so git tracks empty directories
 # Consuming projects can add additional directories in project.yaml
 project_directories:
-  - path: governance/plans
-    description: "Implementation plans for issues and features"
-  - path: .panels
-    description: "Panel reports — only latest per panel type"
-  - path: governance/checkpoints
+  - path: .governance/plans
+    description: "Implementation plans for issues and features (accumulated)"
+  - path: .governance/panels
+    description: "Panel review reports (latest only per panel type, overwrite strategy)"
+  - path: .governance/checkpoints
     description: "Context capacity checkpoints (session state)"
-  - path: .governance-state
-    description: "Cross-session governance state persistence"
+  - path: .governance/state
+    description: "Cross-session governance state persistence (accumulated)"
 
 # Gitignore patterns for .ai/
 gitignore:

@@ -44,7 +44,7 @@ You are performing a **governance-compliance-review**. Evaluate the provided pul
 **Role:** Provides context on expected governance steps for the change type. The Code Manager is the orchestrator persona that understands what governance steps should have been executed based on the change scope, risk level, and policy profile.
 
 **Evaluate For:**
-- Plan existence (`governance/plans/` contains a plan for this change, created before implementation)
+- Plan existence (`.governance/plans/` in consuming repos, or `governance/plans/` in ai-submodule, contains a plan for this change, created before implementation)
 - Plan-to-implementation alignment (the implementation matches what was planned)
 - Issue linkage (PR references a GitHub issue, issue is in correct state)
 - Branch naming compliance (`{author}/{type}/{issue}/{description}` format)
@@ -100,8 +100,8 @@ The governance compliance review gathers evidence from these sources:
 
 | Source | Location | What to Check |
 |--------|----------|---------------|
-| Plan | `governance/plans/` | Existence, completeness, approval, alignment with implementation |
-| Panel emissions | `governance/emissions/` or `.panels/` | All required panels present, structured emissions valid |
+| Plan | `.governance/plans/` (consuming repos) or `governance/plans/` (ai-submodule) | Existence, completeness, approval, alignment with implementation |
+| Panel emissions | `governance/emissions/` or `.governance/panels/` | All required panels present, structured emissions valid |
 | Copilot review | PR review threads | Copilot invoked and review completed (if configured) |
 | Documentation changes | PR diff | Affected docs updated in same commit |
 | Issue references | PR description, commit messages | Issue linked, issue in correct state |
@@ -114,7 +114,7 @@ The governance compliance review gathers evidence from these sources:
 ## Process
 
 1. **Read governance compliance checklist** — Load the required governance steps from the active policy profile (`governance/policy/*.yaml`).
-2. **Gather evidence from PR** — Collect artifacts: plan in `governance/plans/`, panel emissions in `governance/emissions/`, Copilot review status, documentation changes in diff, issue references in PR body and commits, review threads, CI check results.
+2. **Gather evidence from PR** — Collect artifacts: plan in `.governance/plans/` (consuming repos) or `governance/plans/` (ai-submodule), panel emissions in `governance/emissions/`, Copilot review status, documentation changes in diff, issue references in PR body and commits, review threads, CI check results.
 3. **Classify each governance step** — For each required step, classify as: complete, partial, missing, or not-applicable (with justification).
 4. **Assign severity to gaps** — Critical (governance fundamentally broken), High (required step missing), Medium (step partially complete), Low (minor deviation), Info (observation).
 5. **Determine overall compliance** — Calculate compliance score and produce aggregate verdict.
@@ -205,7 +205,7 @@ Wrap the JSON in these markers:
       "persona": "agentic/code-manager",
       "verdict": "approve",
       "confidence": 0.90,
-      "rationale": "Plan exists in governance/plans/, implementation matches plan, issue linked, branch naming compliant.",
+      "rationale": "Plan exists in .governance/plans/, implementation matches plan, issue linked, branch naming compliant.",
       "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
     },
     {
@@ -227,4 +227,4 @@ Wrap the JSON in these markers:
 - **Do not re-run other panels** — This review checks that panels executed and produced valid output. It does not re-evaluate the findings of those panels.
 - **Respect policy profile exceptions** — Different policy profiles have different requirements. Check the active profile before flagging missing steps.
 - **Report all violations** — Do not aggregate multiple violations into a single finding. Each governance gap is a separate finding with its own severity.
-- **Provide actionable remediation** — Every finding must include specific steps to achieve compliance (e.g., "Create a plan in `governance/plans/plan-{issue-number}.md` using the plan template before proceeding").
+- **Provide actionable remediation** — Every finding must include specific steps to achieve compliance (e.g., "Create a plan in `.governance/plans/plan-{issue-number}.md` using the plan template before proceeding").

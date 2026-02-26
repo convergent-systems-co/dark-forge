@@ -415,7 +415,7 @@ if ($IsSubmodule) {
     }
 
     # Project directories
-    $projectDirs = @('.plans', '.panels')
+    $projectDirs = @('.governance/plans', '.governance/panels', '.governance/checkpoints', '.governance/state')
     $configForDirs = Get-ConfigData
     if ($configForDirs -and $configForDirs.ContainsKey('project_directories') -and $configForDirs.project_directories) {
         $projectDirs = @()
@@ -425,7 +425,27 @@ if ($IsSubmodule) {
             }
         }
         if ($projectDirs.Count -eq 0) {
-            $projectDirs = @('.plans', '.panels')
+            $projectDirs = @('.governance/plans', '.governance/panels', '.governance/checkpoints', '.governance/state')
+        }
+    }
+
+    # Migrate old directory paths to new .governance/ structure
+    $migrations = @{
+        '.plans' = '.governance/plans'
+        '.panels' = '.governance/panels'
+        'governance/checkpoints' = '.governance/checkpoints'
+        '.governance-state' = '.governance/state'
+    }
+    foreach ($oldDir in $migrations.Keys) {
+        $oldPath = Join-Path $ProjectRoot $oldDir
+        $newPath = Join-Path $ProjectRoot $migrations[$oldDir]
+        if ((Test-Path $oldPath) -and -not (Test-Path $newPath)) {
+            $newParent = Split-Path $newPath -Parent
+            if (-not (Test-Path $newParent)) {
+                New-Item -ItemType Directory -Path $newParent -Force | Out-Null
+            }
+            Move-Item -Path $oldPath -Destination $newPath -Force
+            Write-Host "  Migrated $oldDir/ -> $($migrations[$oldDir])/" -ForegroundColor Yellow
         }
     }
 

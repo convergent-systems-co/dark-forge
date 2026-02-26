@@ -163,7 +163,7 @@ Each escalation produces a JSON record conforming to `governance/schemas/cross-r
 }
 ```
 
-Records are saved to `.panels/escalation-{id}.json` in the consuming repo (ephemeral, not committed).
+Records are saved to `.governance/panels/escalation-{id}.json` in the consuming repo (ephemeral, not committed).
 
 ## Upstream Issue Format
 

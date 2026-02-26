@@ -11,7 +11,7 @@ flowchart TD
     DEV["You (Developer)\n'Build me X' · 'Fix Y' · 'Add Z feature'"]
     DEV --> DEVOPS["DevOps Engineer\nSession entry — pre-flight, triage, routing"]
     DEVOPS --> CM["Code Manager\nOrchestrator — validates intent, selects panels, assigns work"]
-    CM -->|"Plan written to\ngovernance/plans/"| CODER["Coder\nWorker — implements plan, writes tests"]
+    CM -->|"Plan written to\n.governance/plans/"| CODER["Coder\nWorker — implements plan, writes tests"]
     CODER --> TESTER["Tester\nIndependent evaluator — must approve before push"]
     TESTER --> PANELS["Review Panels (run in parallel)\nSecurity · Architecture · Data/PII · Quality · +15 more"]
     PANELS -->|"Each emits structured JSON\nwith confidence score & risk level"| ENGINE["Policy Engine\nDeterministic Python — reads emissions\nproduces: merge · remediate · block"]
@@ -71,10 +71,10 @@ Every decision is recorded:
 
 | Artifact | Location | Mutability |
 |----------|----------|------------|
-| **Plans** | `governance/plans/` | Written before implementation, archived to GitHub Releases on merge |
-| **Panel Emissions** | `.panels/` | Latest per panel type (overwrite strategy) |
+| **Plans** | `.governance/plans/` | Written before implementation, archived to GitHub Releases on merge |
+| **Panel Emissions** | `.governance/panels/` | Latest per panel type (overwrite strategy) |
 | **Run Manifests** | `governance/manifests/` | Immutable — complete audit trail for replay and compliance |
-| **Checkpoints** | `governance/checkpoints/` | Session state for resumption across context resets |
+| **Checkpoints** | `.governance/checkpoints/` | Session state for resumption across context resets |
 
 ---
 

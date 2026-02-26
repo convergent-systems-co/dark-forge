@@ -75,7 +75,7 @@ When `init.sh` runs, after creating symlinks it:
 1. **Checks prerequisites** -- `gh` CLI installed and authenticated
 2. **Detects the GitHub repository** from git remotes
 3. **Reads configuration** from `config.yaml` (defaults) and `project.yaml` (overrides)
-4. **Creates project directories** (`governance/plans/`, `.panels/`, `governance/checkpoints/`) with `.gitkeep` files
+4. **Creates project directories** (`.governance/plans/`, `.governance/panels/`, `.governance/checkpoints/`, `.governance/state/`) with `.gitkeep` files, migrating contents from legacy paths if present
 5. **Applies repository settings** via `gh api repos/{owner}/{repo} -X PATCH`
 6. **Generates or merges CODEOWNERS** — if the file is empty or missing, generates from config; if it already exists, merges governance-required entries (adds missing patterns and owners)
 7. **Validates branch protection** by checking expected rulesets exist (warns on mismatch, does not apply)
@@ -179,8 +179,10 @@ This catches misconfiguration before the agentic loop starts, preventing silent 
 
 | Directory | Purpose | Retention |
 |-----------|---------|-----------|
-| `governance/plans/` | Implementation plans for issues and features | Accumulated — all plans retained |
-| `.panels/` | Panel review reports | Latest only — overwrite per panel type |
+| `.governance/plans/` | Implementation plans for issues and features | Accumulated — all plans retained |
+| `.governance/panels/` | Panel review reports | Latest only — overwrite per panel type |
+| `.governance/checkpoints/` | Context capacity checkpoints (session state) | Session lifecycle |
+| `.governance/state/` | Cross-session governance state persistence | Accumulated |
 
 ### Configuration
 
@@ -188,10 +190,14 @@ Directories are declared in `config.yaml` under `project_directories`:
 
 ```yaml
 project_directories:
-  - path: governance/plans
-    description: "Implementation plans for issues and features"
-  - path: .panels
-    description: "Panel reports — only latest per panel type"
+  - path: .governance/plans
+    description: "Implementation plans for issues and features (accumulated)"
+  - path: .governance/panels
+    description: "Panel review reports (latest only per panel type, overwrite strategy)"
+  - path: .governance/checkpoints
+    description: "Context capacity checkpoints (session state)"
+  - path: .governance/state
+    description: "Cross-session governance state persistence (accumulated)"
 ```
 
 Consuming projects can add additional directories in their `project.yaml`. Directory lists from both files are merged (appended).
@@ -201,11 +207,12 @@ Consuming projects can add additional directories in their `project.yaml`. Direc
 - Directories are only created in submodule context (consuming repos, not the ai-submodule itself)
 - Each directory gets a `.gitkeep` file so git tracks the empty directory
 - Idempotent — existing directories are left untouched
-- If Python is not available, falls back to the hardcoded defaults (`governance/plans/`, `.panels/`, and `governance/checkpoints/`)
+- If Python is not available, falls back to the hardcoded defaults (`.governance/plans/`, `.governance/panels/`, `.governance/checkpoints/`, `.governance/state/`)
+- Automatically migrates contents from legacy paths (`governance/plans/`, `.panels/`, `governance/checkpoints/`, `.governance-state/`) to the new `.governance/` structure, preserving old directories for manual cleanup
 
 ### Panel Report Convention
 
-Panel reports in `.panels/` follow an overwrite strategy: each panel type writes to a fixed filename (e.g., `.panels/security-review.json`), replacing the previous report. This keeps only the latest report per panel type, avoiding repository bloat from accumulated review artifacts.
+Panel reports in `.governance/panels/` follow an overwrite strategy: each panel type writes to a fixed filename (e.g., `.governance/panels/security-review.json`), replacing the previous report. This keeps only the latest report per panel type, avoiding repository bloat from accumulated review artifacts.
 
 ## CODEOWNERS and Governance Workflow Interaction
 
@@ -251,4 +258,4 @@ The governance workflow runs as `github-actions[bot]`, which is a GitHub system 
 
 The `repository` section is fully optional. If absent from `config.yaml`, `init.sh` skips repository configuration entirely. Existing consuming repos are unaffected until they add the section.
 
-The `project_directories` section is also optional. If absent, `init.sh` falls back to creating `governance/plans/`, `.panels/`, and `governance/checkpoints/` with hardcoded defaults. Existing consuming repos that already have these directories are unaffected (idempotent).
+The `project_directories` section is also optional. If absent, `init.sh` falls back to creating `.governance/plans/`, `.governance/panels/`, `.governance/checkpoints/`, and `.governance/state/` with hardcoded defaults. Existing consuming repos with legacy directory paths (`governance/plans/`, `.panels/`, `governance/checkpoints/`, `.governance-state/`) will have contents migrated automatically to the new `.governance/` structure.

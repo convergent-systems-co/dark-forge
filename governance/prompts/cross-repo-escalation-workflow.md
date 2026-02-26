@@ -195,7 +195,7 @@ Write an escalation record conforming to `governance/schemas/cross-repo-escalati
 }
 ```
 
-Save to `.panels/escalation-${ESCALATION_ID}.json` in the consuming repo (not committed — ephemeral session artifact).
+Save to `.governance/panels/escalation-${ESCALATION_ID}.json` in the consuming repo (not committed — ephemeral session artifact).
 
 ## Authentication
 

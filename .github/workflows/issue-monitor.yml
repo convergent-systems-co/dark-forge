@@ -150,7 +150,7 @@ jobs:
             Follow all governance steps through Step 7 (PR Monitoring & Review Loop).
 
             Key constraints:
-            - Create a plan in governance/plans/ before implementation
+            - Create a plan in .governance/plans/ before implementation
             - Use conventional commits
             - Create a PR referencing the issue
             - Monitor CI checks and Copilot recommendations
