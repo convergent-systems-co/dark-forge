@@ -74,7 +74,7 @@ async function main(): Promise<void> {
 
   // Register all components
   const discovered = await registerResources(server, governanceRoot);
-  registerTools(server, governanceRoot);
+  const skillCount = await registerTools(server, governanceRoot);
   registerPrompts(server, governanceRoot);
 
   // Log to stderr (stdout is reserved for MCP protocol)
@@ -82,7 +82,7 @@ async function main(): Promise<void> {
     `[ai-submodule-mcp] Governance root: ${governanceRoot}`
   );
   console.error(
-    `[ai-submodule-mcp] Serving ${discovered.length} resources`
+    `[ai-submodule-mcp] Serving ${discovered.length} resources, ${skillCount} skill(s)`
   );
 
   // Connect via STDIO transport

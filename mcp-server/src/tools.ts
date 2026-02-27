@@ -4,14 +4,22 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { readTextFile, spawnPython } from "./utils.js";
 import { discoverResources } from "./resources.js";
+import {
+  discoverSkills,
+  getDefaultSkillsDir,
+  generateToolDefinition,
+  handleSkillToolCall,
+  SkillInputSchema,
+  type LoadedSkill,
+} from "./skills.js";
 
 /**
- * Register all MCP tools with the server.
+ * Register all MCP tools with the server, including auto-discovered skills.
  */
-export function registerTools(
+export async function registerTools(
   server: McpServer,
   governanceRoot: string
-): void {
+): Promise<number> {
   // Tool: validate_emission
   server.tool(
     "validate_emission",
@@ -266,6 +274,38 @@ export function registerTools(
       };
     }
   );
+
+  // --- Skill auto-discovery and registration ---
+  const skillsDir = getDefaultSkillsDir();
+  const skills = await discoverSkills(skillsDir);
+
+  for (const skill of skills) {
+    const def = generateToolDefinition(skill);
+    server.tool(
+      def.name,
+      def.description,
+      def.inputSchema,
+      async (args) => {
+        const output = handleSkillToolCall(skill, args);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: output,
+            },
+          ],
+        };
+      }
+    );
+  }
+
+  if (skills.length > 0) {
+    console.error(
+      `[ai-submodule-mcp] Registered ${skills.length} skill(s): ${skills.map((s) => s.toolName).join(", ")}`
+    );
+  }
+
+  return skills.length;
 }
 
 /**
