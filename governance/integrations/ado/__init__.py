@@ -45,6 +45,27 @@ from governance.integrations.ado.reverse_mappers import (
     map_ado_state_to_github,
     map_ado_user_to_github,
 )
+from governance.integrations.ado.hierarchy import (
+    parse_child_references,
+    parse_parent_reference,
+    sync_hierarchy_from_ado,
+    sync_hierarchy_to_ado,
+    validate_type_hierarchy,
+)
+from governance.integrations.ado.comments_sync import (
+    format_ado_to_github_comment,
+    format_github_to_ado_comment,
+    should_sync_comment,
+    sync_comment_from_ado,
+    sync_comment_to_ado,
+)
+from governance.integrations.ado.area_iteration import (
+    map_area_path_to_label,
+    map_iteration_to_milestone,
+    map_label_to_area_path,
+    map_milestone_to_iteration,
+)
+from governance.integrations.ado.bulk_sync import initial_sync
 from governance.integrations.ado._patch import (
     add_field,
     add_github_commit_link,
@@ -108,6 +129,25 @@ __all__ = [
     "map_ado_fields_to_github",
     "map_ado_priority_to_github",
     "map_ado_user_to_github",
+    # Hierarchy sync
+    "parse_parent_reference",
+    "parse_child_references",
+    "sync_hierarchy_to_ado",
+    "sync_hierarchy_from_ado",
+    "validate_type_hierarchy",
+    # Comment sync
+    "should_sync_comment",
+    "format_github_to_ado_comment",
+    "format_ado_to_github_comment",
+    "sync_comment_to_ado",
+    "sync_comment_from_ado",
+    # Area/iteration mapping
+    "map_label_to_area_path",
+    "map_area_path_to_label",
+    "map_milestone_to_iteration",
+    "map_iteration_to_milestone",
+    # Bulk sync
+    "initial_sync",
     # Patch builder
     "add_field",
     "add_github_commit_link",

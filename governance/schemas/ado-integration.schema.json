@@ -77,6 +77,11 @@
           "type": "boolean",
           "default": false,
           "description": "Sync file attachments between GitHub issues and ADO work items."
+        },
+        "comment_prefix": {
+          "type": "string",
+          "default": "[ado-sync]",
+          "description": "Prefix required on comments for them to be synced between systems. Only comments starting with this prefix are eligible for cross-system sync."
         }
       },
       "additionalProperties": false
@@ -162,6 +167,20 @@
         }
       },
       "additionalProperties": false
+    },
+    "area_path_mapping": {
+      "type": "object",
+      "description": "Maps GitHub label suffixes (from 'area:*' labels) to ADO area paths. Keys are the label suffix (e.g., 'Team A' for label 'area:Team A'), values are full ADO area paths (e.g., 'Project\\Team A').",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "iteration_mapping": {
+      "type": "object",
+      "description": "Maps GitHub milestone titles to ADO iteration paths. Keys are milestone titles, values are full ADO iteration paths. The special value '@CurrentIteration' maps to the current ADO sprint.",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "additionalProperties": false

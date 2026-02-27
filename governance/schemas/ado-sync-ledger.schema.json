@@ -85,6 +85,30 @@
             "type": "string",
             "enum": ["active", "paused", "error"],
             "description": "Current status of this mapping. 'active' means sync is operational, 'paused' means sync is temporarily halted, 'error' means the last sync failed."
+          },
+          "comment_mappings": {
+            "type": "array",
+            "description": "Tracks synced comments between GitHub and ADO for this mapping.",
+            "items": {
+              "type": "object",
+              "required": ["github_comment_id", "ado_comment_id", "synced_at"],
+              "properties": {
+                "github_comment_id": {
+                  "type": "integer",
+                  "description": "GitHub comment ID."
+                },
+                "ado_comment_id": {
+                  "type": "string",
+                  "description": "ADO comment ID (as string)."
+                },
+                "synced_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "ISO 8601 timestamp of when this comment was synced."
+                }
+              },
+              "additionalProperties": false
+            }
           }
         },
         "additionalProperties": false

@@ -1174,6 +1174,60 @@ def cmd_health(args: argparse.Namespace) -> int:
     return EXIT_ERROR if has_fail else EXIT_SUCCESS
 
 
+def cmd_initial_sync(args: argparse.Namespace) -> int:
+    """Bulk initial sync — create work items for all open issues (or reverse)."""
+    from governance.integrations.ado.bulk_sync import initial_sync
+
+    direction = "ado_to_github" if args.reverse else "github_to_ado"
+    _verbose(args, f"Starting initial sync ({direction})...")
+
+    client, raw = _build_client(args)
+
+    ledger_path = _find_governance_file("state/ado-sync-ledger.json")
+    if ledger_path is None:
+        ledger_path = Path(".governance/state/ado-sync-ledger.json")
+    error_path = _find_governance_file("state/ado-sync-errors.json")
+    if error_path is None:
+        error_path = Path(".governance/state/ado-sync-errors.json")
+
+    with client:
+        results = initial_sync(
+            raw,
+            client,
+            ledger_path,
+            error_path,
+            direction=direction,
+            dry_run=args.dry_run,
+            limit=args.limit,
+            since=args.since,
+            github_repo=args.repo,
+        )
+
+    created = sum(1 for r in results if r.status == "created")
+    skipped = sum(1 for r in results if r.status == "skipped")
+    errors = sum(1 for r in results if r.status == "error")
+
+    if args.json:
+        _print_json({
+            "direction": direction,
+            "dry_run": args.dry_run,
+            "total": len(results),
+            "created": created,
+            "skipped": skipped,
+            "errors": errors,
+        })
+    else:
+        print(f"\nInitial sync complete ({direction}):")
+        print(f"  Created: {created}")
+        print(f"  Skipped: {skipped}")
+        print(f"  Errors:  {errors}")
+        print(f"  Total:   {len(results)}")
+
+    if args.dry_run:
+        return EXIT_DRY_RUN_WOULD_CHANGE if created + skipped > 0 else EXIT_SUCCESS
+    return EXIT_SUCCESS if errors == 0 else EXIT_ERROR
+
+
 # ── Utility functions ───────────────────────────────────────────────────────
 
 
@@ -1339,6 +1393,33 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Process the error queue, retrying unresolved sync errors.",
     )
 
+    p_initial_sync = subparsers.add_parser(
+        "initial-sync",
+        help="Bulk initial sync: create work items for all open issues (or reverse).",
+    )
+    p_initial_sync.add_argument(
+        "--reverse",
+        action="store_true",
+        help="Sync ADO→GitHub instead of the default GitHub→ADO.",
+    )
+    p_initial_sync.add_argument(
+        "--limit",
+        type=int,
+        metavar="N",
+        help="Process at most N items.",
+    )
+    p_initial_sync.add_argument(
+        "--since",
+        metavar="YYYY-MM-DD",
+        help="Only process items created after this date.",
+    )
+    p_initial_sync.add_argument(
+        "--repo",
+        metavar="OWNER/REPO",
+        default="",
+        help="GitHub repository (e.g., 'owner/repo'). Uses current repo if omitted.",
+    )
+
     # ── Setup ───────────────────────────────────────────────────────────
 
     subparsers.add_parser(
@@ -1388,6 +1469,7 @@ _COMMANDS = {
     "setup-custom-fields": cmd_setup_custom_fields,
     "setup-service-hooks": cmd_setup_service_hooks,
     "health": cmd_health,
+    "initial-sync": cmd_initial_sync,
 }
 
 
