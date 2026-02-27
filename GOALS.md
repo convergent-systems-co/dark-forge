@@ -143,6 +143,23 @@ This document tracks the maturity phases, completed work, and open enhancements 
 |-------|----|-------|--------|
 | #432 | — | Simplify init.sh into modular scripts | Refactored 1,113-line init.sh into 165-line orchestrator + 10 modular scripts in governance/bin/; added --dry-run, --debug flags; quick-install.sh for one-line setup; troubleshooting guide |
 
+### Platform Infrastructure
+
+| Issue | PR | Title | Impact |
+|-------|----|-------|--------|
+| #464 | — | Project Manager persona | Opt-in portfolio-level orchestrator with multiplexed Code Managers; 6-agent architecture |
+| #469 | #486 | Developer prompt library | 12 global prompts in `prompts/global/` for code review, debugging, PR creation, refactoring, test writing |
+| — | — | Prompt catalog system | `bin/generate-prompt-catalog.py`, `catalog/prompt-catalog.json`, `prompt-catalog.schema.json`, `prompt-catalog.yml` CI workflow |
+| — | — | Skills system | `.skill.md` format in `mcp-server/skills/`, Zod validation, MCP tool registration, `governance-review` skill |
+| — | — | MCP server enhancements | Hybrid fetch, IDE auto-installer, `--no-cache`/`--refresh`/`--validate-hash`/`--offline` CLI options, Docker support |
+| — | — | Agentic CI workflows | `agentic-issue-worker.yml` (issue-to-PR pipeline) and `agentic-loop.yml` (reusable AI convergence loop) |
+| — | — | Self-repair workflows | `auto-rebase.yml`, `branch-cleanup.yml`, `self-repair-lint.yml` |
+| — | — | Publishing workflows | `prompt-catalog.yml`, `publish-mcp.yml` (npm + Docker) |
+| — | — | Retroactive ADRs | 5 architectural decision records (001-005) in `docs/decisions/` |
+| — | — | MIT License | Repository licensed under MIT |
+| — | — | Documentation updates | project.yaml configuration guide, CI workflows reference, prompt library guide, skills development guide |
+| #432 | — | Modular init.sh | 1,113-line script refactored to 165-line orchestrator + 10 modular scripts; `--dry-run`, `--debug` flags; `quick-install.sh` |
+
 ## TODO
 
 - [ ] **MkDocs strict build mode** (#366) — Add `mkdocs build --strict` to CI pipeline. NOT INGESTABLE: requires troubleshooting build warnings/errors before strict mode can be enabled. Rolled back from PR #382.
@@ -175,8 +192,8 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 |-----------|------|-----------------|-----------|
 | 5a | Self-Proving Systems | Partially | Can create test governance schemas, test-generation panel definition, proof-of-correctness policy. Cannot build runtime test execution — requires consuming repo integration. |
 | 5b | Self-Evolution | Yes (governance artifacts) | Retrospective aggregation schema, threshold auto-tuning policy, persona effectiveness scoring schema, governance change proposal workflow. All are config/schema artifacts. |
-| 5c | Always-On Orchestration | Yes (governance artifacts) | All governance artifacts complete: event-driven triggers (PR #192), checkpoint resumption (PR #189), cross-session state persistence (PR #209). Runtime blocked by Claude Code/Copilot being session-based tools. |
-| 5d | Multi-Agent Coordination | Governance artifacts complete; single-session prompt-chaining implemented | All governance artifacts defined. Single-session multi-agent architecture implemented: 4-agent prompt-chained pipeline (DevOps Engineer → Code Manager → Coder → Tester) with structured agent protocol. Cross-session parallelism still blocked by AI tooling. |
+| 5c | Always-On Orchestration | Yes (governance artifacts) | All governance artifacts complete: event-driven triggers (PR #192), checkpoint resumption (PR #189), cross-session state persistence (PR #209). Partial CI-native runtime achieved via `agentic-issue-worker` + `agentic-loop` workflows. |
+| 5d | Multi-Agent Coordination | Governance artifacts complete; single-session prompt-chaining implemented | All governance artifacts defined. Single-session multi-agent architecture implemented: 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) with structured agent protocol. Cross-session parallelism still blocked by AI tooling. |
 | 5e | Spec-Driven Interface | Yes (governance artifacts) | Formal spec schema (richer than GitHub issues), acceptance verification workflow, reduced human touchpoint model. All are config artifacts. |
 
 ### 5a — Self-Proving Systems (Partially Achievable)
@@ -192,22 +209,23 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 - [x] Persona effectiveness scoring schema — Schema tracking per-persona signal-to-noise ratio, enabling automated persona weight adjustment (PR #143)
 - [x] Governance change proposal workflow — Agentic workflow where the system proposes governance config changes (new thresholds, persona adjustments) for human approval (PR #147)
 
-### 5c — Always-On Orchestration (Governance Artifacts Complete)
+### 5c — Always-On Orchestration (Governance Artifacts Complete; Partial CI-Native Runtime)
 
 - [x] Event-driven webhook trigger — GitHub Actions workflow dispatching governance sessions on issue creation, labeling, and deployment status changes (PR #191)
 - [x] Automatic checkpoint resumption — Checkpoint schema and resumption workflow for reliable session recovery after context resets (PR #189)
 - [x] Cross-session state persistence — Schema and storage strategy for maintaining governance context across multiple agentic sessions (PR #209)
+- [x] CI-native agentic runtime — `agentic-issue-worker.yml` (issue-to-PR pipeline with complexity assessment, plan generation, `/agentic-retry:` human feedback loop) and `agentic-loop.yml` (reusable AI convergence loop with checkpoint/resume, judge evaluation, manifest logging)
 
-> **Runtime blocked:** All governance artifacts for Phase 5c are complete. Runtime execution requires persistent daemon capabilities (always-on orchestration across sessions), which does not exist in current AI tooling (Claude Code, GitHub Copilot are session-based). Scheduled triggers via GitHub Actions (#74) and event-driven triggers (PR #192) partially address this.
+> **Partially runtime:** All governance artifacts for Phase 5c are complete. CI-native runtime is now partially achieved via `agentic-issue-worker` + `agentic-loop` workflows — issues labeled `agentic-ready` trigger autonomous issue-to-PR pipelines within GitHub Actions. Full always-on orchestration (persistent daemon across sessions) still requires platform capabilities beyond current AI tooling.
 
 ### 5d — Multi-Agent Coordination (Single-Session Implemented)
 
 - [x] Conflict detection schema — JSON Schema for detecting when multiple agents modify overlapping files or governance state (PR #171)
 - [x] Merge sequencing policy — Policy rules for ordering concurrent agent PRs to avoid conflicts and maintain governance consistency (PR #174)
 - [x] Parallel agent session protocol — Specification for spawning, coordinating, and reconciling multiple concurrent agent sessions (PR #181)
-- [x] Single-session multi-agent architecture — 4-agent prompt-chained pipeline (DevOps Engineer, Code Manager, Coder, Tester) with structured agent protocol, implementing Anthropic's Routing, Orchestrator-Workers, and Evaluator-Optimizer patterns (PR #228)
+- [x] Single-session multi-agent architecture — 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) with structured agent protocol, implementing Anthropic's Routing, Orchestrator-Workers, and Evaluator-Optimizer patterns (PR #228, #464)
 
-> **Partially runtime:** Single-session multi-agent coordination is implemented via prompt-chaining (all four agents execute sequentially within one context window). Cross-session parallelism (multiple concurrent agent processes) still requires a multi-agent orchestrator, which does not exist in current AI tooling.
+> **Partially runtime:** Single-session multi-agent coordination is implemented via prompt-chaining (six agents execute within one context window with parallel Coder dispatch). Project Manager mode enables multiplexed Code Managers for higher throughput. Cross-session parallelism (multiple concurrent agent processes) still requires a multi-agent orchestrator, which does not exist in current AI tooling.
 
 ### 5e — Spec-Driven Interface (Achievable — Governance Artifacts)
 

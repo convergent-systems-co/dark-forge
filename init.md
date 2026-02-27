@@ -43,7 +43,7 @@ The `--refresh` flag re-applies structural setup (symlinks, workflows, directori
 | Directory | Contents |
 |-----------|----------|
 | `governance/prompts/reviews/` | 19 consolidated review prompts (canonical location for all reviews) |
-| `governance/personas/agentic/` | 5 agentic personas (DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) |
+| `governance/personas/agentic/` | 6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) |
 | `governance/policy/` | 3 deterministic policy profiles (default, fin_pii_high, infrastructure_critical) |
 | `governance/schemas/` | JSON schemas for structured emissions and panel configuration |
 | `governance/prompts/` | Workflow prompts, templates (plan, runtime DI), startup loop |

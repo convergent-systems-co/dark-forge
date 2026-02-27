@@ -24,11 +24,11 @@ Deep-dive into platform design and internals.
 | [Session State Persistence](architecture/session-state-persistence.md) | Cross-session governance state storage strategy (Phase 5c) |
 | [Event-Driven Triggers](architecture/event-driven-triggers.md) | Event-driven governance session dispatch (Phase 5c) |
 | [Formal Specification](architecture/formal-spec.md) | Formal specification of governance invariants |
-| [Agent Architecture](architecture/agent-architecture.md) | 4-agent prompt-chained architecture, protocol, transport phases, failure modes |
+| [Agent Architecture](architecture/agent-architecture.md) | 6-agent prompt-chained architecture, protocol, transport phases, failure modes |
 
 ### Agentic Architecture
 
-The agentic loop uses a 4-agent prompt-chained pipeline. Start it with `/startup` in your AI tool.
+The agentic loop uses a 6-agent prompt-chained pipeline. Start it with `/startup` in your AI tool.
 
 | Persona | Pattern | Role |
 |---------|---------|------|

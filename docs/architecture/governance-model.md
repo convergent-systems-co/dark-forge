@@ -835,7 +835,7 @@ flowchart TD
 
 ## 11. Role Definitions
 
-The agentic pipeline uses a 4-agent prompt-chained architecture implementing Anthropic's orchestration patterns:
+The agentic pipeline uses a 6-agent prompt-chained architecture implementing Anthropic's orchestration patterns:
 
 | Agent | Pattern | Role |
 |-------|---------|------|

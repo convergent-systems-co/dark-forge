@@ -43,13 +43,13 @@ git add .ai && git commit -m "Update .ai submodule"
 
 ## Starting the Agentic Loop
 
-Run `/startup` in your AI tool (Claude Code or GitHub Copilot). This activates the 5-agent pipeline:
+Run `/startup` in your AI tool (Claude Code or GitHub Copilot). This activates the 6-agent pipeline:
 
 ```
 /startup
 ```
 
-The pipeline chains five agents through five phases, looping until the session cap is hit:
+The pipeline chains six agents through five phases, looping until the session cap is hit. An optional Project Manager mode (`governance.use_project_manager: true`) enables multiplexed Code Managers for higher throughput.
 
 ```mermaid
 flowchart TD
@@ -201,13 +201,35 @@ If the agent repeats itself, forgets decisions, or re-reads files it already rea
 
 **Auto-merge fails** — Verify `allow_auto_merge` is enabled and CODEOWNERS is populated. Run `bash .ai/bin/init.sh` to apply settings.
 
+## Developer Prompt Library
+
+12 production-ready prompts are available in `prompts/global/` for common tasks: code review, debugging, PR creation, refactoring, test writing, and more. Use them via the MCP server or read directly from the filesystem. See [Prompt Library Guide](../guides/prompt-library.md).
+
+## MCP Server Quick Start
+
+The MCP server exposes governance prompts, panels, and tools to any MCP-compatible IDE:
+
+```bash
+bash mcp-server/install.sh --governance-root /path/to/repo   # Auto-configure Claude Code, VS Code, Cursor
+```
+
+See [MCP Server Usage](../guides/mcp-server-usage.md) for details.
+
+## Skills System
+
+Skills (`.skill.md` files) are self-contained capabilities registered as MCP tools. The `governance-review` skill runs panel reviews against code changes. See [Skills Development Guide](../guides/skills-development.md).
+
 ## Further Reading
 
 - [README.md](../../README.md) — Full architecture, governance layers, file structure, and [Documentation Index](../../README.md#documentation-index)
 - [GOALS.md](../../GOALS.md) — Phase status and completed work
 - [governance/prompts/reviews/](../../governance/prompts/reviews/) — 19 consolidated review prompts (preferred, replaces individual persona/panel files)
-- [governance/personas/agentic/](../../governance/personas/agentic/) — 5 agentic personas (DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
+- [governance/personas/agentic/](../../governance/personas/agentic/) — 6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
 - [docs/architecture/governance-model.md](../architecture/governance-model.md) — Governance layers, policy profiles, and how changes flow through the system
+- [docs/guides/project-yaml-configuration.md](../guides/project-yaml-configuration.md) — Complete project.yaml configuration reference
+- [docs/architecture/ci-workflows.md](../architecture/ci-workflows.md) — All 16 GitHub Actions workflows
+- [docs/guides/prompt-library.md](../guides/prompt-library.md) — Developer prompt library and catalog system
+- [docs/guides/skills-development.md](../guides/skills-development.md) — MCP skills system
 - [docs/configuration/repository-setup.md](../configuration/repository-setup.md) — Repository settings, CODEOWNERS, per-project overrides
 - [docs/architecture/context-management.md](../architecture/context-management.md) — Context tiers, capacity detection, shutdown protocol
 - [governance/prompts/startup.md](../../governance/prompts/startup.md) — Agentic loop entry point (full protocol)

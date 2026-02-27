@@ -47,6 +47,10 @@ powershell -ExecutionPolicy Bypass -File mcp-server\install.ps1 -GovernanceRoot 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `--governance-root` | Auto-detected | Path to the repository root containing `governance/` |
+| `--no-cache` | `false` | Disable resource caching (reload from disk on every request) |
+| `--refresh` | `false` | Clear cached resources on startup |
+| `--validate-hash` | `false` | Validate content integrity against stored SHA-256 hashes |
+| `--offline` | `false` | Disable network requests (use only local resources) |
 
 If `--governance-root` is not specified, the server walks up from its install location to find the `governance/` directory (works for both the Dark Factory Governance repository itself and consuming repos with `.ai/governance/`).
 
@@ -134,12 +138,13 @@ URI pattern: `governance://workflows/{workflow-name}`
 
 Includes: feature-implementation, bug-fix, refactoring, documentation, migration, api-design, architecture-decision, incident-response, acceptance-verification, and index.
 
-### Personas (5)
+### Personas (6)
 
 URI pattern: `governance://personas/{persona-name}`
 
 | URI | Description |
 |-----|-------------|
+| `governance://personas/project-manager` | Portfolio-level orchestrator (opt-in) |
 | `governance://personas/code-manager` | Pipeline orchestrator |
 | `governance://personas/coder` | Implementation agent |
 | `governance://personas/devops-engineer` | Session entry point and routing |
@@ -235,6 +240,59 @@ Perform threat modeling analysis using the threat modeling prompt.
 
 **Arguments:** None
 
+## Hybrid Fetch System
+
+The MCP server uses a hybrid fetch strategy for loading governance resources:
+
+1. **Local filesystem** (primary) — Reads directly from the governance root directory
+2. **Cached content** — Stores parsed resources in memory for fast repeated access
+3. **Hash validation** — Optional integrity checking via `--validate-hash` using SHA-256 digests from the prompt catalog
+
+The `--offline` flag restricts the server to local resources only, useful for air-gapped environments.
+
+## Install Subcommand
+
+The `install.sh` script automatically configures MCP server entries for supported IDEs:
+
+```bash
+bash mcp-server/install.sh --governance-root /path/to/repo
+```
+
+**What it configures:**
+
+| IDE | Configuration File | Server Key |
+|-----|-------------------|------------|
+| Claude Code | `~/.claude.json` (workspace) | `ai-submodule-mcp` |
+| VS Code | `.vscode/settings.json` | `mcp.servers.ai-submodule-mcp` |
+| Cursor | `~/.cursor/mcp.json` | `ai-submodule-mcp` |
+
+The installer validates Node.js availability and the built server (`dist/index.js`) before configuring. It generates the correct args array with the governance root path and merges it into existing IDE settings without overwriting other configuration.
+
+**Windows:**
+```powershell
+powershell -ExecutionPolicy Bypass -File mcp-server\install.ps1 -GovernanceRoot C:\path\to\repo
+```
+
+## Skills
+
+Skills are self-contained capabilities exposed as MCP tools. Each skill is a `.skill.md` file in `mcp-server/skills/` with YAML frontmatter defining its name, description, and allowed tools.
+
+**Available skills:**
+
+| Skill | Description | Allowed Tools |
+|-------|-------------|---------------|
+| `governance-review` | Run governance panel reviews against code changes | Read, Glob, Grep, Bash |
+
+**Skill tool input schema:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `task` | string | Yes | The specific task to perform |
+| `context` | string | No | Additional context |
+| `output_format` | string | No | Desired output format |
+
+See [Skills Development Guide](skills-development.md) for creating new skills.
+
 ## Content Integrity
 
 The server provides manifest generation for integrity validation:
@@ -283,7 +341,7 @@ Verify the governance root contains the expected directory structure:
 governance/
   prompts/reviews/     (20 .md files)
   prompts/workflows/   (10 .md files)
-  personas/agentic/    (5 .md files)
+  personas/agentic/    (6 .md files)
   policy/              (4 primary .yaml files)
   schemas/             (panel-output.schema.json)
 ```

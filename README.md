@@ -13,7 +13,7 @@ The Dark Factory Governance Platform exists to:
 1. **Automate software delivery governance** — Replace manual code review gates with structured, auditable AI-driven review panels that produce deterministic merge decisions.
 2. **Enforce policy without human bottlenecks** — Deterministic policy profiles (default, financial/PII, infrastructure-critical) evaluate every change programmatically. AI models never interpret policy rules.
 3. **Maintain compliance at scale** — Embed SOC2, PCI-DSS, HIPAA, and GDPR compliance into the review pipeline so regulated changes are caught at intake, not after merge.
-4. **Enable autonomous agentic operation** — A 5-agent prompt-chained pipeline (DevOps Engineer → Code Manager → Coder → IaC Engineer → Tester) orchestrates the full lifecycle (session management, issue triage, planning, implementation, evaluation, review, merge) with human oversight only where policy requires it.
+4. **Enable autonomous agentic operation** — A 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) orchestrates the full lifecycle (session management, issue triage, planning, implementation, evaluation, review, merge) with human oversight only where policy requires it.
 5. **Distribute governance as infrastructure** — Ship as a git submodule so any repository gets personas, panels, policies, and CI workflows by adding a single dependency.
 6. **Reach full Dark Factory** — Progress through defined maturity phases toward fully autonomous software delivery with runtime feedback loops and self-evolving governance.
 
@@ -36,6 +36,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
 
 ```
 .ai/  (or repo root when working on this repo directly)
+  LICENSE                      MIT license
   instructions.md              Base AI instructions (< 200 tokens, Tier 0)
   instructions/                Decomposed instruction modules (code-quality, security, testing, etc.)
   config.yaml                  Symlink and sync configuration
@@ -44,6 +45,15 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
     init.ps1                   Bootstrap script for consuming repos (Windows)
     issue-monitor.sh           Local issue monitor daemon (macOS/Linux)
     issue-monitor.ps1          Local issue monitor daemon (Windows)
+    generate-prompt-catalog.py Prompt catalog generator
+
+  prompts/                     Developer prompts
+    global/                    12 global developer prompts (*.prompt.md)
+  catalog/                     Auto-generated prompt catalog
+    prompt-catalog.json        Machine-readable prompt index
+
+  mcp-server/                  MCP server for IDE integration
+    skills/                    MCP skills (*.skill.md)
 
   governance/                  All governance machinery (personas, policy, schemas, etc.)
     templates/                 Language-specific scaffolding
@@ -53,7 +63,7 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       react/                   React conventions
       csharp/                  C#/.NET conventions
     personas/                  AI persona definitions (Markdown)
-      agentic/                 DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester
+      agentic/                 Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester
 
     prompts/                   Reusable prompt templates
       reviews/                 19 consolidated review prompts (replaces personas/panels/)
@@ -140,8 +150,13 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
       repository-setup.md        Repository settings and CODEOWNERS setup
       ci-gating.md               CI checks, branch protection, auto-merge
       copilot-integration.md     Copilot auto-fix configuration guide
-    decisions/                   Architectural decision records
-      README.md                  ADR-001 through ADR-011
+    decisions/                   Architectural decision records (5 ADRs)
+      README.md                  ADR index
+      001-deterministic-policy-engine.md
+      002-panel-based-review-system.md
+      003-agent-persona-model.md
+      004-submodule-distribution.md
+      005-jit-context-management.md
     governance/                  Governance processes
       artifact-classification.md Cognitive, Enforcement, Audit artifact types
       acceptance-verification.md Acceptance criteria verification
@@ -167,11 +182,21 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
   .github/
     workflows/
       dark-factory-governance.yml   Governance review CI (detect + policy engine + review)
-      plan-archival.yml             Archives plans to releases on PR merge
-      propagate-submodule.yml       Auto-propagation for consuming repos
-      issue-monitor.yml                 Issue evaluation and agent dispatch (manual + event-driven)
-      event-trigger.yml                 Event-driven governance session dispatch (Phase 5c)
       jm-compliance.yml             Enterprise-locked compliance checks
+      plan-archival.yml             Archives plans to releases on PR merge
+      prompt-eval.yml               Prompt evaluation tests
+      agentic-issue-worker.yml      CI-native issue-to-PR pipeline (Phase 5c)
+      agentic-loop.yml              Reusable AI convergence loop (Phase 5c)
+      event-trigger.yml             Event-driven governance session dispatch (Phase 5c)
+      issue-monitor.yml             Issue evaluation and agent dispatch
+      auto-rebase.yml               Keep agent PRs rebased on main
+      branch-cleanup.yml            Delete merged/stale branches weekly
+      self-repair-lint.yml          Detect workflow lint errors
+      propagate-submodule.yml       Auto-propagation for consuming repos
+      deploy-docs.yml               Build and deploy docs site
+      publish-dashboard.yml         Governance catalog dashboard
+      prompt-catalog.yml            Regenerate prompt catalog
+      publish-mcp.yml               Publish MCP server (npm + Docker)
     ISSUE_TEMPLATE/
       feature-request.yml           Structured feature request form
       bug-report.yml                Structured bug report form
@@ -182,10 +207,11 @@ See [GOALS.md](GOALS.md) for detailed progress tracking, completed work, and ope
 
 ### Agentic Pipeline (5-Phase Parallel Workflow)
 
-The platform uses a 5-agent prompt-chained pipeline implementing Anthropic's orchestration patterns. The Code Manager dispatches **parallel Coder agents** — each running in an isolated git worktree with its own context window — enabling concurrent work on multiple issues per session.
+The platform uses a 6-agent prompt-chained pipeline implementing Anthropic's orchestration patterns. The Code Manager dispatches **parallel Coder agents** — each running in an isolated git worktree with its own context window — enabling concurrent work on multiple issues per session.
 
 | Agent | Pattern | Role |
 |-------|---------|------|
+| **Project Manager** | Orchestrator-Workers | Portfolio-level orchestrator (opt-in): multiplexes Code Managers, cross-batch coordination |
 | **DevOps Engineer** | Routing | Session entry, pre-flight checks (including branch protection detection), issue triage, routing |
 | **Code Manager** | Orchestrator-Workers | Intent validation, panel selection, parallel dispatch, review coordination, merge |
 | **Coder** | Worker | Implementation, test coverage, structured output (runs in isolated worktree) |
@@ -209,7 +235,7 @@ flowchart TD
     P5 -->|Session cap or context pressure| STOP[Shutdown Protocol]
 ```
 
-Inter-agent communication uses typed messages (`ASSIGN`, `STATUS`, `RESULT`, `FEEDBACK`, `ESCALATE`, `APPROVE`, `BLOCK`, `CANCEL`) per the [Agent Protocol](governance/prompts/agent-protocol.md). Up to N Coder agents run concurrently (N = `governance.parallel_coders` from `project.yaml`, default 5; set to -1 for unlimited context-monitored mode).
+Inter-agent communication uses typed messages (`ASSIGN`, `STATUS`, `RESULT`, `FEEDBACK`, `ESCALATE`, `APPROVE`, `BLOCK`, `CANCEL`, `WATCH`) per the [Agent Protocol](governance/prompts/agent-protocol.md). Up to N Coder agents run concurrently (N = `governance.parallel_coders` from `project.yaml`, default 5; set to -1 for unlimited context-monitored mode).
 
 ### Governance Layers (Phase 4a)
 
@@ -325,11 +351,24 @@ Quick navigation to all documentation in this repository.
 | Document | Topic |
 |----------|-------|
 | [Governance Model](docs/architecture/governance-model.md) | Five governance layers and decision authority |
+| [Agent Architecture](docs/architecture/agent-architecture.md) | 6-agent prompt-chained architecture and protocol |
+| [CI Workflows](docs/architecture/ci-workflows.md) | All 16 GitHub Actions workflows |
 | [Artifact Classification](docs/governance/artifact-classification.md) | Cognitive, Enforcement, and Audit artifact types |
 | [Context Management](docs/architecture/context-management.md) | JIT loading tiers and checkpoint-based reset protection |
 | [Runtime Feedback](docs/architecture/runtime-feedback.md) | Drift detection and incident-to-DI generation (Phase 4b/5) |
 | [CI Gating Blueprint](docs/configuration/ci-gating.md) | CI checks, branch protection, and auto-merge |
 | [Repository Configuration](docs/configuration/repository-setup.md) | Settings, CODEOWNERS, and branch protection setup |
+
+### Guides
+
+| Document | Topic |
+|----------|-------|
+| [project.yaml Configuration](docs/guides/project-yaml-configuration.md) | Complete reference for all project.yaml keys |
+| [Prompt Library](docs/guides/prompt-library.md) | 12 global developer prompts and catalog system |
+| [Skills Development](docs/guides/skills-development.md) | MCP skills system and creating new skills |
+| [MCP Server Usage](docs/guides/mcp-server-usage.md) | MCP server setup, resources, and tools |
+| [MCP Security Guidelines](docs/guides/mcp-security-guidelines.md) | Security guidance for MCP server deployment |
+| [Naming CLI Usage](docs/guides/naming-cli-usage.md) | Azure resource naming CLI tool |
 
 ### Operational Guides
 
@@ -345,6 +384,16 @@ Quick navigation to all documentation in this repository.
 | [Mass Parallelization](docs/architecture/mass-parallelization.md) | Multi-agent orchestration with collision domains (Phase 5e) |
 | [Session State Persistence](docs/architecture/session-state-persistence.md) | Cross-session governance state storage strategy (Phase 5c) |
 | [Naming Review](docs/governance/naming-review.md) | Persona/panel naming consistency |
+
+### Architectural Decisions
+
+| Document | Topic |
+|----------|-------|
+| [ADR-001](docs/decisions/001-deterministic-policy-engine.md) | Deterministic policy engine |
+| [ADR-002](docs/decisions/002-panel-based-review-system.md) | Panel-based review system |
+| [ADR-003](docs/decisions/003-agent-persona-model.md) | Agent persona model |
+| [ADR-004](docs/decisions/004-submodule-distribution.md) | Submodule distribution model |
+| [ADR-005](docs/decisions/005-jit-context-management.md) | JIT context management |
 
 ### Agentic Prompts
 
@@ -369,6 +418,7 @@ Quick navigation to all documentation in this repository.
 |----------|-------------|
 | [Consolidated Review Prompts](governance/prompts/reviews/) | 19 self-contained review prompts (canonical location) |
 | [Shared Perspectives](governance/prompts/shared-perspectives.md) | Canonical definitions for cross-cutting perspectives |
+| [Project Manager](governance/personas/agentic/project-manager.md) | Portfolio orchestrator (opt-in) — multiplexed Code Managers, cross-batch coordination |
 | [DevOps Engineer](governance/personas/agentic/devops-engineer.md) | Routing agent — session lifecycle, pre-flight, issue triage |
 | [Code Manager](governance/personas/agentic/code-manager.md) | Orchestrator agent — intent validation, panel selection, review coordination, merge |
 | [Coder](governance/personas/agentic/coder.md) | Worker agent — implementation, tests, structured output |

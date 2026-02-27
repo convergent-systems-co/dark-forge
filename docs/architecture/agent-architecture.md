@@ -2,13 +2,19 @@
 
 ## Overview
 
-The Dark Factory Governance Platform uses a 4-agent prompt-chained architecture for autonomous software delivery. Each agent has a distinct role, bounded authority, and communicates via a structured protocol. The architecture implements three Anthropic agent patterns: Routing, Orchestrator-Workers with Parallelization, and Evaluator-Optimizer.
+The Dark Factory Governance Platform uses a 6-agent prompt-chained architecture for autonomous software delivery. Each agent has a distinct role, bounded authority, and communicates via a structured protocol. The architecture implements three Anthropic agent patterns: Routing, Orchestrator-Workers with Parallelization, and Evaluator-Optimizer.
 
 No agent can self-approve its own work. Every work item flows through at least three agents before merge.
+
+The six agents operate in two modes:
+- **Standard mode** (default) — DevOps Engineer is the session entry point, dispatching to Code Manager, which orchestrates Coder, IaC Engineer (conditional), and Tester
+- **Project Manager mode** (opt-in via `governance.use_project_manager: true`) — Project Manager replaces DevOps Engineer as entry point, multiplexing multiple Code Managers for higher throughput
 
 ---
 
 ## System Diagram
+
+### Standard Mode (Default)
 
 ```mermaid
 flowchart TD
@@ -25,6 +31,7 @@ flowchart TD
         C1[Coder Agent 1<br/><i>Worker</i>]
         C2[Coder Agent 2<br/><i>Worker</i>]
         CN[Coder Agent N<br/><i>Worker</i>]
+        IAC[IaC Engineer<br/><i>Worker (conditional)</i>]
     end
 
     subgraph "Phase 4 — Evaluation & Review"
@@ -41,9 +48,11 @@ flowchart TD
     CM_DISPATCH -->|"Task(worktree)"| C1
     CM_DISPATCH -->|"Task(worktree)"| C2
     CM_DISPATCH -->|"Task(worktree)"| CN
+    CM_DISPATCH -->|"Task(worktree, infra)"| IAC
     C1 -->|RESULT| CM_COLLECT
     C2 -->|RESULT| CM_COLLECT
     CN -->|RESULT| CM_COLLECT
+    IAC -->|RESULT| CM_COLLECT
     CM_COLLECT -->|"ASSIGN (evaluate)"| T
     T -->|APPROVE| CM_MERGE
     T -->|FEEDBACK| CM_COLLECT
@@ -51,11 +60,89 @@ flowchart TD
     CM_MERGE -->|"Loop or shutdown"| DE
 ```
 
+### Project Manager Mode (Opt-In)
+
+```mermaid
+flowchart TD
+    subgraph "PM Phase 0-1"
+        PM[Project Manager<br/><i>Portfolio Orchestrator</i>]
+        DE_BG[DevOps Engineer<br/><i>Background Agent</i>]
+    end
+
+    subgraph "PM Phase 2 — Multiplexed Managers"
+        CM1[Code Manager 1<br/><i>Code batch</i>]
+        CM2[Code Manager 2<br/><i>Docs batch</i>]
+        CMM[Code Manager M<br/><i>Infra batch</i>]
+    end
+
+    subgraph "Nested Workers"
+        C1A[Coder 1a]
+        C1B[Coder 1b]
+        C2A[Coder 2a]
+        IAC_M[IaC Engineer]
+    end
+
+    PM -->|"spawn (background)"| DE_BG
+    DE_BG -->|"RESULT (grouped batches)"| PM
+    DE_BG -.->|"WATCH (new issues)"| PM
+    PM -->|"ASSIGN (code group)"| CM1
+    PM -->|"ASSIGN (docs group)"| CM2
+    PM -->|"ASSIGN (infra group)"| CMM
+    CM1 -->|"Task(worktree)"| C1A
+    CM1 -->|"Task(worktree)"| C1B
+    CM2 -->|"Task(worktree)"| C2A
+    CMM -->|"Task(worktree)"| IAC_M
+    CM1 -->|RESULT| PM
+    CM2 -->|RESULT| PM
+    CMM -->|RESULT| PM
+```
+
 ---
 
-## The Four Agents
+## The Six Agents
 
-### 1. DevOps Engineer
+### 1. Project Manager (Opt-In)
+
+**Pattern:** Anthropic's Orchestrator-Workers at portfolio level
+**Source:** [`governance/personas/agentic/project-manager.md`](../../governance/personas/agentic/project-manager.md)
+**Activation:** `governance.use_project_manager: true` in `project.yaml`
+
+The Project Manager is an opt-in portfolio-level orchestrator that replaces the DevOps Engineer as the session entry point. It multiplexes multiple Code Managers for higher throughput.
+
+**Responsibilities:**
+
+- Session initialization and checkpoint recovery (PM-specific state)
+- Spawn DevOps Engineer as a background agent for pre-flight and triage
+- Receive grouped issue batches from DevOps Engineer
+- Spawn M Code Managers (one per group, M = `governance.parallel_code_managers`, default 3)
+- Coordinate cross-batch dependencies
+- Process WATCH messages from DevOps Engineer for new issues discovered mid-session
+- Manage lifecycle: CANCEL propagation, context capacity monitoring, checkpoint writing
+
+**Authority boundaries:**
+
+| Domain | Authority |
+|--------|-----------|
+| Session lifecycle | Full (supersedes DevOps Engineer in PM mode) |
+| Code Manager spawning and assignment | Full |
+| Cross-batch coordination | Full |
+| CANCEL propagation | Full |
+| Implementation, code review, merge | None (delegated to Code Managers) |
+
+**Context thresholds:**
+
+| Level | Tool Calls | Chat Turns | Active CMs | Token Usage |
+|-------|-----------|------------|------------|-------------|
+| Green | < 40 | < 60 | < M-1 | < 60% |
+| Yellow | 40-55 | 60-100 | M-1 | 60-70% |
+| Orange | 55-80 | 100-150 | M | 70-80% |
+| Red | > 80 | > 150 | M | >= 80% |
+
+**Key constraint:** The Project Manager never writes code, reviews PRs, or merges. It only spawns and coordinates Code Managers.
+
+---
+
+### 2. DevOps Engineer
 
 **Pattern:** Anthropic's Routing pattern
 **Source:** [`governance/personas/agentic/devops-engineer.md`](../../governance/personas/agentic/devops-engineer.md)
@@ -86,7 +173,11 @@ The DevOps Engineer is the session entry point. It owns session lifecycle and de
 
 ---
 
-### 2. Code Manager
+In Project Manager mode, the DevOps Engineer runs as a background agent, continuously polling for new issues and emitting WATCH messages to the Project Manager when new actionable work is discovered.
+
+---
+
+### 3. Code Manager
 
 **Pattern:** Anthropic's Orchestrator-Workers with Parallelization
 **Source:** [`governance/personas/agentic/code-manager.md`](../../governance/personas/agentic/code-manager.md)
@@ -126,7 +217,7 @@ The Code Manager is the primary orchestrator. It manages the lifecycle of work f
 
 ---
 
-### 3. Coder
+### 4. Coder
 
 **Pattern:** Worker in Anthropic's Orchestrator-Workers pattern
 **Source:** [`governance/personas/agentic/coder.md`](../../governance/personas/agentic/coder.md)
@@ -163,7 +254,40 @@ The Coder is the execution agent. It implements changes as directed by the Code 
 
 ---
 
-### 4. Tester
+### 5. IaC Engineer (Conditional)
+
+**Pattern:** Worker in Anthropic's Orchestrator-Workers pattern
+**Source:** [`governance/personas/agentic/iac-engineer.md`](../../governance/personas/agentic/iac-engineer.md)
+
+The IaC Engineer is a conditional execution agent dispatched only for infrastructure changes. It follows JM Paved Roads standards for Azure resource provisioning.
+
+**Dispatch trigger:** Issues involving `.bicep`, `.tf`, `infra/**`, `bicep/**`, `terraform/**`, `*.bicepparam`, `*.tfvars`.
+
+**Responsibilities:**
+
+- Implement infrastructure changes using Bicep or Terraform
+- Follow JM Paved Roads naming conventions and module registry
+- Apply security-first defaults and mandatory tagging (Application, Environment, ManagedBy)
+- Configure per-environment parameter files
+- Emit structured RESULT messages
+
+**Authority boundaries:**
+
+| Domain | Authority |
+|--------|-----------|
+| Infrastructure implementation | Full (within allowed paths) |
+| Naming convention compliance | Full |
+| Module registry selection | Full |
+| Application code changes | None |
+| Policy/schema/persona modification | None |
+
+**Containment limits:** Max 20 files/PR, 800 lines/commit, 10 new files/PR, 15 commits/PR.
+
+**Allowed paths:** `infra/**`, `bicep/**`, `terraform/**`, `*.bicep`, `*.bicepparam`, `*.tf`, `*.tfvars`, `parameters.json`, `.governance/plans/**`, `docs/**`.
+
+---
+
+### 6. Tester
 
 **Pattern:** Anthropic's Evaluator-Optimizer pattern
 **Source:** [`governance/personas/agentic/tester.md`](../../governance/personas/agentic/tester.md)
@@ -214,13 +338,15 @@ All inter-agent communication uses structured JSON messages with these types:
 
 | Type | Purpose | Valid Senders |
 |------|---------|---------------|
-| `ASSIGN` | Delegate a work unit | DevOps Engineer -> Code Manager, Code Manager -> Coder, Code Manager -> Tester |
-| `STATUS` | Progress update | Coder -> Code Manager, Code Manager -> DevOps Engineer |
-| `RESULT` | Report completion | Coder -> Code Manager, Code Manager -> DevOps Engineer |
-| `FEEDBACK` | Structured evaluation feedback | Tester -> Code Manager (relayed to Coder) |
+| `ASSIGN` | Delegate a work unit | Project Manager -> Code Manager, DevOps Engineer -> Code Manager, Code Manager -> Coder/IaC Engineer, Code Manager -> Tester |
+| `STATUS` | Progress update | Coder -> Code Manager, Code Manager -> DevOps Engineer/Project Manager |
+| `RESULT` | Report completion | Coder/IaC Engineer -> Code Manager, Code Manager -> DevOps Engineer/Project Manager, DevOps Engineer -> Project Manager |
+| `FEEDBACK` | Structured evaluation feedback | Tester -> Code Manager (relayed to Coder/IaC Engineer) |
 | `ESCALATE` | Escalate beyond authority | Any agent -> its orchestrator |
 | `APPROVE` | Approve for next phase | Tester -> Code Manager |
 | `BLOCK` | Reject; must fix before proceeding | Tester -> Code Manager |
+| `CANCEL` | Stop work immediately | Any orchestrator -> its workers (cascading) |
+| `WATCH` | Notify of new actionable work | DevOps Engineer -> Project Manager (background polling mode) |
 
 ### Message Schema
 
@@ -228,9 +354,9 @@ Every message includes:
 
 ```json
 {
-  "message_type": "ASSIGN | STATUS | RESULT | FEEDBACK | ESCALATE | APPROVE | BLOCK | CANCEL",
-  "source_agent": "devops-engineer | code-manager | coder | tester",
-  "target_agent": "devops-engineer | code-manager | coder | tester",
+  "message_type": "ASSIGN | STATUS | RESULT | FEEDBACK | ESCALATE | APPROVE | BLOCK | CANCEL | WATCH",
+  "source_agent": "project-manager | devops-engineer | code-manager | coder | iac-engineer | tester",
+  "target_agent": "project-manager | devops-engineer | code-manager | coder | iac-engineer | tester",
   "correlation_id": "issue-42",
   "payload": {},
   "feedback": {}
@@ -241,19 +367,29 @@ Every message includes:
 
 ```mermaid
 flowchart LR
-    DE[DevOps Engineer] -->|ASSIGN| CM[Code Manager]
+    PM[Project Manager] -->|ASSIGN / CANCEL| CM[Code Manager]
+    CM -->|STATUS / RESULT / ESCALATE| PM
+
+    DE[DevOps Engineer] -->|ASSIGN / RESULT| PM
+    DE -.->|WATCH| PM
+    DE -->|ASSIGN| CM
+
     CM -->|STATUS / RESULT / ESCALATE| DE
 
-    CM -->|ASSIGN| CO[Coder]
+    CM -->|ASSIGN / CANCEL| CO[Coder]
     CO -->|STATUS / RESULT / ESCALATE| CM
+
+    CM -->|ASSIGN / CANCEL| IAC[IaC Engineer]
+    IAC -->|STATUS / RESULT / ESCALATE| CM
 
     CM -->|ASSIGN| TE[Tester]
     TE -->|FEEDBACK / APPROVE / BLOCK / ESCALATE| CM
 
     CM -->|"FEEDBACK (relayed)"| CO
+    CM -->|"FEEDBACK (relayed)"| IAC
 ```
 
-Agents must not send message types not listed in their valid transitions. The DevOps Engineer never communicates directly with the Coder or Tester.
+Agents must not send message types not listed in their valid transitions. The DevOps Engineer never communicates directly with the Coder, IaC Engineer, or Tester. The Project Manager communicates only with DevOps Engineer and Code Managers.
 
 ---
 
@@ -320,13 +456,13 @@ Each file contains the full message schema as JSON. The orchestrator reads the d
 
 ## Pipeline Phases
 
-The startup sequence (`governance/prompts/startup.md`) chains the four agents through five phases:
+The startup sequence (`governance/prompts/startup.md`) chains the six agents through five phases (standard mode):
 
 | Phase | Agent(s) | What Happens |
 |-------|----------|--------------|
 | 1 | DevOps Engineer | Pre-flight checks, resolve open PRs, triage and prioritize issues |
 | 2 | Code Manager | Validate intent for all issues, select review panels, create plans |
-| 3 | Code Manager + Coders | Parallel dispatch: spawn up to N Coder agents in worktrees |
+| 3 | Code Manager + Coders + IaC Engineer | Parallel dispatch: spawn up to N Coder agents in worktrees; IaC Engineer for infrastructure changes |
 | 4 | Code Manager + Tester | Collect results, Tester evaluates, security review, PR monitoring |
 | 5 | Code Manager + DevOps Engineer | Merge PRs, retrospective, loop or shutdown |
 
@@ -431,7 +567,7 @@ If the policy engine blocks a merge:
 
 ### Adding a New Agent
 
-To add a fifth agent to the pipeline:
+To add a new agent to the pipeline:
 
 1. Create a persona file in `governance/personas/agentic/` defining role, responsibilities, authority, and anti-patterns
 2. Define its valid message transitions in `governance/prompts/agent-protocol.md`
@@ -474,7 +610,10 @@ This controls the maximum number of `Task` tool dispatches in Phase 3.
 - [Governance Model](governance-model.md) -- The five governance layers the agents operate within
 - [Context Management](context-management.md) -- JIT loading tiers and shutdown protocol
 - [Mass Parallelization](mass-parallelization.md) -- Multi-agent collision domains (Phase 5e)
+- [Project Manager Persona](../../governance/personas/agentic/project-manager.md)
 - [DevOps Engineer Persona](../../governance/personas/agentic/devops-engineer.md)
 - [Code Manager Persona](../../governance/personas/agentic/code-manager.md)
 - [Coder Persona](../../governance/personas/agentic/coder.md)
+- [IaC Engineer Persona](../../governance/personas/agentic/iac-engineer.md)
 - [Tester Persona](../../governance/personas/agentic/tester.md)
+- [Project Manager Architecture](project-manager-architecture.md)

@@ -8,7 +8,7 @@ The Dark Factory Governance Platform is an **AI governance framework** for auton
 
 - **No application code** — only configuration, policy, schemas, and documentation
 - **Governance artifacts** — personas, review prompts, policy profiles, and schemas
-- **Agentic workflows** — five-agent pipeline for autonomous software delivery
+- **Agentic workflows** — six-agent pipeline for autonomous software delivery
 - **Deterministic policy engine** — programmatic evaluation with no AI interpretation
 
 Current maturity: **Phase 4b (Autonomous Remediation)** — all governance artifacts implemented. Phase 5 sub-phases (5a-5e) are defined with achievability assessments.
@@ -249,7 +249,7 @@ Pattern: `itsfwcp/{type}/{issue-number}/{short-name}`
 | Directory | Purpose | Mutability |
 |-----------|---------|------------|
 | `governance/prompts/reviews/` | 19 consolidated review prompts | Editable (cognitive artifacts) |
-| `governance/personas/agentic/` | 5 agentic personas | Editable (cognitive artifacts) |
+| `governance/personas/agentic/` | 6 agentic personas | Editable (cognitive artifacts) |
 | `governance/policy/` | Deterministic policy profiles (YAML) | Versioned (enforcement artifacts) |
 | `governance/schemas/` | JSON Schema definitions | Versioned (enforcement artifacts) |
 | `governance/engine/` | Python policy engine + tests | Standard code (with tests) |
@@ -384,7 +384,7 @@ Key directories for contributors:
 .ai/  (or repo root when working on this repo directly)
   bin/                         Executable scripts (init.sh, issue-monitor.sh)
   governance/
-    personas/agentic/          5 agentic personas (DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
+    personas/agentic/          6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
     prompts/
       reviews/                 19 consolidated review prompts (canonical)
       shared-perspectives.md   Canonical perspective definitions
@@ -423,7 +423,7 @@ This repository uses the agentic pipeline for development. You can invoke it wit
 /startup
 ```
 
-This activates the 5-agent pipeline:
+This activates the 6-agent pipeline:
 
 1. **DevOps Engineer** — Pre-flight checks, issue triage, routing
 2. **Code Manager** — Intent validation, panel selection, review coordination

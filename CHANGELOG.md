@@ -8,6 +8,20 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 
 ## [Unreleased]
 
+### Added
+
+- **MIT License** — Repository is now MIT-licensed
+- **Project Manager persona** (#464) — Opt-in portfolio-level orchestrator (`governance.use_project_manager: true`) implementing multiplexed Code Managers for higher throughput. 6-agent architecture: Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester
+- **Developer prompt library** (#469) — 12 production-ready global prompts in `prompts/global/` covering code review, debugging, PR creation, refactoring, test writing, and more
+- **Prompt catalog system** — Auto-generated `catalog/prompt-catalog.json` with SHA-256 hashes and git timestamps; `bin/generate-prompt-catalog.py` generator; `prompt-catalog.yml` CI workflow for regeneration on push; `prompt-catalog.schema.json` validation schema
+- **Skills system** — `.skill.md` format in `mcp-server/skills/` with Zod validation and MCP tool registration; initial `governance-review` skill
+- **MCP server enhancements** — Hybrid fetch system, IDE auto-installer (`install.sh`/`install.ps1` for Claude Code, VS Code, Cursor), new CLI options (`--no-cache`, `--refresh`, `--validate-hash`, `--offline`), Docker support
+- **Agentic CI workflows** — `agentic-issue-worker.yml` (CI-native issue-to-PR pipeline with complexity assessment, plan generation, and human feedback via `/agentic-retry:`) and `agentic-loop.yml` (reusable AI convergence loop with checkpoint/resume, judge evaluation, and manifest logging)
+- **Self-repair workflows** — `auto-rebase.yml` (keep agent PRs rebased on main, runs on push and every 6 hours), `branch-cleanup.yml` (delete merged/stale branches weekly), `self-repair-lint.yml` (detect actionlint errors and create remediation issues)
+- **Publishing workflows** — `prompt-catalog.yml` (regenerate prompt catalog on prompt changes), `publish-mcp.yml` (publish MCP server to npm and Docker on release)
+- **Retroactive ADRs** — 5 architectural decision records in `docs/decisions/`: deterministic policy engine (001), panel-based review system (002), agent persona model (003), submodule distribution (004), JIT context management (005)
+- **Documentation** — `docs/guides/project-yaml-configuration.md` (complete project.yaml reference), `docs/architecture/ci-workflows.md` (all 16 workflows), `docs/guides/prompt-library.md` (prompt catalog guide), `docs/guides/skills-development.md` (skills system guide)
+
 ### Removed
 
 - **78 deprecated persona and panel files removed** (#257)
@@ -15,7 +29,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
   - 19 panel files from `governance/personas/panels/`
   - `governance/personas/index.md` persona reference grid
   - Consolidated review prompts at `governance/prompts/reviews/` are the canonical location
-  - Agentic personas (`governance/personas/agentic/`) are preserved (5 files)
+  - Agentic personas (`governance/personas/agentic/`) are preserved (6 files)
   - All documentation references updated to point to `governance/prompts/reviews/`
 
 ### Breaking Changes

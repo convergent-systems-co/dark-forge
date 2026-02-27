@@ -81,6 +81,25 @@ Complete index of all governance prompts organized by type.
 | Test Coverage Gate | `governance/prompts/test-coverage-gate.md` |
 | Write Tests | `governance/prompts/write-tests.md` |
 
+## Global Developer Prompts
+
+12 production-ready prompts for common development tasks. See [Prompt Library Guide](../guides/prompt-library.md) for usage details.
+
+| Name | File | Description | Tags | Status |
+|------|------|-------------|------|--------|
+| global-dev-code-review | `prompts/global/global-dev-code-review.prompt.md` | Review code for quality, security, performance | dev, review, security, quality | production |
+| global-dev-context-summary | `prompts/global/global-dev-context-summary.prompt.md` | Generate brief code context summary | dev, summary, context | production |
+| global-dev-debug | `prompts/global/global-dev-debug.prompt.md` | Debug issues and troubleshoot errors | dev, debug, troubleshooting | production |
+| global-dev-explain | `prompts/global/global-dev-explain.prompt.md` | Explain code sections and design patterns | dev, explain, documentation | production |
+| global-dev-git-review | `prompts/global/global-dev-git-review.prompt.md` | Review git history and commit changes | dev, review, git, history | production |
+| global-dev-plan-create | `prompts/global/global-dev-plan-create.prompt.md` | Create implementation plans | dev, planning, strategy | production |
+| global-dev-plan-execute | `prompts/global/global-dev-plan-execute.prompt.md` | Execute plans and track progress | dev, execution, tracking | production |
+| global-dev-pr-create | `prompts/global/global-dev-pr-create.prompt.md` | Create pull requests with structured summaries | dev, pr, review | production |
+| global-dev-pr-review | `prompts/global/global-dev-pr-review.prompt.md` | Review pull requests | dev, pr, review, quality | production |
+| global-dev-refactor | `prompts/global/global-dev-refactor.prompt.md` | Refactor code for clarity and performance | dev, refactor, improvement | production |
+| global-dev-release-notes | `prompts/global/global-dev-release-notes.prompt.md` | Generate release notes and changelogs | dev, docs, release | production |
+| global-dev-write-tests | `prompts/global/global-dev-write-tests.prompt.md` | Write comprehensive tests | dev, testing, quality | production |
+
 ## Shared Perspectives
 
 Canonical definitions for perspectives appearing in 2+ review prompts.
