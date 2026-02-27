@@ -18,29 +18,29 @@ The six agents operate in two modes:
 
 ```mermaid
 flowchart TD
-    subgraph "Phase 1 — Pre-flight & Triage"
-        DE[DevOps Engineer<br/><i>Routing pattern</i>]
+    subgraph "Phase 1 — Pre-flight and Triage"
+        DE["DevOps Engineer<br/><i>Routing pattern</i>"]
     end
 
     subgraph "Phase 2 — Planning"
-        CM_PLAN[Code Manager<br/><i>Orchestrator</i>]
+        CM_PLAN["Code Manager<br/><i>Orchestrator</i>"]
     end
 
     subgraph "Phase 3 — Parallel Dispatch"
-        CM_DISPATCH[Code Manager<br/><i>Parallelization</i>]
-        C1[Coder Agent 1<br/><i>Worker</i>]
-        C2[Coder Agent 2<br/><i>Worker</i>]
-        CN[Coder Agent N<br/><i>Worker</i>]
-        IAC[IaC Engineer<br/><i>Worker (conditional)</i>]
+        CM_DISPATCH["Code Manager<br/><i>Parallelization</i>"]
+        C1["Coder Agent 1<br/><i>Worker</i>"]
+        C2["Coder Agent 2<br/><i>Worker</i>"]
+        CN["Coder Agent N<br/><i>Worker</i>"]
+        IAC["IaC Engineer<br/><i>Worker, conditional</i>"]
     end
 
-    subgraph "Phase 4 — Evaluation & Review"
-        CM_COLLECT[Code Manager<br/><i>Orchestrator</i>]
-        T[Tester<br/><i>Evaluator-Optimizer</i>]
+    subgraph "Phase 4 — Evaluation and Review"
+        CM_COLLECT["Code Manager<br/><i>Orchestrator</i>"]
+        T["Tester<br/><i>Evaluator-Optimizer</i>"]
     end
 
-    subgraph "Phase 5 — Merge & Loop"
-        CM_MERGE[Code Manager + DevOps Engineer]
+    subgraph "Phase 5 — Merge and Loop"
+        CM_MERGE["Code Manager + DevOps Engineer"]
     end
 
     DE -->|"ASSIGN (batch)"| CM_PLAN
@@ -65,14 +65,14 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph "PM Phase 0-1"
-        PM[Project Manager<br/><i>Portfolio Orchestrator</i>]
-        DE_BG[DevOps Engineer<br/><i>Background Agent</i>]
+        PM["Project Manager<br/><i>Portfolio Orchestrator</i>"]
+        DE_BG["DevOps Engineer<br/><i>Background Agent</i>"]
     end
 
     subgraph "PM Phase 2 — Multiplexed Managers"
-        CM1[Code Manager 1<br/><i>Code batch</i>]
-        CM2[Code Manager 2<br/><i>Docs batch</i>]
-        CMM[Code Manager M<br/><i>Infra batch</i>]
+        CM1["Code Manager 1<br/><i>Code batch</i>"]
+        CM2["Code Manager 2<br/><i>Docs batch</i>"]
+        CMM["Code Manager M<br/><i>Infra batch</i>"]
     end
 
     subgraph "Nested Workers"
@@ -367,26 +367,26 @@ Every message includes:
 
 ```mermaid
 flowchart LR
-    PM[Project Manager] -->|ASSIGN / CANCEL| CM[Code Manager]
-    CM -->|STATUS / RESULT / ESCALATE| PM
+    PM[Project Manager] -->|"ASSIGN, CANCEL"| CM[Code Manager]
+    CM -->|"STATUS, RESULT, ESCALATE"| PM
 
-    DE[DevOps Engineer] -->|ASSIGN / RESULT| PM
+    DE[DevOps Engineer] -->|"ASSIGN, RESULT"| PM
     DE -.->|WATCH| PM
     DE -->|ASSIGN| CM
 
-    CM -->|STATUS / RESULT / ESCALATE| DE
+    CM -->|"STATUS, RESULT, ESCALATE"| DE
 
-    CM -->|ASSIGN / CANCEL| CO[Coder]
-    CO -->|STATUS / RESULT / ESCALATE| CM
+    CM -->|"ASSIGN, CANCEL"| CO[Coder]
+    CO -->|"STATUS, RESULT, ESCALATE"| CM
 
-    CM -->|ASSIGN / CANCEL| IAC[IaC Engineer]
-    IAC -->|STATUS / RESULT / ESCALATE| CM
+    CM -->|"ASSIGN, CANCEL"| IAC[IaC Engineer]
+    IAC -->|"STATUS, RESULT, ESCALATE"| CM
 
     CM -->|ASSIGN| TE[Tester]
-    TE -->|FEEDBACK / APPROVE / BLOCK / ESCALATE| CM
+    TE -->|"FEEDBACK, APPROVE, BLOCK, ESCALATE"| CM
 
-    CM -->|"FEEDBACK (relayed)"| CO
-    CM -->|"FEEDBACK (relayed)"| IAC
+    CM -->|"FEEDBACK relayed"| CO
+    CM -->|"FEEDBACK relayed"| IAC
 ```
 
 Agents must not send message types not listed in their valid transitions. The DevOps Engineer never communicates directly with the Coder, IaC Engineer, or Tester. The Project Manager communicates only with DevOps Engineer and Code Managers.
@@ -415,12 +415,12 @@ The Code Manager spawns multiple Coder agents using the `Task` tool with `isolat
 
 ```mermaid
 flowchart TD
-    CM[Code Manager<br/>Main session] -->|"Task(worktree, background)"| W1[Coder 1<br/>Worktree 1]
-    CM -->|"Task(worktree, background)"| W2[Coder 2<br/>Worktree 2]
-    CM -->|"Task(worktree, background)"| WN[Coder N<br/>Worktree N]
-    W1 -->|"Result (branch, changes)"| CM
-    W2 -->|"Result (branch, changes)"| CM
-    WN -->|"Result (branch, changes)"| CM
+    CM["Code Manager<br/>Main session"] -->|"Task worktree, background"| W1["Coder 1<br/>Worktree 1"]
+    CM -->|"Task worktree, background"| W2["Coder 2<br/>Worktree 2"]
+    CM -->|"Task worktree, background"| WN["Coder N<br/>Worktree N"]
+    W1 -->|"Result: branch, changes"| CM
+    W2 -->|"Result: branch, changes"| CM
+    WN -->|"Result: branch, changes"| CM
 ```
 
 Key properties:
@@ -472,7 +472,7 @@ The startup sequence (`governance/prompts/startup.md`) chains the six agents thr
 sequenceDiagram
     participant DE as DevOps Engineer
     participant CM as Code Manager
-    participant CO as Coder (x N)
+    participant CO as Coder x N
     participant TE as Tester
     participant PE as Policy Engine
 
