@@ -3,7 +3,7 @@
 # Sourced by all governance/bin/*.sh scripts.
 
 # Guard against double-sourcing
-[ -n "$_COMMON_SH_LOADED" ] && return 0
+[ -n "${_COMMON_SH_LOADED:-}" ] && return 0
 _COMMON_SH_LOADED=1
 
 # --- Configuration ---
@@ -16,7 +16,7 @@ log_warn()  { echo "  [WARN] $*"; }
 log_error() { echo "  [ERROR] $*"; }
 log_skip()  { echo "  [SKIP] $*"; }
 log_info()  { echo "  [INFO] $*"; }
-log_debug() { [ "$DEBUG" = "true" ] && echo "  [DEBUG] $*"; }
+log_debug() { [ "$DEBUG" = "true" ] && echo "  [DEBUG] $*" || true; }
 
 # --- Path resolution ---
 # Resolve the .ai directory from any governance/bin/ script.
