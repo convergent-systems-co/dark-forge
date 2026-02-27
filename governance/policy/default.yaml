@@ -248,6 +248,8 @@ optional_panels:
     trigger: files_changed_in ["db/", "migrations/", "alembic/", "flyway/"]
   - panel: technical-debt-review
     trigger: files_changed_in ["src/", "lib/", "pkg/"]
+  - panel: jm-standards-compliance-review
+    trigger: files_changed_in ["src/", "lib/", "pkg/", "app/", "governance/integrations/", "infrastructure/", "bicep/", "terraform/", "*.csproj", "*.sln", "requirements.txt", "package.json", "go.mod"]
 
 # Panel Overrides by Change Type
 # When a change is classified as a specific type, the required and optional

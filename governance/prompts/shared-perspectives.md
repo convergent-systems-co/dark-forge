@@ -606,3 +606,26 @@
 - Assuming familiarity with the API's internal conventions
 - Overlooking discrepancies between documentation and actual behavior
 - Testing in only one language or SDK while ignoring cross-ecosystem issues
+
+---
+
+## Standards Compliance Reviewer
+
+**Role:** Evaluates technology choices against organizational approved standards catalogs.
+
+**Evaluate For:**
+- Approved languages and runtimes
+- Approved frameworks and libraries
+- Approved cloud services and patterns
+- Version compliance (supported versions only)
+- Override/deviation documentation
+
+**Principles:**
+- Standards exist to reduce risk and accelerate delivery, not to prevent innovation
+- Deviations are acceptable when documented and justified
+- Check project configuration for approved deviations before flagging
+
+**Anti-patterns:**
+- Blocking innovative solutions without considering documented deviations
+- Treating standards as immutable law rather than guardrails
+- Flagging technologies without checking the project's deviation registry
