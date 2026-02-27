@@ -87,6 +87,13 @@ Four deterministic YAML profiles in `governance/policy/`:
 
 All profiles require security-review, threat-modeling, cost-analysis, documentation-review, and data-governance-review panels on every PR. Policies are evaluated programmatically. AI models never interpret policy rules.
 
+### Regulatory Compliance
+
+The governance platform maps to three major AI regulatory and standards frameworks:
+- **EU AI Act** (`docs/compliance/eu-ai-act-mapping.md`) -- four-tier risk classification (`ai_act_risk_tier` field in panel emissions), model provenance tracking, GDPR Article 22 automated decision-making controls. Full enforcement: 2 August 2026.
+- **NIST AI RMF** (`docs/compliance/nist-ai-rmf-mapping.md`) -- four functions (Govern, Map, Measure, Manage) mapped to governance layers, policy engine, panel system, and structured emissions.
+- **ISO/IEC 42001** (`docs/compliance/iso-42001-mapping.md`) -- clauses 4-10 mapped to governance artifacts, from context definition (`project.yaml`) through continual improvement (`GOALS.md`).
+
 ### Context Management (JIT Loading)
 
 Context is loaded in tiers to prevent window overflow:

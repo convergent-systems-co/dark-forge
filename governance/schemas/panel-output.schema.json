@@ -151,6 +151,11 @@
       },
       "minItems": 1
     },
+    "ai_act_risk_tier": {
+      "type": "string",
+      "description": "EU AI Act risk classification tier for the assessed change.",
+      "enum": ["unacceptable", "high", "limited", "minimal"]
+    },
     "execution_status": {
       "type": "string",
       "description": "Status of the panel execution. Defaults to 'success' if omitted (backward compatible).",
@@ -174,6 +179,19 @@
         "model_version": {
           "type": "string",
           "description": "Model identifier (e.g., 'gpt-4-turbo-2024-04-09', 'claude-3-opus'). Free-form string — no format constraint, as model naming conventions vary by provider."
+        },
+        "model_hash": {
+          "type": "string",
+          "description": "SHA-256 hash of the model weights or version identifier."
+        },
+        "provider": {
+          "type": "string",
+          "description": "AI model provider (e.g., anthropic, openai)."
+        },
+        "version_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Model version or training cutoff date."
         },
         "triggered_by": {
           "type": "string",
