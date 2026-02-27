@@ -246,8 +246,6 @@ optional_panels:
     trigger: files_changed_in ["api/", "openapi/", "swagger/", "graphql/"]
   - panel: migration-review
     trigger: files_changed_in ["db/", "migrations/", "alembic/", "flyway/"]
-  - panel: incident-post-mortem
-    trigger: files_changed_in ["incident/", "postmortem/", ".incidents/"]
   - panel: technical-debt-review
     trigger: files_changed_in ["src/", "lib/", "pkg/"]
 

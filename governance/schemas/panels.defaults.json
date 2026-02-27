@@ -169,30 +169,6 @@
         "rationale": "Documentation review requires reading docs and code to verify accuracy and completeness."
       }
     },
-    "incident-post-mortem": {
-      "enabled": true,
-      "pass_criteria": {
-        "min_confidence": 0.70,
-        "max_critical_findings": 0,
-        "max_high_findings": 2,
-        "required_verdict": "approve",
-        "min_compliance_score": 0.70
-      },
-      "scoring": {
-        "confidence_base": 0.85,
-        "deductions": {
-          "critical": 0.25,
-          "high": 0.15,
-          "medium": 0.05,
-          "low": 0.01
-        },
-        "floor": 0.0
-      },
-      "allowed_tools": {
-        "capabilities": ["file_read", "file_search", "git_history"],
-        "rationale": "Incident post-mortem requires reading incident artifacts, searching for related changes, and reviewing git history for root cause."
-      }
-    },
     "migration-review": {
       "enabled": true,
       "pass_criteria": {
