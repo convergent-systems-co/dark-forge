@@ -10,6 +10,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | 4a | Policy-Bound Autonomy | Deterministic merge decisions, structured emissions | **Implemented** | Governance CI workflow, structured emissions, run manifests, policy profiles |
 | 4b | Autonomous Remediation | Auto-fix, drift detection, remediation loops | **Implemented** | Policy engine runtime; drift detection schemas and policy config (PR #69); auto-remediation schemas and workflow (PR #81); incident-to-DI generation schemas and workflow (PR #87) |
 | 5 | Dark Factory | Full automation with runtime feedback and self-evolution | **Phase 5a-5e defined** | Sub-phases decomposed with achievability assessment; see Phase 5 section below |
+| 6 | Azure DevOps Integration | Bidirectional GitHub Issues to ADO Work Items sync | **Implemented** | ADO API client, sync engine, reverse sync, hierarchy/comments, health/retry/dashboard |
 
 ## Completed Work
 
@@ -115,13 +116,13 @@ This document tracks the maturity phases, completed work, and open enhancements 
 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
-| #455 | — | FinOps review panel | Default required panel across all policy profiles with 5 perspectives (FinOps Strategist, Resource Optimizer, Shutdown/Decommission Analyst, Savings Plan Advisor, Cost Allocation Auditor), destruction safety guardrails requiring human approval, schema extension for destruction_recommended and requires_human_approval fields |
+| #455 | #457 | FinOps review panel | Default required panel across all policy profiles with 5 perspectives (FinOps Strategist, Resource Optimizer, Shutdown/Decommission Analyst, Savings Plan Advisor, Cost Allocation Auditor), destruction safety guardrails requiring human approval, schema extension for destruction_recommended and requires_human_approval fields |
 
 ### Schema and Tooling
 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
-| #435 | — | Schema evolution tooling and emission migration CLI | Schema versioning (`schema_version` field), migration rules directory, chained migration CLI (`governance/bin/migrate-emissions.py`), 25 pytest tests |
+| #435 | #459 | Schema evolution tooling and emission migration CLI | Schema versioning (`schema_version` field), migration rules directory, chained migration CLI (`governance/bin/migrate-emissions.py`), 25 pytest tests |
 
 ### Documentation Site & Tooling
 
@@ -141,13 +142,13 @@ This document tracks the maturity phases, completed work, and open enhancements 
 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
-| #432 | — | Simplify init.sh into modular scripts | Refactored 1,113-line init.sh into 165-line orchestrator + 10 modular scripts in governance/bin/; added --dry-run, --debug flags; quick-install.sh for one-line setup; troubleshooting guide |
+| #432 | #461 | Simplify init.sh into modular scripts | Refactored 1,113-line init.sh into 165-line orchestrator + 10 modular scripts in governance/bin/; added --dry-run, --debug flags; quick-install.sh for one-line setup; troubleshooting guide |
 
 ### Platform Infrastructure
 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
-| #464 | — | Project Manager persona | Opt-in portfolio-level orchestrator with multiplexed Code Managers; 6-agent architecture |
+| #464 | #464 | Project Manager persona | Opt-in portfolio-level orchestrator with multiplexed Code Managers; 6-agent architecture |
 | #469 | #486 | Developer prompt library | 12 global prompts in `prompts/global/` for code review, debugging, PR creation, refactoring, test writing |
 | — | — | Prompt catalog system | `bin/generate-prompt-catalog.py`, `catalog/prompt-catalog.json`, `prompt-catalog.schema.json`, `prompt-catalog.yml` CI workflow |
 | — | — | Skills system | `.skill.md` format in `mcp-server/skills/`, Zod validation, MCP tool registration, `governance-review` skill |
@@ -158,11 +159,24 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | — | — | Retroactive ADRs | 5 architectural decision records (001-005) in `docs/decisions/` |
 | — | — | MIT License | Repository licensed under MIT |
 | — | — | Documentation updates | project.yaml configuration guide, CI workflows reference, prompt library guide, skills development guide |
-| #432 | — | Modular init.sh | 1,113-line script refactored to 165-line orchestrator + 10 modular scripts; `--dry-run`, `--debug` flags; `quick-install.sh` |
+| #432 | #461 | Modular init.sh | 1,113-line script refactored to 165-line orchestrator + 10 modular scripts; `--dry-run`, `--debug` flags; `quick-install.sh` |
+
+### Phase 6 — Azure DevOps Integration
+
+| Issue | PR | Title | Impact |
+|-------|----|-------|--------|
+| #490 | — | Phase 6 ADO Integration epic | Epic closed — all sub-phases complete |
+| #491 | #504 | ADO API client library | Python module wrapping ADO REST API 7.1 |
+| #492 | #510 | ADO integration and sync schemas | 3 JSON schemas for config, ledger, errors |
+| #493 | #513 | ADO sync CLI tool | `bin/ado-sync.py` with manual sync operations |
+| #494 | #514 | GitHub-to-ADO sync engine | Sync engine + GitHub Action workflow |
+| #495 | #518 | ADO-to-GitHub reverse sync | Service hooks, reverse mapping, echo prevention |
+| #496 | #519 | ADO advanced features | Hierarchy, comments, area/iteration, bulk sync |
+| #497 | #520 | ADO operations and health | Health check, retry, dashboard, documentation |
 
 ## TODO
 
-- [ ] **MkDocs strict build mode** (#366) — Add `mkdocs build --strict` to CI pipeline. NOT INGESTABLE: requires troubleshooting build warnings/errors before strict mode can be enabled. Rolled back from PR #382.
+- [x] ~~**MkDocs strict build mode** (#366) — Add `mkdocs build --strict` to CI pipeline.~~ (Closed)
 
 ## Phase 6 — Azure DevOps Integration
 
@@ -350,56 +364,56 @@ ado_integration:
 
 **Epic:** #490
 
-| Sub-Phase | Name | Issues | Dependencies |
-|-----------|------|--------|--------------|
-| 6a | Foundation — Data In/Out | #491 (API client), #492 (Schemas), #493 (CLI tool) | None |
-| 6b | GitHub to ADO Sync | #494 (Sync engine + GitHub Action) | 6a |
-| 6c | ADO to GitHub Sync | #495 (Service Hook receiver + reverse mapping) | 6a, 6b |
-| 6d | Advanced Features | #496 (Hierarchy, comments, area/iteration, bulk sync) | 6b, 6c |
-| 6e | Operations and Observability | #497 (Health, retry, dashboard, documentation) | 6b, 6c |
+| Sub-Phase | Name | Issues | Dependencies | Status |
+|-----------|------|--------|--------------|--------|
+| 6a | Foundation — Data In/Out | #491 (API client), #492 (Schemas), #493 (CLI tool) | None | **Complete** |
+| 6b | GitHub to ADO Sync | #494 (Sync engine + GitHub Action) | 6a | **Complete** |
+| 6c | ADO to GitHub Sync | #495 (Service Hook receiver + reverse mapping) | 6a, 6b | **Complete** |
+| 6d | Advanced Features | #496 (Hierarchy, comments, area/iteration, bulk sync) | 6b, 6c | **Complete** |
+| 6e | Operations and Observability | #497 (Health, retry, dashboard, documentation) | 6b, 6c | **Complete** |
 
 ### 6a — Foundation: Data In/Out
 
 The foundation layer provides the core ability to read from and write to Azure DevOps. Everything else builds on this.
 
-- [ ] **ADO API client library** — Python module (`governance/integrations/ado/client.py`) wrapping ADO REST API 7.1. Supports work item CRUD, WIQL queries, batch operations, field management, and classification node (area/iteration) queries. Handles authentication (PAT, Service Principal, Managed Identity), rate limiting (TSTU-aware with `Retry-After` header respect), pagination (continuation tokens), and error handling. Full test suite with mocked HTTP responses.
-- [ ] **Configuration schema** — JSON Schema (`governance/schemas/ado-integration.schema.json`) defining the `ado_integration` section of `project.yaml`. Validates organization URL, auth method, sync direction, state/type/field mappings, filters, and all configurable parameters. Policy engine extended to load and validate ADO config.
-- [ ] **Sync ledger schema** — JSON Schema (`governance/schemas/ado-sync-ledger.schema.json`) defining the mapping store format. Fields: `github_issue_number`, `github_repo`, `ado_work_item_id`, `ado_project`, `ado_work_item_type`, `sync_direction`, `last_synced_at`, `last_sync_source`, `created_at`, `sync_status`. Storage at `.governance/state/ado-sync-ledger.json`.
-- [ ] **CLI tool** — `bin/ado-sync.py` providing manual operations: `test-connection` (verify auth), `list-projects`, `list-work-item-types`, `query` (WIQL), `get` (fetch work item), `create` (create work item), `sync-status` (show ledger), `initial-sync` (bulk import). Uses the API client library. Supports `--dry-run` and `--verbose` flags.
-- [ ] **Custom field provisioning** — Script or CLI subcommand to create `Custom.GitHubIssueUrl` and `Custom.GitHubRepo` custom fields on the ADO organization/process, and add them to relevant work item types. Idempotent (skips if fields already exist).
+- [x] **ADO API client library** — Python module (`governance/integrations/ado/client.py`) wrapping ADO REST API 7.1. Supports work item CRUD, WIQL queries, batch operations, field management, and classification node (area/iteration) queries. Handles authentication (PAT, Service Principal, Managed Identity), rate limiting (TSTU-aware with `Retry-After` header respect), pagination (continuation tokens), and error handling. Full test suite with mocked HTTP responses.
+- [x] **Configuration schema** — JSON Schema (`governance/schemas/ado-integration.schema.json`) defining the `ado_integration` section of `project.yaml`. Validates organization URL, auth method, sync direction, state/type/field mappings, filters, and all configurable parameters. Policy engine extended to load and validate ADO config.
+- [x] **Sync ledger schema** — JSON Schema (`governance/schemas/ado-sync-ledger.schema.json`) defining the mapping store format. Fields: `github_issue_number`, `github_repo`, `ado_work_item_id`, `ado_project`, `ado_work_item_type`, `sync_direction`, `last_synced_at`, `last_sync_source`, `created_at`, `sync_status`. Storage at `.governance/state/ado-sync-ledger.json`.
+- [x] **CLI tool** — `bin/ado-sync.py` providing manual operations: `test-connection` (verify auth), `list-projects`, `list-work-item-types`, `query` (WIQL), `get` (fetch work item), `create` (create work item), `sync-status` (show ledger), `initial-sync` (bulk import). Uses the API client library. Supports `--dry-run` and `--verbose` flags.
+- [x] **Custom field provisioning** — Script or CLI subcommand to create `Custom.GitHubIssueUrl` and `Custom.GitHubRepo` custom fields on the ADO organization/process, and add them to relevant work item types. Idempotent (skips if fields already exist).
 
 ### 6b — GitHub to ADO Sync
 
-- [ ] **Sync engine core** — Python module (`governance/integrations/ado/sync_engine.py`) implementing the mapping logic: state mapping, type mapping, field mapping, ledger management, echo detection. Stateless per-invocation; reads ledger, processes event, writes ledger.
-- [ ] **GitHub Action workflow** — `.github/workflows/ado-sync.yml` triggered on `issues: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]`. Loads project.yaml config, invokes sync engine, commits ledger updates.
-- [ ] **Work item creation** — When a GitHub issue is opened and no ledger entry exists: create ADO work item with mapped type, title, description, state, assignment, area/iteration path. Store cross-reference in `Custom.GitHubIssueUrl`. Add pinned comment on GitHub issue with ADO work item link.
-- [ ] **Work item updates** — When a GitHub issue is edited, closed, reopened, labeled, or assigned: update the corresponding ADO work item fields via JSON Patch. Respect field ownership rules from conflict resolution config.
-- [ ] **Filter enforcement** — Apply `include_labels` and `exclude_labels` filters before syncing. Issues matching `exclude_labels` are skipped entirely (no ledger entry created).
+- [x] **Sync engine core** — Python module (`governance/integrations/ado/sync_engine.py`) implementing the mapping logic: state mapping, type mapping, field mapping, ledger management, echo detection. Stateless per-invocation; reads ledger, processes event, writes ledger.
+- [x] **GitHub Action workflow** — `.github/workflows/ado-sync.yml` triggered on `issues: [opened, edited, closed, reopened, labeled, unlabeled, assigned, unassigned, milestoned, demilestoned]`. Loads project.yaml config, invokes sync engine, commits ledger updates.
+- [x] **Work item creation** — When a GitHub issue is opened and no ledger entry exists: create ADO work item with mapped type, title, description, state, assignment, area/iteration path. Store cross-reference in `Custom.GitHubIssueUrl`. Add pinned comment on GitHub issue with ADO work item link.
+- [x] **Work item updates** — When a GitHub issue is edited, closed, reopened, labeled, or assigned: update the corresponding ADO work item fields via JSON Patch. Respect field ownership rules from conflict resolution config.
+- [x] **Filter enforcement** — Apply `include_labels` and `exclude_labels` filters before syncing. Issues matching `exclude_labels` are skipped entirely (no ledger entry created).
 
 ### 6c — ADO to GitHub Sync
 
-- [ ] **Service Hook receiver** — Lightweight HTTP endpoint (Azure Function or GitHub Actions `repository_dispatch` via ADO webhook) that receives ADO `workitem.created`, `workitem.updated`, and `workitem.deleted` events. Validates payload signature, extracts work item ID, invokes sync engine in reverse direction.
-- [ ] **Reverse state mapping** — ADO state changes update GitHub issue state and `ado:*` labels. `Closed`/`Removed` close the issue. `New`/`Active` reopen it (if closed). `Resolved` adds `ado:resolved` label.
-- [ ] **Reverse field mapping** — ADO title/description changes update GitHub issue title/body. ADO assignment changes update GitHub assignees (requires user mapping: ADO email to GitHub username).
-- [ ] **User mapping configuration** — `ado_integration.user_mapping` in `project.yaml`: dictionary mapping ADO user emails to GitHub usernames for assignment sync.
-- [ ] **Echo prevention** — Before processing an ADO webhook, check ledger `last_sync_source` and `last_synced_at`. If the last sync was from GitHub and within the grace period, skip the update to prevent infinite loops.
+- [x] **Service Hook receiver** — Lightweight HTTP endpoint (Azure Function or GitHub Actions `repository_dispatch` via ADO webhook) that receives ADO `workitem.created`, `workitem.updated`, and `workitem.deleted` events. Validates payload signature, extracts work item ID, invokes sync engine in reverse direction.
+- [x] **Reverse state mapping** — ADO state changes update GitHub issue state and `ado:*` labels. `Closed`/`Removed` close the issue. `New`/`Active` reopen it (if closed). `Resolved` adds `ado:resolved` label.
+- [x] **Reverse field mapping** — ADO title/description changes update GitHub issue title/body. ADO assignment changes update GitHub assignees (requires user mapping: ADO email to GitHub username).
+- [x] **User mapping configuration** — `ado_integration.user_mapping` in `project.yaml`: dictionary mapping ADO user emails to GitHub usernames for assignment sync.
+- [x] **Echo prevention** — Before processing an ADO webhook, check ledger `last_sync_source` and `last_synced_at`. If the last sync was from GitHub and within the grace period, skip the update to prevent infinite loops.
 
 ### 6d — Advanced Features
 
-- [ ] **Hierarchy sync** — When a GitHub issue references `parent: #N` in its body, create `System.LinkTypes.Hierarchy-Reverse` link in ADO pointing to the parent work item. When ADO adds a child link, add the parent reference to the GitHub issue body.
-- [ ] **Comment sync** — Bidirectional comment sync with attribution (`[Synced from GitHub — @username]` / `[Synced from ADO — User Name]`). Configurable: `sync_comments: true/false` in `project.yaml`. Only sync comments with `[ado-sync]` prefix to avoid noise (opt-in per comment).
-- [ ] **Area path mapping** — Map GitHub labels prefixed with `area:` to ADO area paths. Example: `area:backend` maps to `MyProject\Backend`. Configurable mapping table in `project.yaml`.
-- [ ] **Iteration path mapping** — Map GitHub milestones to ADO iteration paths. When an issue is added to a milestone, set the ADO iteration path. Supports `@CurrentIteration` macro.
-- [ ] **Bulk initial sync** — CLI command `bin/ado-sync.py initial-sync` that reads all open GitHub issues and creates corresponding ADO work items (with ledger entries). Supports `--dry-run`, `--limit`, and `--since` flags. Handles rate limiting gracefully.
-- [ ] **Attachment sync** — When GitHub issue body contains image links or file attachments, download and attach to the ADO work item (and vice versa). Configurable: `sync_attachments: true/false`.
+- [x] **Hierarchy sync** — When a GitHub issue references `parent: #N` in its body, create `System.LinkTypes.Hierarchy-Reverse` link in ADO pointing to the parent work item. When ADO adds a child link, add the parent reference to the GitHub issue body.
+- [x] **Comment sync** — Bidirectional comment sync with attribution (`[Synced from GitHub — @username]` / `[Synced from ADO — User Name]`). Configurable: `sync_comments: true/false` in `project.yaml`. Only sync comments with `[ado-sync]` prefix to avoid noise (opt-in per comment).
+- [x] **Area path mapping** — Map GitHub labels prefixed with `area:` to ADO area paths. Example: `area:backend` maps to `MyProject\Backend`. Configurable mapping table in `project.yaml`.
+- [x] **Iteration path mapping** — Map GitHub milestones to ADO iteration paths. When an issue is added to a milestone, set the ADO iteration path. Supports `@CurrentIteration` macro.
+- [x] **Bulk initial sync** — CLI command `bin/ado-sync.py initial-sync` that reads all open GitHub issues and creates corresponding ADO work items (with ledger entries). Supports `--dry-run`, `--limit`, and `--since` flags. Handles rate limiting gracefully.
+- [x] **Attachment sync** — When GitHub issue body contains image links or file attachments, download and attach to the ADO work item (and vice versa). Configurable: `sync_attachments: true/false`.
 
 ### 6e — Operations and Observability
 
-- [ ] **Health check** — `bin/ado-sync.py health` command that verifies: ADO connection works, custom fields exist, service hooks are configured, ledger is consistent (no orphaned entries), and last sync was recent.
-- [ ] **Sync dashboard** — Structured emission for sync health: items synced, conflicts resolved, errors, last sync timestamp. Consumable by the governance dashboard.
-- [ ] **Retry and dead-letter** — Failed sync operations are logged to `.governance/state/ado-sync-errors.json` with full context. CLI command `bin/ado-sync.py retry-failed` processes the error queue.
-- [ ] **Documentation** — `docs/guides/ado-integration.md` covering: setup, configuration, authentication, state/type mapping, hierarchy sync, troubleshooting, FAQ.
-- [ ] **ADO Service Hook setup guide** — Step-by-step guide for configuring ADO Service Hooks to point to the receiver endpoint, with filtering by area path and work item type.
+- [x] **Health check** — `bin/ado-sync.py health` command that verifies: ADO connection works, custom fields exist, service hooks are configured, ledger is consistent (no orphaned entries), and last sync was recent.
+- [x] **Sync dashboard** — Structured emission for sync health: items synced, conflicts resolved, errors, last sync timestamp. Consumable by the governance dashboard.
+- [x] **Retry and dead-letter** — Failed sync operations are logged to `.governance/state/ado-sync-errors.json` with full context. CLI command `bin/ado-sync.py retry-failed` processes the error queue.
+- [x] **Documentation** — `docs/guides/ado-integration.md` covering: setup, configuration, authentication, state/type mapping, hierarchy sync, troubleshooting, FAQ.
+- [x] **ADO Service Hook setup guide** — Step-by-step guide for configuring ADO Service Hooks to point to the receiver endpoint, with filtering by area path and work item type.
 
 ## Phase 4b — Remaining Work
 
