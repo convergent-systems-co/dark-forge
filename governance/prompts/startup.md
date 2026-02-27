@@ -678,6 +678,56 @@ If no baseline emission exists and the panel cannot execute, treat the panel as 
 5. **Update issue** with review cycle summary
 6. **Re-push and re-poll** if changes were made (max 3 review cycles, then escalate)
 
+### 4e-bis: Copilot Recommendation Triage
+
+After classifying Copilot recommendations in Phase 4e, track medium+ severity recommendations as sub-issues for audit and resolution tracking.
+
+1. **Create sub-issues for medium+ severity recommendations:**
+
+   For each recommendation classified as medium, high, or critical in Phase 4e, create a tracked sub-issue:
+
+   ```bash
+   gh issue create --title "copilot-rec: <summary> (PR #<pr-number>)" \
+     --label "copilot-recommendation" --label "<severity>" \
+     --body "## Copilot Recommendation\n\n**PR:** #<pr-number>\n**File:** <file>\n**Line:** <line>\n**Severity:** <severity>\n\n### Recommendation\n<body>\n\n### Resolution\n_Pending_"
+   ```
+
+   > **Info/low severity recommendations** are acknowledged in PR comments but do NOT create separate issues (prevents noise).
+
+2. **Track disposition for each sub-issue:**
+
+   - **Implemented** — close as completed with commit SHA reference:
+     `gh issue close <rec-issue> --comment "Implemented in <sha>. Verified by Tester."`
+   - **Dismissed** — close as not planned with documented rationale:
+     `gh issue close <rec-issue> --reason "not planned" --comment "Dismissed: <rationale>"`
+   - **Deferred** — leave open, link to a follow-up issue:
+     `gh issue comment <rec-issue> --body "Deferred to #<follow-up-issue>. Will address in next iteration."`
+
+3. **Post summary table on the PR:**
+
+   After all recommendations are resolved, post a summary comment:
+
+   ```bash
+   gh pr comment <pr-number> --body "## Copilot Recommendation Summary
+
+   | # | Recommendation | Severity | Disposition | Issue |
+   |---|---------------|----------|-------------|-------|
+   | 1 | <summary> | high | Implemented (abc1234) | #N |
+   | 2 | <summary> | medium | Dismissed (rationale) | #N |
+   | 3 | <summary> | critical | Deferred to #M | #N |
+   "
+   ```
+
+4. **DevOps Engineer pre-merge verification:**
+
+   Before proceeding to Phase 4f, the DevOps Engineer verifies:
+   - All medium+ recommendation sub-issues have a resolution (implemented, dismissed, or deferred)
+   - No recommendation sub-issues remain in `_Pending_` state
+   - Dismissed recommendations have documented rationale
+   - The summary table is posted on the PR
+
+   If any recommendation is unresolved, block merge and ASSIGN resolution back to the Coder.
+
 ### 4f: Pre-Merge Thread Verification
 
 **Safety net — must pass before merge.** Uses GraphQL `reviewThreads` query to catch all unresolved threads regardless of author:
