@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Naming Test Report — 2026-02-27</title>
+<style>
+  :root { --pass: #22c55e; --fail: #ef4444; --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6; --name-bg: rgba(34,197,94,0.08); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; background: var(--bg); color: var(--text); padding: 2rem; line-height: 1.6; }
+  h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+  .summary-card .value { font-size: 2rem; font-weight: bold; }
+  .summary-card .label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .pass { color: var(--pass); }
+  .fail { color: var(--fail); }
+  .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 2rem; }
+  .progress-fill { height: 100%; background: var(--pass); border-radius: 4px; }
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+  .section-header { padding: 1rem 1.25rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .section-header:hover { background: rgba(59,130,246,0.05); }
+  .section-header h2 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 9999px; font-weight: 600; }
+  .badge-pass { background: rgba(34,197,94,0.15); color: var(--pass); }
+  .badge-count { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .chevron { transition: transform 0.2s; font-size: 0.8rem; color: var(--muted); }
+  .chevron.open { transform: rotate(90deg); }
+  .section-body { display: none; border-top: 1px solid var(--border); }
+  .section-body.open { display: block; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { background: rgba(0,0,0,0.2); text-align: left; padding: 0.6rem 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; position: sticky; top: 0; }
+  td { padding: 0.5rem 0.75rem; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: rgba(59,130,246,0.03); }
+  code { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 0.78rem; }
+  .gen-name { background: var(--name-bg); border: 1px solid rgba(34,197,94,0.2); padding: 2px 6px; border-radius: 3px; font-weight: 600; color: var(--pass); white-space: nowrap; }
+  .status-pass { color: var(--pass); font-weight: 600; }
+  .footer { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<h1>Azure Naming Test Report</h1>
+<p class="subtitle">Branch: <code>NETWORK_ID/docs/azure-naming-test-results</code> &nbsp;|&nbsp; 2026-02-27 &nbsp;|&nbsp; pytest 8.4.2 &nbsp;|&nbsp; Python 3.9.6 &nbsp;|&nbsp; 1.13s</p>
+
+<div class="summary-grid">
+  <div class="summary-card"><div class="value pass">77</div><div class="label">Tests Passed</div></div>
+  <div class="summary-card"><div class="value fail">0</div><div class="label">Tests Failed</div></div>
+  <div class="summary-card"><div class="value" style="color:var(--accent)">14</div><div class="label">Test Classes</div></div>
+  <div class="summary-card"><div class="value" style="color:var(--text)">1.13s</div><div class="label">Duration</div></div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+
+<!-- ================================================================== -->
+<!-- Section 1: TestNamingInputValidation -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestNamingInputValidation <span class="badge badge-count">10</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>Expected Error</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_invalid_resource_type</td><td><code>Microsoft.Fake/stuff</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>web</code></td><td>Unsupported resource type</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_invalid_lob</td><td><code>Microsoft.Sql/servers</code></td><td><code>badlob</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>web</code></td><td>Invalid LOB</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_invalid_stage</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>badstage</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>web</code></td><td>Invalid stage</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_invalid_app_id_too_long</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>ab</code></td><td><code>web</code></td><td>Invalid app_id</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_invalid_app_id_number</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>1</code></td><td><code>web</code></td><td>Invalid app_id</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_empty_app_name</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>""</code></td><td><code>a</code></td><td><code>web</code></td><td>app_name is required</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>test_role_required_for_standard</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>""</code></td><td>role is required</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>test_role_not_required_for_mini</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>""</code></td><td><em>no error (mini)</em></td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>test_role_not_required_for_small</td><td><code>Microsoft.AppConfiguration/configurationStores</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>""</code></td><td><em>no error (small)</em></td><td class="status-pass">PASS</td></tr>
+      <tr><td>10</td><td>test_multiple_errors_reported</td><td><code>Microsoft.Fake/stuff</code></td><td><code>badlob</code></td><td><code>badstage</code></td><td><code>""</code></td><td><code>99</code></td><td>—</td><td>5 combined errors</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 2: TestStandardPattern -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestStandardPattern <span class="badge badge-count">4</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>location</th><th>Generated Name</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_basic_sql_server</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>payments</code></td><td><code>a</code></td><td><code>db</code></td><td>—</td><td><span class="gen-name">sql-set-dev-payments-db-a</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_with_location</td><td><code>Microsoft.Sql/servers</code></td><td><code>jma</code></td><td><code>prod</code></td><td><code>billing</code></td><td><code>b</code></td><td><code>api</code></td><td><code>eastus</code></td><td><span class="gen-name">sql-jma-prod-billing-api-eastus-b</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_case_normalized</td><td><code>Microsoft.Sql/servers</code></td><td><code>SET</code></td><td><code>DEV</code></td><td><code>MyApp</code></td><td><code>A</code></td><td><code>Web</code></td><td>—</td><td><span class="gen-name">sql-set-dev-myapp-web-a</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_all_standard_resources_generate</td><td><em>all standard types</em></td><td><code>set</code></td><td><code>dev</code></td><td><code>testapp</code></td><td><code>a</code></td><td><code>web</code></td><td>—</td><td><em>each starts with {prefix}-, within max_length</em></td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 3: TestMiniPattern -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestMiniPattern <span class="badge badge-count">6</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>Generated Name</th><th>Max Len</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_keyvault</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><span class="gen-name">kvsdmyappa</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_storage_account</td><td><code>Microsoft.Storage/storageAccounts</code></td><td><code>jma</code></td><td><code>prod</code></td><td><code>datalake</code></td><td><code>b</code></td><td><span class="gen-name">stjpdatalakeb</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_container_registry</td><td><code>Microsoft.ContainerRegistry/registries</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>platform</code></td><td><code>a</code></td><td><span class="gen-name">crsdplatforma</span></td><td>50</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_mini_truncation_for_long_name</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>verylongapplicationname</code></td><td><code>a</code></td><td><span class="gen-name">kvsdverylongapplicationa</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_mini_strips_hyphens_from_app_name</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>my-cool-app</code></td><td><code>a</code></td><td><span class="gen-name">kvsdmycoolappa</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_all_mini_resources_generate</td><td><em>all mini types</em></td><td><code>set</code></td><td><code>dev</code></td><td><code>testapp</code></td><td><code>a</code></td><td><em>each no hyphens, within max_length</em></td><td>—</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 4: TestSmallPattern -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestSmallPattern <span class="badge badge-count">4</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>Generated Name</th><th>Max Len</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_app_configuration</td><td><code>Microsoft.AppConfiguration/configurationStores</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>platform</code></td><td><code>a</code></td><td><span class="gen-name">appcs-set-dev-platform-a</span></td><td>50</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_app_insights</td><td><code>Microsoft.Insights/components</code></td><td><code>jma</code></td><td><code>prod</code></td><td><code>analytics</code></td><td><code>b</code></td><td><span class="gen-name">appi-jma-prod-analytics-b</span></td><td>—</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_small_truncation</td><td><code>Microsoft.AppConfiguration/configurationStores</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>"a" &times; 100</code></td><td><code>a</code></td><td><span class="gen-name">appcs-set-dev-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-a</span></td><td>50</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_all_small_resources_generate</td><td><em>all small types</em></td><td><code>set</code></td><td><code>dev</code></td><td><code>testapp</code></td><td><code>a</code></td><td><em>each within max_length</em></td><td>—</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 5: TestDeterministicShortening -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestDeterministicShortening <span class="badge badge-count">4</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>Generated Name</th><th>Max Len</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_app_name_truncated_before_role</td><td><code>Microsoft.Web/serverfarms</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>averylongapplicationname</code></td><td><code>a</code></td><td><code>web</code></td><td><span class="gen-name">plan-set-dev-averylongapplicationn-web-a</span></td><td>40</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_role_truncated_after_app_name</td><td><code>Microsoft.Web/serverfarms</code></td><td><code>setf</code></td><td><code>nonprod</code></td><td><code>app</code></td><td><code>a</code></td><td><code>"a" &times; 40</code></td><td><span class="gen-name">plan-setf-nonprod-a-aaaaaaaaaaaaaaaaaa-a</span></td><td>40</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_shortening_preserves_fixed_parts</td><td><code>Microsoft.DocumentDB/databaseAccounts</code></td><td><code>lexus</code></td><td><code>nonprod</code></td><td><code>superlongapplicationname</code></td><td><code>a</code></td><td><code>database</code></td><td><span class="gen-name">cosmos-lexus-nonprod-superlongapp-database-a</span></td><td>44</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_shortening_is_deterministic</td><td><code>Microsoft.Web/serverfarms</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>longname</code></td><td><code>a</code></td><td><code>web</code></td><td><span class="gen-name">plan-set-dev-longname-web-a</span></td><td>40</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 6: TestValidateName -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestValidateName <span class="badge badge-count">9</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>Name Input</th><th>resource_type</th><th>Valid</th><th>Expected Error</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_valid_name</td><td><code>sql-set-dev-payments-db-a</code></td><td><code>Microsoft.Sql/servers</code></td><td>True</td><td>—</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_exceeds_max_length</td><td><code>sql-</code> + <code>"a" &times; 100</code></td><td><code>Microsoft.Sql/servers</code></td><td>False</td><td>exceeds maximum</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_hyphens_rejected_for_mini</td><td><code>kv-set-dev-app</code></td><td><code>Microsoft.KeyVault/vaults</code></td><td>False</td><td>Hyphens are not allowed</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_wrong_prefix</td><td><code>wrongprefix-set-dev-app-web-a</code></td><td><code>Microsoft.Sql/servers</code></td><td>False</td><td>should start with</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_unsupported_resource_type</td><td><code>anything</code></td><td><code>Microsoft.Fake/stuff</code></td><td>False</td><td>Unsupported</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_empty_name</td><td><code>""</code></td><td><code>Microsoft.Sql/servers</code></td><td>False</td><td>—</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>test_leading_hyphen</td><td><code>-sql-set-dev-app-web-a</code></td><td><code>Microsoft.Sql/servers</code></td><td>False</td><td>start or end with a hyphen</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>test_trailing_hyphen</td><td><code>sql-set-dev-app-web-a-</code></td><td><code>Microsoft.Sql/servers</code></td><td>False</td><td>—</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>test_includes_length_info</td><td><code>sql-set-dev-app-web-a</code></td><td><code>Microsoft.Sql/servers</code></td><td>True</td><td>max_length=63, actual=21</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 7: TestListResourceTypes -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestListResourceTypes <span class="badge badge-count">3</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>Assertions</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_returns_all_types</td><td>Count matches RESOURCE_TYPES dict</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_sorted_by_resource_type</td><td>List is alphabetically sorted</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_entry_shape</td><td>Each entry has: resource_type, prefix, max_length, pattern, allows_hyphens</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 8: TestResourceDataIntegrity -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestResourceDataIntegrity <span class="badge badge-count">7</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>Data Source</th><th>Assertions</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_all_lobs_are_lowercase</td><td>VALID_LOBS</td><td>All lowercase</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_all_stages_are_lowercase</td><td>VALID_STAGES</td><td>All lowercase</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_all_prefixes_are_lowercase</td><td>RESOURCE_TYPES[*].prefix</td><td>All lowercase</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_max_lengths_are_positive</td><td>RESOURCE_TYPES[*].max_length</td><td>All &gt; 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_patterns_are_valid</td><td>RESOURCE_TYPES[*].pattern</td><td>All in {standard, mini, small}</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_mini_pattern_disallows_hyphens</td><td>RESOURCE_TYPES (mini)</td><td>allows_hyphens is False</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>test_expected_resource_count</td><td>RESOURCE_TYPES</td><td>&ge; 22 entries</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 9: TestCLI -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestCLI <span class="badge badge-count">11</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>CLI Args</th><th>Exit</th><th>Generated Name / Output</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_list_types</td><td><code>--list-types</code></td><td>0</td><td>Contains <code>Microsoft.Sql/servers</code></td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_list_types_json</td><td><code>--list-types --json</code></td><td>0</td><td>Valid JSON list</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_generate_standard</td><td><code>--resource-type Microsoft.Sql/servers --lob set --stage dev --app-name payments --app-id a --role db</code></td><td>0</td><td><span class="gen-name">sql-set-dev-payments-db-a</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_generate_json</td><td><code>--resource-type Microsoft.Sql/servers --lob set --stage dev --app-name payments --app-id a --role db --json</code></td><td>0</td><td><span class="gen-name">sql-set-dev-payments-db-a</span> (JSON, length=26)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_generate_mini</td><td><code>--resource-type Microsoft.KeyVault/vaults --lob set --stage dev --app-name myapp --app-id a</code></td><td>0</td><td><span class="gen-name">kvsdmyappa</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_validate_valid</td><td><code>--validate-only sql-set-dev-payments-db-a --resource-type Microsoft.Sql/servers</code></td><td>0</td><td>VALID</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>test_validate_invalid</td><td><code>--validate-only kv-bad-name --resource-type Microsoft.KeyVault/vaults</code></td><td>1</td><td>INVALID</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td>test_missing_required_args</td><td><code>--resource-type Microsoft.Sql/servers --lob set</code></td><td>1</td><td>stderr: <code>required</code></td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td>test_invalid_lob_error</td><td><code>--resource-type Microsoft.Sql/servers --lob invalid --stage dev --app-name myapp --app-id a --role web</code></td><td>1</td><td>Error exit</td><td class="status-pass">PASS</td></tr>
+      <tr><td>10</td><td>test_validate_without_resource_type</td><td><code>--validate-only some-name</code></td><td>1</td><td>stderr: <code>--resource-type</code></td><td class="status-pass">PASS</td></tr>
+      <tr><td>11</td><td>test_generate_with_location</td><td><code>--resource-type Microsoft.Sql/servers --lob set --stage dev --app-name payments --app-id a --role db --location eastus</code></td><td>0</td><td><span class="gen-name">sql-set-dev-payments-db-eastus-a</span></td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 10: TestV2LobStageCodes -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestV2LobStageCodes <span class="badge badge-count">7</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>Data Source</th><th>Assertions</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_lob_codes_cover_all_valid_lobs</td><td>LOB_CODES vs VALID_LOBS</td><td>Keys match exactly</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_stage_codes_cover_all_valid_stages</td><td>STAGE_CODES vs VALID_STAGES</td><td>Keys match exactly</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_lob_codes_are_single_char</td><td>LOB_CODES values</td><td>All len == 1</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_stage_codes_are_single_char</td><td>STAGE_CODES values</td><td>All len == 1</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_lob_codes_are_unique</td><td>LOB_CODES values</td><td>No duplicates</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td>test_stage_codes_are_unique</td><td>STAGE_CODES values</td><td>No duplicates</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td>test_all_codes_are_lowercase</td><td>LOB_CODES + STAGE_CODES</td><td>All lowercase</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 11: TestV2QaStage -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestV2QaStage <span class="badge badge-count">3</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>Generated Name</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_qa_stage_standard</td><td><code>Microsoft.Sql/servers</code></td><td><code>set</code></td><td><code>qa</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>db</code></td><td><span class="gen-name">sql-set-qa-myapp-db-a</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_qa_stage_mini</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>qa</code></td><td><code>myapp</code></td><td><code>a</code></td><td>—</td><td><span class="gen-name">kvsqmyappa</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_qa_stage_small</td><td><code>Microsoft.AppConfiguration/configurationStores</code></td><td><code>set</code></td><td><code>qa</code></td><td><code>platform</code></td><td><code>a</code></td><td>—</td><td><span class="gen-name">appcs-set-qa-platform-a</span></td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 12: TestV2CollisionPrevention -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestV2CollisionPrevention <span class="badge badge-count">5</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>Variant A</th><th>Generated A</th><th>Variant B</th><th>Generated B</th><th>Diff Field</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_different_roles_produce_different_mini_names</td><td>Storage, set/dev, acctach, a, role=chk</td><td><span class="gen-name">stsdacctachchka</span></td><td>role=rpt</td><td><span class="gen-name">stsdacctachrpta</span></td><td>role</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_different_app_ids_produce_different_mini_names</td><td>KeyVault, jma/prod, billing, id=a</td><td><span class="gen-name">kvjpbillinga</span></td><td>id=b</td><td><span class="gen-name">kvjpbillingb</span></td><td>app_id</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td>test_different_lobs_produce_different_mini_names</td><td>Storage, lob=set, dev, myapp, a</td><td><span class="gen-name">stsdmyappa</span></td><td>lob=jma</td><td><span class="gen-name">stjdmyappa</span></td><td>lob</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td>test_different_stages_produce_different_mini_names</td><td>KeyVault, set, stage=dev, myapp, a</td><td><span class="gen-name">kvsdmyappa</span></td><td>stage=prod</td><td><span class="gen-name">kvspmyappa</span></td><td>stage</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td>test_si_suffix_rejected</td><td colspan="5">Sql/servers, set/dev, shared, id=<code>a-si</code>, role=db</td><td><em>NamingError: Invalid app_id</em></td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 13: TestV2MiniWithRole -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestV2MiniWithRole <span class="badge badge-count">2</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>Generated Name</th><th>Max Len</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_mini_keyvault_with_role</td><td><code>Microsoft.KeyVault/vaults</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>myapp</code></td><td><code>a</code></td><td><code>sec</code></td><td><span class="gen-name">kvsdmyappseca</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_mini_storage_with_role</td><td><code>Microsoft.Storage/storageAccounts</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>acctach</code></td><td><code>a</code></td><td><code>chk</code></td><td><span class="gen-name">stsdacctachchka</span></td><td>24</td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Section 14: TestV2SmallWithRoleAndAppId -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> TestV2SmallWithRoleAndAppId <span class="badge badge-count">2</span> <span class="badge badge-pass">ALL PASS</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>#</th><th>Test</th><th>resource_type</th><th>lob</th><th>stage</th><th>app_name</th><th>app_id</th><th>role</th><th>Generated Name</th><th>Status</th></tr>
+      <tr><td>1</td><td>test_small_with_role</td><td><code>Microsoft.AppConfiguration/configurationStores</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>platform</code></td><td><code>a</code></td><td><code>cfg</code></td><td><span class="gen-name">appcs-set-dev-platform-cfg-a</span></td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td>test_small_appid_always_present</td><td><code>Microsoft.Insights/components</code></td><td><code>set</code></td><td><code>dev</code></td><td><code>monitor</code></td><td><code>a</code></td><td>—</td><td><span class="gen-name">appi-set-dev-monitor-a</span></td><td class="status-pass">PASS</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- Summary -->
+<!-- ================================================================== -->
+<div class="section">
+  <div class="section-header" onclick="toggle(this)">
+    <h2><span class="chevron">&#9654;</span> Summary <span class="badge badge-pass">77/77</span></h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>Test Class</th><th>Tests</th><th>Passed</th><th>Failed</th></tr>
+      <tr><td>TestNamingInputValidation</td><td>10</td><td class="status-pass">10</td><td>0</td></tr>
+      <tr><td>TestStandardPattern</td><td>4</td><td class="status-pass">4</td><td>0</td></tr>
+      <tr><td>TestMiniPattern</td><td>6</td><td class="status-pass">6</td><td>0</td></tr>
+      <tr><td>TestSmallPattern</td><td>4</td><td class="status-pass">4</td><td>0</td></tr>
+      <tr><td>TestDeterministicShortening</td><td>4</td><td class="status-pass">4</td><td>0</td></tr>
+      <tr><td>TestValidateName</td><td>9</td><td class="status-pass">9</td><td>0</td></tr>
+      <tr><td>TestListResourceTypes</td><td>3</td><td class="status-pass">3</td><td>0</td></tr>
+      <tr><td>TestResourceDataIntegrity</td><td>7</td><td class="status-pass">7</td><td>0</td></tr>
+      <tr><td>TestCLI</td><td>11</td><td class="status-pass">11</td><td>0</td></tr>
+      <tr><td>TestV2LobStageCodes</td><td>7</td><td class="status-pass">7</td><td>0</td></tr>
+      <tr><td>TestV2QaStage</td><td>3</td><td class="status-pass">3</td><td>0</td></tr>
+      <tr><td>TestV2CollisionPrevention</td><td>5</td><td class="status-pass">5</td><td>0</td></tr>
+      <tr><td>TestV2MiniWithRole</td><td>2</td><td class="status-pass">2</td><td>0</td></tr>
+      <tr><td>TestV2SmallWithRoleAndAppId</td><td>2</td><td class="status-pass">2</td><td>0</td></tr>
+      <tr style="font-weight:bold; border-top: 2px solid var(--border);"><td>Total</td><td>77</td><td class="status-pass">77</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Azure Naming v2 Test Suite &mdash; 77 tests, 14 classes &mdash; Generated 2026-02-27
+</div>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+document.querySelectorAll('.section-header').forEach(h => toggle(h));
+</script>
+</body>
+</html>
