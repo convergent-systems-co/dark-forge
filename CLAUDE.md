@@ -115,6 +115,11 @@ Skills (`.skill.md` files in `mcp-server/skills/`) are self-contained capabiliti
 
 Python client library at `governance/integrations/ado/` wrapping the ADO REST API 7.1. Provides `AdoClient` with work item CRUD, WIQL queries, comments (HTML-only), classification nodes, fields, types, project inspection (custom states/processes), and GitHub artifact link helpers. Auth via PAT, Service Principal, or Managed Identity (lazy `azure-identity` import). Configured via `ado_integration` section in `project.yaml`. The `ado` MCP skill exposes these operations to AI assistants. See `docs/guides/mcp-server-usage.md#azure-devops-integration`.
 
+Three JSON Schemas in `governance/schemas/` govern ADO sync configuration and state:
+- **`ado-integration.schema.json`** -- Validates the `ado_integration` section of `project.yaml` (organization, auth, sync behaviour, state/type/field mappings, filters).
+- **`ado-sync-ledger.schema.json`** -- Validates the sync ledger at `.governance/state/ado-sync-ledger.json` (GitHub issue to ADO work item mappings).
+- **`ado-sync-error.schema.json`** -- Validates the error log at `.governance/state/ado-sync-errors.json` (failed sync operations with retry tracking).
+
 ### CI Workflows
 
 16 GitHub Actions workflows across four categories: Governance (dark-factory-governance, jm-compliance, plan-archival, prompt-eval), Agentic (agentic-issue-worker, agentic-loop, event-trigger, issue-monitor), Self-Repair (auto-rebase, branch-cleanup, self-repair-lint), and Publishing/Automation (propagate-submodule, deploy-docs, publish-dashboard, prompt-catalog, publish-mcp). See `docs/architecture/ci-workflows.md`.

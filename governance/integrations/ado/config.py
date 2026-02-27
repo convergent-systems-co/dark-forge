@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 from governance.integrations.ado._exceptions import AdoConfigError
 from governance.integrations.ado._types import AccessMethod, AuthMethod
@@ -25,6 +27,53 @@ class AdoConfig:
     @property
     def base_url(self) -> str:
         return f"https://dev.azure.com/{self.organization}"
+
+
+def validate_config_schema(data: dict) -> dict:
+    """Validate an ADO config dict against the ado-integration JSON Schema.
+
+    Args:
+        data: A dict representing the ado_integration configuration
+              (the section contents, not the full project.yaml).
+
+    Returns:
+        A dict with keys:
+        - ``valid`` (bool): Whether validation passed.
+        - ``errors`` (list[str]): List of validation error messages (empty if valid).
+
+    Raises:
+        AdoConfigError: If the schema file cannot be found or loaded.
+    """
+    try:
+        from jsonschema import validate as jschema_validate, ValidationError
+    except ImportError:
+        raise AdoConfigError(
+            "jsonschema package is required for schema validation. "
+            "Install it with: pip install jsonschema"
+        )
+
+    schema_path = (
+        Path(__file__).resolve().parent.parent.parent
+        / "schemas"
+        / "ado-integration.schema.json"
+    )
+    if not schema_path.exists():
+        raise AdoConfigError(f"ADO integration schema not found at {schema_path}")
+
+    try:
+        with open(schema_path) as f:
+            schema = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        raise AdoConfigError(f"Failed to load ADO integration schema: {e}")
+
+    result: dict = {"valid": True, "errors": []}
+    try:
+        jschema_validate(instance=data, schema=schema)
+    except ValidationError as e:
+        result["valid"] = False
+        result["errors"].append(e.message)
+
+    return result
 
 
 def load_config(data: dict) -> AdoConfig:

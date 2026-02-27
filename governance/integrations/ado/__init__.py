@@ -29,7 +29,7 @@ from governance.integrations.ado.auth import (
     create_auth_provider,
 )
 from governance.integrations.ado.client import AdoClient
-from governance.integrations.ado.config import AdoConfig, load_config
+from governance.integrations.ado.config import AdoConfig, load_config, validate_config_schema
 from governance.integrations.ado._patch import (
     add_field,
     add_github_commit_link,
@@ -51,6 +51,7 @@ __all__ = [
     # Config
     "AdoConfig",
     "load_config",
+    "validate_config_schema",
     # Auth
     "AuthProvider",
     "PatAuth",

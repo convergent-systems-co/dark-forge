@@ -175,6 +175,70 @@ def validate_emission_consistency(emission: dict, log: EvaluationLog) -> list:
     return warnings
 
 
+def validate_ado_config(project_config: dict, log=None) -> dict:
+    """Validate the ado_integration section of a project config against the ADO integration schema.
+
+    This is a non-blocking validation — failures produce warnings, not errors.
+    The function is safe to call even when jsonschema is unavailable (returns
+    a warning instead of raising).
+
+    Args:
+        project_config: The full project.yaml dict (or just the ado_integration section).
+        log: Optional EvaluationLog for recording results.
+
+    Returns:
+        A dict with keys:
+        - ``valid`` (bool): Whether the config passed schema validation.
+        - ``warnings`` (list[str]): List of warning messages (empty if valid).
+    """
+    result = {"valid": True, "warnings": []}
+
+    # Accept either the full project config or just the ado_integration section.
+    ado_config = project_config
+    if "ado_integration" in project_config:
+        ado_config = project_config["ado_integration"]
+
+    if not ado_config:
+        result["warnings"].append("No ado_integration configuration found.")
+        if log:
+            log.record("validate_ado_config", "skip", "No ado_integration section present")
+        return result
+
+    # Locate the schema file relative to this module.
+    schema_path = Path(__file__).resolve().parent.parent / "schemas" / "ado-integration.schema.json"
+    if not schema_path.exists():
+        msg = f"ADO integration schema not found at {schema_path}"
+        result["warnings"].append(msg)
+        if log:
+            log.record("validate_ado_config", "skip", msg)
+        return result
+
+    try:
+        with open(schema_path) as f:
+            schema = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        msg = f"Failed to load ADO integration schema: {e}"
+        result["warnings"].append(msg)
+        if log:
+            log.record("validate_ado_config", "fail", msg)
+        result["valid"] = False
+        return result
+
+    try:
+        validate(instance=ado_config, schema=schema)
+    except ValidationError as e:
+        msg = f"ADO config validation warning: {e.message}"
+        result["warnings"].append(msg)
+        result["valid"] = False
+        if log:
+            log.record("validate_ado_config", "fail", msg)
+        return result
+
+    if log:
+        log.record("validate_ado_config", "pass", "ADO integration config is valid")
+    return result
+
+
 def validate_emission_freshness(emission: dict, expected_commit_sha: str, log: EvaluationLog) -> list:
     """Check emission freshness and provenance.
 

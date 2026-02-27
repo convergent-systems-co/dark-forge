@@ -207,6 +207,11 @@
       "type": "object",
       "description": "Azure DevOps integration configuration for work item sync.",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the ADO integration is active. Set to false to disable sync without removing configuration."
+        },
         "organization": {
           "type": "string",
           "description": "Azure DevOps organization name."
@@ -214,6 +219,10 @@
         "default_project": {
           "type": "string",
           "description": "Default ADO project name for API calls."
+        },
+        "project": {
+          "type": "string",
+          "description": "ADO project name for sync operations. Distinct from default_project which is used by the client library."
         },
         "access_method": {
           "type": "string",
@@ -226,6 +235,11 @@
           "enum": ["pat", "service_principal", "managed_identity"],
           "default": "pat",
           "description": "Authentication method for ADO API. For az_cli access_method, auth is handled by the az login session."
+        },
+        "auth_secret_name": {
+          "type": "string",
+          "default": "ADO_PAT",
+          "description": "Name of the GitHub Actions secret or environment variable containing the authentication credential."
         },
         "api_version": {
           "type": "string",
@@ -243,6 +257,126 @@
           "type": "number",
           "default": 30.0,
           "description": "HTTP request timeout in seconds."
+        },
+        "sync": {
+          "type": "object",
+          "description": "Synchronisation behaviour configuration controlling direction, automation, and conflict resolution.",
+          "properties": {
+            "direction": {
+              "type": "string",
+              "enum": ["bidirectional", "github_to_ado", "ado_to_github", "disabled"],
+              "default": "github_to_ado",
+              "description": "Sync direction between GitHub and ADO."
+            },
+            "auto_create": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically create ADO work items when new GitHub issues are opened."
+            },
+            "auto_close": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically close ADO work items when linked GitHub issues are closed."
+            },
+            "grace_period_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 5,
+              "description": "Seconds to wait after a change event before syncing, to debounce rapid updates."
+            },
+            "conflict_strategy": {
+              "type": "string",
+              "enum": ["last_write", "field_ownership", "github_wins", "ado_wins"],
+              "default": "last_write",
+              "description": "Strategy for resolving conflicting updates between GitHub and ADO."
+            },
+            "sync_comments": {
+              "type": "boolean",
+              "default": false,
+              "description": "Sync comments between GitHub issues and ADO work items."
+            },
+            "sync_attachments": {
+              "type": "boolean",
+              "default": false,
+              "description": "Sync file attachments between GitHub issues and ADO work items."
+            }
+          },
+          "additionalProperties": false
+        },
+        "state_mapping": {
+          "type": "object",
+          "description": "Maps GitHub issue states to ADO work item states. Keys are GitHub states, values are ADO state names.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type_mapping": {
+          "type": "object",
+          "description": "Maps GitHub issue type labels to ADO work item types. The 'default' key specifies the fallback type.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "field_mapping": {
+          "type": "object",
+          "description": "Configures how GitHub issue metadata maps to ADO work item fields.",
+          "properties": {
+            "area_path": {
+              "type": "string",
+              "default": "",
+              "description": "Default ADO area path for new work items."
+            },
+            "iteration_path": {
+              "type": "string",
+              "default": "@CurrentIteration",
+              "description": "Default ADO iteration path."
+            },
+            "priority_labels": {
+              "type": "object",
+              "description": "Maps GitHub label names to ADO priority values (1-4).",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 4
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "user_mapping": {
+          "type": "object",
+          "description": "Maps GitHub usernames to ADO user emails for assignee sync.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "filters": {
+          "type": "object",
+          "description": "Controls which GitHub issues are eligible for ADO sync.",
+          "properties": {
+            "include_labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Only sync issues with at least one of these labels. Empty means all eligible."
+            },
+            "exclude_labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["internal", "governance"],
+              "description": "Never sync issues with any of these labels."
+            },
+            "ado_area_path_filter": {
+              "type": "string",
+              "default": "",
+              "description": "Only sync ADO work items under this area path."
+            }
+          },
+          "additionalProperties": false
         }
       },
       "required": ["organization"],
