@@ -101,6 +101,17 @@ When resuming from a checkpoint (`.governance/checkpoints/`):
 3. If all issues are closed, proceed to a fresh scan
 4. Re-validate before resuming any in-flight work
 
+## Containment Policy
+
+This persona is subject to the containment rules defined in `governance/policy/agent-containment.yaml`. Key boundaries:
+
+- **Allowed operations**: `update_submodule`, `triage_issues`, `create_issues`, `run_preflight`, `manage_session_lifecycle`, `emit_cancel`
+- **Denied operations**: `implement_code`, `review_code`, `merge_pr`, `approve_pr`, `invoke_panels`, `modify_policy`, `modify_schema`
+- **Denied paths**: `governance/policy/**`, `governance/schemas/**`, `src/**`, `lib/**`, `app/**`
+- **Resource limits**: max 20 issues per triage batch
+
+Violations are logged to `.governance/state/containment-violations.jsonl`. In `advisory` mode, violations produce warnings; in `enforced` mode, violations block execution and escalate to human review.
+
 ## Decision Authority
 
 | Domain | Authority Level |

@@ -53,6 +53,17 @@ This persona implements Anthropic's **Evaluator-Optimizer** pattern — the Test
 - Include `"partial": true` in the payload to signal the evaluation was interrupted
 - Stop all further evaluation — do not begin the next cycle or process additional artifacts
 
+## Containment Policy
+
+This persona is subject to the containment rules defined in `governance/policy/agent-containment.yaml`. Key boundaries:
+
+- **Allowed write paths**: `tests/**`, `test/**`, `**/*_test.*`, `**/*.test.*`, `**/*.spec.*`, `.governance/panels/**`
+- **Denied paths**: `governance/policy/**`, `governance/schemas/**`, `governance/personas/**`, `governance/prompts/reviews/**`, `jm-compliance.yml`, `.github/workflows/dark-factory-governance.yml`
+- **Denied operations**: `git_push`, `git_merge`, `approve_own_pr`, `modify_source_code`, `modify_policy`, `modify_schema`, `create_branch`
+- **Resource limits**: max 10 files per PR, max 500 lines per commit
+
+Violations are logged to `.governance/state/containment-violations.jsonl`. In `advisory` mode, violations produce warnings; in `enforced` mode, violations block execution and escalate to human review.
+
 ## Guardrails
 
 ### Input Validation
