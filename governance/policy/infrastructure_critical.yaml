@@ -150,5 +150,3 @@ optional_panels:
     trigger: files_changed_in ["db/", "migrations/", "schema/", "data/"]
   - panel: api-design-review
     trigger: files_changed_in ["api/", "openapi/", "swagger/", "graphql/"]
-  - panel: incident-post-mortem
-    trigger: files_changed_in ["incident/", "postmortem/", ".incidents/"]
