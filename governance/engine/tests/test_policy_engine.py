@@ -1590,3 +1590,191 @@ class TestTimestampParsingException:
         warnings = policy_engine.validate_emission_freshness(emission, "", log)
         # Should not crash — may or may not produce a warning depending on parse result
         assert isinstance(warnings, list)
+
+
+# ===========================================================================
+# Fast-track profile and change-type panel overrides
+# ===========================================================================
+
+
+class TestFastTrackProfileLoads:
+    """Verify the fast-track.yaml profile loads and has the expected structure."""
+
+    def test_fast_track_profile_loads(self, fast_track_profile):
+        """Fast-track profile can be loaded via YAML and has required keys."""
+        assert fast_track_profile["profile_name"] == "fast-track"
+        assert fast_track_profile["profile_version"] == "1.0.0"
+
+    def test_fast_track_required_panels(self, fast_track_profile):
+        """Fast-track profile requires only code-review and security-review."""
+        required = fast_track_profile["required_panels"]
+        assert "code-review" in required
+        assert "security-review" in required
+        assert len(required) == 2
+
+    def test_fast_track_security_review_always_required(self, fast_track_profile):
+        """Security-review is non-negotiable in fast-track."""
+        assert "security-review" in fast_track_profile["required_panels"]
+
+    def test_fast_track_auto_merge_enabled(self, fast_track_profile):
+        """Fast-track enables auto-merge with a lower confidence threshold."""
+        auto_merge = fast_track_profile["auto_merge"]
+        assert auto_merge["enabled"] is True
+        # Confidence threshold should be 0.75 (lower than default 0.85)
+        conditions = auto_merge["conditions"]
+        confidence_cond = [c for c in conditions if "aggregate_confidence" in c]
+        assert len(confidence_cond) == 1
+        assert "0.75" in confidence_cond[0]
+
+    def test_fast_track_trigger_conditions(self, fast_track_profile):
+        """Fast-track defines trigger conditions for change type classification."""
+        triggers = fast_track_profile["trigger_conditions"]["change_types"]
+        assert "docs_only" in triggers
+        assert "chore" in triggers
+        assert "typo_fix" in triggers
+        assert "test_only" in triggers
+
+    def test_fast_track_plan_skip_condition(self, fast_track_profile):
+        """Fast-track allows skipping plans for small changes (< 3 files)."""
+        plan_req = fast_track_profile["plan_required"]
+        assert plan_req["default"] is True
+        assert plan_req["skip_when"]["files_changed_lt"] == 3
+
+    def test_fast_track_weighting(self, fast_track_profile):
+        """Fast-track weighting only covers code-review and security-review."""
+        weights = fast_track_profile["weighting"]["weights"]
+        assert set(weights.keys()) == {"code-review", "security-review"}
+
+    def test_fast_track_block_rules_match_default(self, fast_track_profile, default_profile):
+        """Fast-track block rules are the same as default — safety is never relaxed."""
+        ft_conditions = fast_track_profile["block"]["conditions"]
+        dp_conditions = default_profile["block"]["conditions"]
+        assert len(ft_conditions) == len(dp_conditions)
+
+    def test_fast_track_risk_aggregation_matches_default(self, fast_track_profile, default_profile):
+        """Fast-track risk aggregation is identical to default."""
+        assert fast_track_profile["risk_aggregation"] == default_profile["risk_aggregation"]
+
+
+class TestFastTrackRequiredPanelCheck:
+    """Verify the policy engine correctly validates emissions against fast-track panels."""
+
+    def test_fast_track_all_required_present(self, fast_track_profile):
+        """When both code-review and security-review are present, no panels are missing."""
+        log = _log()
+        emissions = [
+            make_emission(panel_name="code-review"),
+            make_emission(panel_name="security-review"),
+        ]
+        missing = policy_engine.check_required_panels(emissions, fast_track_profile, log)
+        assert missing == []
+
+    def test_fast_track_missing_security_review(self, fast_track_profile):
+        """Missing security-review is detected even in fast-track."""
+        log = _log()
+        emissions = [make_emission(panel_name="code-review")]
+        missing = policy_engine.check_required_panels(emissions, fast_track_profile, log)
+        assert "security-review" in missing
+
+    def test_fast_track_missing_code_review(self, fast_track_profile):
+        """Missing code-review is detected in fast-track."""
+        log = _log()
+        emissions = [make_emission(panel_name="security-review")]
+        missing = policy_engine.check_required_panels(emissions, fast_track_profile, log)
+        assert "code-review" in missing
+
+
+class TestPanelOverridesByChangeType:
+    """Tests for panel_overrides_by_change_type in default.yaml and the engine function."""
+
+    def test_docs_only_reduces_required_panels(self, default_profile):
+        """docs_only change type reduces required panels to documentation-review + security-review."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "docs_only", log)
+        assert "documentation-review" in effective
+        assert "security-review" in effective
+        # Should NOT require threat-modeling, cost-analysis, etc.
+        assert "threat-modeling" not in effective
+        assert "cost-analysis" not in effective
+
+    def test_chore_reduces_required_panels(self, default_profile):
+        """chore change type reduces required panels to code-review + security-review."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "chore", log)
+        assert "code-review" in effective
+        assert "security-review" in effective
+        assert "threat-modeling" not in effective
+
+    def test_test_only_requires_testing_review(self, default_profile):
+        """test_only change type includes testing-review, code-review, and security-review."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "test_only", log)
+        assert "testing-review" in effective
+        assert "code-review" in effective
+        assert "security-review" in effective
+
+    def test_unknown_change_type_returns_base_required(self, default_profile):
+        """Unknown change type falls back to the full required_panels list."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "unknown_type", log)
+        assert effective == default_profile["required_panels"]
+
+    def test_no_change_type_returns_base_required(self, default_profile):
+        """None change type returns the full required_panels list."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, None, log)
+        assert effective == default_profile["required_panels"]
+
+    def test_empty_change_type_returns_base_required(self, default_profile):
+        """Empty string change type returns the full required_panels list."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "", log)
+        assert effective == default_profile["required_panels"]
+
+    def test_security_review_always_enforced(self):
+        """If an override omits security-review, the function adds it automatically."""
+        log = _log()
+        profile = make_profile()
+        # Add an override that deliberately omits security-review
+        profile["panel_overrides_by_change_type"] = {
+            "docs_only": {
+                "required_panels": ["documentation-review"],
+                "optional_panels": [],
+            }
+        }
+        effective = policy_engine.get_required_panels_for_change_type(profile, "docs_only", log)
+        assert "security-review" in effective
+        assert "documentation-review" in effective
+
+    def test_security_review_not_duplicated(self, default_profile):
+        """If the override already includes security-review, it is not duplicated."""
+        log = _log()
+        effective = policy_engine.get_required_panels_for_change_type(default_profile, "docs_only", log)
+        assert effective.count("security-review") == 1
+
+    def test_profile_without_overrides_section(self):
+        """Profile without panel_overrides_by_change_type returns base required panels."""
+        log = _log()
+        profile = make_profile()
+        # make_profile does not include panel_overrides_by_change_type
+        effective = policy_engine.get_required_panels_for_change_type(profile, "docs_only", log)
+        assert effective == profile["required_panels"]
+
+    def test_override_log_entries(self, default_profile):
+        """The function records log entries when applying overrides."""
+        log = _log()
+        policy_engine.get_required_panels_for_change_type(default_profile, "docs_only", log)
+        rule_ids = [e["rule_id"] for e in log.entries]
+        assert "change_type_override" in rule_ids
+
+    def test_docs_only_check_required_with_override(self, default_profile):
+        """End-to-end: docs_only override + check_required_panels passes with reduced panels."""
+        log = _log()
+        effective_panels = policy_engine.get_required_panels_for_change_type(default_profile, "docs_only", log)
+        # Build a profile with the overridden required panels
+        overridden_profile = dict(default_profile)
+        overridden_profile["required_panels"] = effective_panels
+        # Provide emissions for only the overridden required panels
+        emissions = [make_emission(panel_name=p) for p in effective_panels]
+        missing = policy_engine.check_required_panels(emissions, overridden_profile, log)
+        assert missing == []

@@ -529,6 +529,56 @@ def check_required_panels(emissions, profile, log):
     return missing
 
 
+def get_required_panels_for_change_type(profile, change_type, log=None):
+    """Return the effective required panels list for a given change type.
+
+    If the profile defines ``panel_overrides_by_change_type`` and *change_type*
+    matches an entry, the override's ``required_panels`` list is returned.
+    Otherwise the profile's top-level ``required_panels`` list is used.
+
+    Security-review is **always** included in the result regardless of what
+    the override declares — it is a non-negotiable gate.
+
+    Returns:
+        list[str]: effective required panel names.
+    """
+    base_required = list(profile.get("required_panels", []))
+
+    if not change_type:
+        if log:
+            log.record("change_type_override", "skip", "No change_type provided; using base required panels")
+        return base_required
+
+    overrides = profile.get("panel_overrides_by_change_type", {})
+    override = overrides.get(change_type)
+
+    if override is None:
+        if log:
+            log.record("change_type_override", "skip", f"No override for change_type '{change_type}'; using base required panels")
+        return base_required
+
+    effective = list(override.get("required_panels", base_required))
+
+    # Enforce security-review is always present
+    if "security-review" not in effective:
+        effective.append("security-review")
+        if log:
+            log.record(
+                "change_type_override_security",
+                "warn",
+                f"security-review was missing from override for '{change_type}'; added automatically",
+            )
+
+    if log:
+        log.record(
+            "change_type_override",
+            "pass",
+            f"Applied panel override for change_type '{change_type}': {effective}",
+        )
+
+    return effective
+
+
 def evaluate_block_conditions(aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log):
     """Evaluate block conditions. Returns (blocked: bool, reason: str)."""
     block_rules = profile.get("block", {}).get("conditions", [])

@@ -247,6 +247,34 @@ optional_panels:
   - panel: technical-debt-review
     trigger: files_changed_in ["src/", "lib/", "pkg/"]
 
+# Panel Overrides by Change Type
+# When a change is classified as a specific type, the required and optional
+# panels can be narrowed. This allows the governance pipeline to reduce
+# ceremony for well-understood change categories while keeping the default
+# required_panels list as the baseline for unclassified changes.
+# NOTE: security-review is ALWAYS required regardless of change type.
+# AI agents use change_type classification to look up overrides here;
+# the policy engine validates that security-review is never dropped.
+panel_overrides_by_change_type:
+  docs_only:
+    required_panels:
+      - documentation-review
+      - security-review
+    optional_panels:
+      - code-review
+  chore:
+    required_panels:
+      - code-review
+      - security-review
+    optional_panels:
+      - documentation-review
+  test_only:
+    required_panels:
+      - testing-review
+      - code-review
+      - security-review
+    optional_panels: []
+
 # Proof-of-Correctness Rules (Phase 5a)
 # Verification level requirements per risk classification.
 # Consuming repos declare compliance via governance/schemas/test-governance.schema.json.

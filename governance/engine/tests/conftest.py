@@ -92,6 +92,11 @@ def reduced_touchpoint_profile():
     return _load_profile("reduced_touchpoint")
 
 
+@pytest.fixture
+def fast_track_profile():
+    return _load_profile("fast-track")
+
+
 # ---------------------------------------------------------------------------
 # Emission builder
 # ---------------------------------------------------------------------------
