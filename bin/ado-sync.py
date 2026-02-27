@@ -712,118 +712,83 @@ def cmd_sync_one(args: argparse.Namespace) -> int:
 
 def cmd_retry_failed(args: argparse.Namespace) -> int:
     """Process the error queue, retrying unresolved errors."""
+    from governance.integrations.ado.retry import retry_failed
+
     error_path = _find_governance_file("state/ado-sync-errors.json")
     if error_path is None:
-        print("No error log found at .governance/state/ado-sync-errors.json")
-        return EXIT_SUCCESS  # No errors is success
-
-    with open(error_path) as f:
-        error_log = json.load(f)
-
-    errors = error_log.get("errors", [])
-    unresolved = [e for e in errors if not e.get("resolved", False)]
-
-    if not unresolved:
         if args.json:
-            _print_json({"message": "No unresolved errors", "total_errors": len(errors)})
+            _print_json({"message": "No error log found", "results": []})
+        else:
+            print("No error log found at .governance/state/ado-sync-errors.json")
+        return EXIT_SUCCESS
+
+    ledger_path = _find_governance_file("state/ado-sync-ledger.json") or Path(
+        ".governance/state/ado-sync-ledger.json"
+    )
+
+    if args.dry_run:
+        # Dry run does not need an ADO client
+        results = retry_failed(
+            config={},
+            client=None,
+            ledger_path=ledger_path,
+            error_log_path=error_path,
+            dry_run=True,
+            max_retries=getattr(args, "max_retries", 3),
+        )
+    else:
+        client, raw = _build_client(args)
+        with client:
+            results = retry_failed(
+                config=raw,
+                client=client,
+                ledger_path=ledger_path,
+                error_log_path=error_path,
+                dry_run=False,
+                max_retries=getattr(args, "max_retries", 3),
+            )
+
+    if not results:
+        if args.json:
+            _print_json({"message": "No unresolved errors to retry", "results": []})
         else:
             print("No unresolved errors to retry.")
         return EXIT_SUCCESS
 
-    if args.dry_run:
-        if args.json:
-            _print_json({
-                "dry_run": True,
-                "would_retry": len(unresolved),
-                "errors": unresolved,
-            })
-        else:
-            print(f"[dry-run] Would retry {len(unresolved)} failed operation(s):")
-            for e in unresolved:
-                issue = e.get("github_issue_number", "?")
-                ado_id = e.get("ado_work_item_id", "?")
-                print(
-                    f"  - {e.get('operation', '?')} | "
-                    f"GitHub #{issue} -> ADO #{ado_id} | "
-                    f"{e.get('error_type', '?')}: {e.get('error_message', '')[:60]}"
-                )
-        return EXIT_DRY_RUN_WOULD_CHANGE
-
-    client, raw = _build_client(args)
-    retried = 0
-    succeeded = 0
-
-    with client:
-        for error in unresolved:
-            retried += 1
-            error_id = error.get("error_id", "?")
-            operation = error.get("operation", "")
-            github_issue = error.get("github_issue_number")
-            ado_id = error.get("ado_work_item_id")
-
-            _verbose(args, f"Retrying error {error_id} ({operation})...")
-
-            try:
-                if operation == "create" and github_issue:
-                    # Re-attempt sync for this issue
-                    # Build a namespace-like object for sync_one
-                    import subprocess
-
-                    result = subprocess.run(
-                        [
-                            "gh", "issue", "view", str(github_issue),
-                            "--json", "title,body,state,labels",
-                        ],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if result.returncode != 0:
-                        _verbose(args, f"  Cannot fetch GitHub issue #{github_issue}, skipping")
-                        error["retry_count"] = error.get("retry_count", 0) + 1
-                        continue
-
-                    issue_data = json.loads(result.stdout)
-                    type_mapping = raw.get("type_mapping", {"default": "User Story"})
-                    wi_type = type_mapping.get("default", "User Story")
-                    ops = [add_field("/fields/System.Title", issue_data.get("title", ""))]
-                    body = issue_data.get("body", "")
-                    if body:
-                        ops.append(add_field("/fields/System.Description", body))
-
-                    wi = client.create_work_item(wi_type, ops)
-                    print(f"  Retry succeeded: created ADO #{wi.id} for GitHub #{github_issue}")
-                    error["resolved"] = True
-                    succeeded += 1
-
-                elif operation == "update" and ado_id:
-                    # For update failures we just verify the work item exists
-                    wi = client.get_work_item(ado_id)
-                    print(f"  ADO #{ado_id} exists (state: {wi.fields.get('System.State', '?')}), marking resolved")
-                    error["resolved"] = True
-                    succeeded += 1
-
-                else:
-                    _verbose(args, f"  Unsupported retry for operation '{operation}', skipping")
-                    error["retry_count"] = error.get("retry_count", 0) + 1
-
-            except AdoError as exc:
-                error["retry_count"] = error.get("retry_count", 0) + 1
-                print(f"  Retry failed for {error_id}: {exc}", file=sys.stderr)
-
-    # Save updated error log
-    with open(error_path, "w") as f:
-        json.dump(error_log, f, indent=2)
-
     if args.json:
         _print_json({
-            "retried": retried,
-            "succeeded": succeeded,
-            "failed": retried - succeeded,
+            "results": [
+                {"error_id": r.error_id, "status": r.status, "message": r.message}
+                for r in results
+            ],
+            "summary": {
+                "total": len(results),
+                "resolved": sum(1 for r in results if r.status == "resolved"),
+                "dead_letter": sum(1 for r in results if r.status == "dead_letter"),
+                "retried": sum(1 for r in results if r.status == "retried"),
+                "skipped": sum(1 for r in results if r.status == "skipped"),
+            },
         })
     else:
-        print(f"\nRetried {retried} error(s): {succeeded} succeeded, {retried - succeeded} failed")
+        for r in results:
+            status_icon = {
+                "resolved": "[OK]",
+                "dead_letter": "[DL]",
+                "retried": "[!!]",
+                "skipped": "[--]",
+            }.get(r.status, "[??]")
+            print(f"  {status_icon} {r.error_id}: {r.message}")
 
-    return EXIT_SUCCESS if succeeded == retried else EXIT_ERROR
+        resolved = sum(1 for r in results if r.status == "resolved")
+        dead = sum(1 for r in results if r.status == "dead_letter")
+        failed = sum(1 for r in results if r.status == "retried")
+        print(f"\n{len(results)} processed: {resolved} resolved, {failed} retried, {dead} dead-lettered")
+
+    if args.dry_run:
+        return EXIT_DRY_RUN_WOULD_CHANGE
+
+    has_failures = any(r.status in ("retried", "dead_letter") for r in results)
+    return EXIT_ERROR if has_failures else EXIT_SUCCESS
 
 
 def cmd_setup_custom_fields(args: argparse.Namespace) -> int:
@@ -1028,140 +993,60 @@ def cmd_setup_service_hooks(args: argparse.Namespace) -> int:
 
 
 def cmd_health(args: argparse.Namespace) -> int:
-    """Run health checks: connection, custom fields, ledger consistency."""
-    checks: list[dict[str, Any]] = []
+    """Run health checks: connection, custom fields, ledger, error queue, service hooks."""
+    from governance.integrations.ado.health import HealthStatus, run_health_checks
 
-    # 1. Connection check
-    _verbose(args, "Checking connection...")
+    # Try to build a client; if config is missing, run without one
+    client = None
+    raw: dict = {}
     try:
-        client, raw = _build_client(args)
+        client_obj, raw = _build_client(args)
+        client = client_obj
+    except (AdoConfigError, AdoError):
+        pass
+
+    ledger_path = _find_governance_file("state/ado-sync-ledger.json") or Path(
+        ".governance/state/ado-sync-ledger.json"
+    )
+    error_path = _find_governance_file("state/ado-sync-errors.json") or Path(
+        ".governance/state/ado-sync-errors.json"
+    )
+
+    if client is not None:
         with client:
-            props = client.get_project_properties()
-            checks.append({
-                "check": "connection",
-                "status": "pass",
-                "detail": f"Connected to {props.get('name', '?')}",
-            })
-
-            # 2. Custom fields check
-            _verbose(args, "Checking custom fields...")
-            fields = client.list_fields()
-            field_refs = {f.reference_name for f in fields}
-            required_fields = ["Custom.GitHubIssueUrl", "Custom.GitHubRepo"]
-            missing = [f for f in required_fields if f not in field_refs]
-            if missing:
-                checks.append({
-                    "check": "custom_fields",
-                    "status": "warn",
-                    "detail": f"Missing fields: {', '.join(missing)}. Run: ado-sync.py setup-custom-fields",
-                })
-            else:
-                checks.append({
-                    "check": "custom_fields",
-                    "status": "pass",
-                    "detail": "All custom fields present",
-                })
-
-    except AdoAuthError as exc:
-        checks.append({
-            "check": "connection",
-            "status": "fail",
-            "detail": f"Authentication failed: {exc}",
-        })
-    except AdoConfigError as exc:
-        checks.append({
-            "check": "connection",
-            "status": "fail",
-            "detail": f"Configuration error: {exc}",
-        })
-    except AdoError as exc:
-        checks.append({
-            "check": "connection",
-            "status": "fail",
-            "detail": f"Connection error: {exc}",
-        })
-
-    # 3. Ledger consistency check
-    _verbose(args, "Checking ledger consistency...")
-    ledger_path = _find_governance_file("state/ado-sync-ledger.json")
-    if ledger_path is None:
-        checks.append({
-            "check": "ledger",
-            "status": "info",
-            "detail": "No ledger file found (no syncs performed yet)",
-        })
+            results = run_health_checks(raw, client, ledger_path, error_path)
     else:
-        try:
-            with open(ledger_path) as f:
-                ledger = json.load(f)
-            mappings = ledger.get("mappings", [])
-            error_count = sum(1 for m in mappings if m.get("sync_status") == "error")
-            checks.append({
-                "check": "ledger",
-                "status": "warn" if error_count > 0 else "pass",
-                "detail": (
-                    f"{len(mappings)} mapping(s), {error_count} in error state"
-                    if error_count
-                    else f"{len(mappings)} mapping(s), all healthy"
-                ),
-            })
-        except (json.JSONDecodeError, OSError) as exc:
-            checks.append({
-                "check": "ledger",
-                "status": "fail",
-                "detail": f"Cannot read ledger: {exc}",
-            })
-
-    # 4. Error queue check
-    _verbose(args, "Checking error queue...")
-    error_path = _find_governance_file("state/ado-sync-errors.json")
-    if error_path is None:
-        checks.append({
-            "check": "error_queue",
-            "status": "pass",
-            "detail": "No error log (clean)",
-        })
-    else:
-        try:
-            with open(error_path) as f:
-                error_log = json.load(f)
-            errors = error_log.get("errors", [])
-            unresolved = [e for e in errors if not e.get("resolved", False)]
-            if unresolved:
-                checks.append({
-                    "check": "error_queue",
-                    "status": "warn",
-                    "detail": (
-                        f"{len(unresolved)} unresolved error(s) of {len(errors)} total. "
-                        "Run: ado-sync.py retry-failed"
-                    ),
-                })
-            else:
-                checks.append({
-                    "check": "error_queue",
-                    "status": "pass",
-                    "detail": f"{len(errors)} error(s), all resolved",
-                })
-        except (json.JSONDecodeError, OSError) as exc:
-            checks.append({
-                "check": "error_queue",
-                "status": "fail",
-                "detail": f"Cannot read error log: {exc}",
-            })
+        results = run_health_checks(raw, None, ledger_path, error_path)
 
     # Output
     if args.json:
-        all_pass = all(c["status"] in ("pass", "info") for c in checks)
-        _print_json({"healthy": all_pass, "checks": checks})
+        all_pass = all(r.status in (HealthStatus.PASS,) for r in results)
+        has_fail = any(r.status == HealthStatus.FAIL for r in results)
+        _print_json({
+            "healthy": all_pass,
+            "has_failures": has_fail,
+            "checks": [
+                {
+                    "name": r.name,
+                    "status": r.status.value,
+                    "details": r.details,
+                }
+                for r in results
+            ],
+        })
     else:
-        status_icons = {"pass": "[OK]", "warn": "[!!]", "fail": "[FAIL]", "info": "[--]"}
+        status_icons = {
+            HealthStatus.PASS: "[OK]",
+            HealthStatus.WARN: "[!!]",
+            HealthStatus.FAIL: "[FAIL]",
+        }
         print("Health Checks:")
-        for c in checks:
-            icon = status_icons.get(c["status"], "[??]")
-            print(f"  {icon} {c['check']}: {c['detail']}")
+        for r in results:
+            icon = status_icons.get(r.status, "[??]")
+            print(f"  {icon} {r.name}: {r.details}")
 
-        all_pass = all(c["status"] in ("pass", "info") for c in checks)
-        has_fail = any(c["status"] == "fail" for c in checks)
+        all_pass = all(r.status == HealthStatus.PASS for r in results)
+        has_fail = any(r.status == HealthStatus.FAIL for r in results)
         print()
         if all_pass:
             print("All checks passed.")
@@ -1170,8 +1055,49 @@ def cmd_health(args: argparse.Namespace) -> int:
         else:
             print("Warnings detected. See details above.")
 
-    has_fail = any(c["status"] == "fail" for c in checks)
+    has_fail = any(r.status == HealthStatus.FAIL for r in results)
     return EXIT_ERROR if has_fail else EXIT_SUCCESS
+
+
+def cmd_dashboard(args: argparse.Namespace) -> int:
+    """Display sync status dashboard."""
+    from governance.integrations.ado.dashboard import generate_dashboard_emission
+
+    ledger_path = _find_governance_file("state/ado-sync-ledger.json") or Path(
+        ".governance/state/ado-sync-ledger.json"
+    )
+    error_path = _find_governance_file("state/ado-sync-errors.json") or Path(
+        ".governance/state/ado-sync-errors.json"
+    )
+
+    emission = generate_dashboard_emission(ledger_path, error_path)
+    status = emission["ado_sync_status"]
+
+    if args.json:
+        _print_json(emission)
+    else:
+        print("ADO Sync Dashboard")
+        print("=" * 40)
+        print()
+        print("Mappings:")
+        print(f"  Total:    {status['total_mappings']}")
+        print(f"  Active:   {status['active_mappings']}")
+        print(f"  Error:    {status['error_mappings']}")
+        print(f"  Paused:   {status['paused_mappings']}")
+        print()
+        print("Last Sync:")
+        print(f"  GitHub -> ADO: {status['last_github_to_ado_sync'] or 'never'}")
+        print(f"  ADO -> GitHub: {status['last_ado_to_github_sync'] or 'never'}")
+        print()
+        print("Errors:")
+        print(f"  Today:        {status['errors_today']}")
+        print(f"  Unresolved:   {status['unresolved_errors']}")
+        print(f"  Dead Letter:  {status['dead_letter_count']}")
+        print(f"  Total:        {status['total_errors']}")
+        print()
+        print(f"Generated: {status['generated_at']}")
+
+    return EXIT_SUCCESS
 
 
 def cmd_initial_sync(args: argparse.Namespace) -> int:
@@ -1388,9 +1314,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p_sync_one.add_argument("github_issue_number", type=int, help="GitHub issue number.")
 
-    subparsers.add_parser(
+    p_retry = subparsers.add_parser(
         "retry-failed",
         help="Process the error queue, retrying unresolved sync errors.",
+    )
+    p_retry.add_argument(
+        "--max-retries",
+        type=int,
+        default=3,
+        help="Max retry attempts before dead-lettering (default: 3).",
     )
 
     p_initial_sync = subparsers.add_parser(
@@ -1445,7 +1377,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser(
         "health",
-        help="Run health checks (connection, custom fields, ledger consistency).",
+        help="Run health checks (connection, custom fields, ledger, error queue, service hooks).",
+    )
+
+    subparsers.add_parser(
+        "dashboard",
+        help="Display sync status dashboard.",
     )
 
     return parser
@@ -1469,6 +1406,7 @@ _COMMANDS = {
     "setup-custom-fields": cmd_setup_custom_fields,
     "setup-service-hooks": cmd_setup_service_hooks,
     "health": cmd_health,
+    "dashboard": cmd_dashboard,
     "initial-sync": cmd_initial_sync,
 }
 

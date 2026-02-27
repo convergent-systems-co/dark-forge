@@ -45,6 +45,9 @@ from governance.integrations.ado.reverse_mappers import (
     map_ado_state_to_github,
     map_ado_user_to_github,
 )
+from governance.integrations.ado.health import HealthCheckResult, HealthStatus, run_health_checks
+from governance.integrations.ado.retry import RetryResult, retry_failed
+from governance.integrations.ado.dashboard import generate_dashboard_emission
 from governance.integrations.ado.hierarchy import (
     parse_child_references,
     parse_parent_reference,
@@ -118,6 +121,15 @@ __all__ = [
     "SyncResult",
     # Reverse sync engine
     "ReverseSyncEngine",
+    # Health checks
+    "HealthCheckResult",
+    "HealthStatus",
+    "run_health_checks",
+    # Retry processor
+    "RetryResult",
+    "retry_failed",
+    # Dashboard
+    "generate_dashboard_emission",
     # Mappers (GitHub -> ADO)
     "map_github_state_to_ado",
     "map_github_labels_to_ado_type",
