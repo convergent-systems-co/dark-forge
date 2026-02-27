@@ -4,7 +4,7 @@
 # Part of Phase 5e — Spec-Driven Interface.
 
 profile_name: reduced_touchpoint
-profile_version: "1.0.1"
+profile_version: "1.1.0"
 description: >
   Near-full-autonomy policy profile that requires human approval only for
   policy-override scenarios, dismissed security-critical findings, or
@@ -161,6 +161,7 @@ required_panels:
   - security-review
   - threat-modeling
   - cost-analysis
+  - finops-review
   - documentation-review
   - data-governance-review
 

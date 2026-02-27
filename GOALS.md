@@ -111,6 +111,12 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | #209 | #211 | Cross-session state persistence (Phase 5c) | Session state schema and storage strategy; completes Phase 5c governance artifacts |
 | #220 | — | Persona consolidation — 19 consolidated review prompts, shared perspectives, deprecation notices |
 
+### FinOps and Cost Governance
+
+| Issue | PR | Title | Impact |
+|-------|----|-------|--------|
+| #455 | — | FinOps review panel | Default required panel across all policy profiles with 5 perspectives (FinOps Strategist, Resource Optimizer, Shutdown/Decommission Analyst, Savings Plan Advisor, Cost Allocation Auditor), destruction safety guardrails requiring human approval, schema extension for destruction_recommended and requires_human_approval fields |
+
 ### Documentation Site & Tooling
 
 | Issue | PR | Title | Impact |

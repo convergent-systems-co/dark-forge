@@ -3,7 +3,7 @@
 # Stricter thresholds, mandatory security and compliance panels, no auto-merge by default.
 
 profile_name: fin_pii_high
-profile_version: "1.0.1"
+profile_version: "1.1.0"
 description: >
   High-security policy profile for financial services and PII-handling
   repositories. Enforces strict compliance gating, mandatory security
@@ -149,6 +149,7 @@ required_panels:
   - testing-review
   - threat-modeling
   - cost-analysis
+  - finops-review
   - documentation-review
   - data-governance-review
 

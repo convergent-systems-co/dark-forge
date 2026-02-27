@@ -3,7 +3,7 @@
 # All policy evaluation is deterministic and must not depend on prose.
 
 profile_name: default
-profile_version: "1.4.0"
+profile_version: "1.5.0"
 description: >
   Baseline policy profile for standard repositories. Balances automation
   with human oversight. Suitable for internal applications with moderate
@@ -24,7 +24,8 @@ weighting:
     copilot-review: 0.08
     documentation-review: 0.05
     threat-modeling: 0.05
-    cost-analysis: 0.04
+    cost-analysis: 0.02
+    finops-review: 0.02
     data-governance-review: 0.05
   # If a panel is not executed, its weight is redistributed proportionally.
   missing_panel_behavior: redistribute
@@ -183,6 +184,8 @@ block:
       condition: required_panel_missing == true
     - description: "CI checks failed."
       condition: ci_checks_passed == false
+    - description: "Destruction recommended by FinOps review requires human approval."
+      condition: destruction_recommended == true
 
 # Override Rules
 # Enterprise override procedure for blocked merges.
@@ -212,6 +215,7 @@ required_panels:
   - security-review
   - threat-modeling
   - cost-analysis
+  - finops-review
   - documentation-review
   - data-governance-review
 

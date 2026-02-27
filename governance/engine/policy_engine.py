@@ -579,7 +579,7 @@ def get_required_panels_for_change_type(profile, change_type, log=None):
     return effective
 
 
-def evaluate_block_conditions(aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log):
+def evaluate_block_conditions(aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log, emissions=None):
     """Evaluate block conditions. Returns (blocked: bool, reason: str)."""
     block_rules = profile.get("block", {}).get("conditions", [])
 
@@ -600,7 +600,7 @@ def evaluate_block_conditions(aggregate_confidence, aggregate_risk, policy_flags
         condition = rule.get("condition", "")
         desc = rule.get("description", condition)
 
-        if _evaluate_block_condition(condition, aggregate_confidence, aggregate_risk, policy_flags):
+        if _evaluate_block_condition(condition, aggregate_confidence, aggregate_risk, policy_flags, emissions=emissions):
             log.record(f"block_{_slugify(desc)}", "fail", desc)
             return True, desc
         else:
@@ -618,13 +618,13 @@ def evaluate_block_conditions(aggregate_confidence, aggregate_risk, policy_flags
     return False, ""
 
 
-def _evaluate_block_condition(condition: str, confidence: float, risk: str, flags: list) -> bool:
+def _evaluate_block_condition(condition: str, confidence: float, risk: str, flags: list, emissions=None) -> bool:
     """Evaluate a single block condition string."""
     cond = condition.strip()
 
     # Handle compound 'and' conditions
     if " and " in cond:
-        return _evaluate_compound_block_condition(cond, confidence, risk, flags)
+        return _evaluate_compound_block_condition(cond, confidence, risk, flags, emissions=emissions)
 
     # Pattern: aggregate_confidence < 0.40
     if cond.startswith("aggregate_confidence <"):
@@ -655,10 +655,16 @@ def _evaluate_block_condition(condition: str, confidence: float, risk: str, flag
         # Handled by check_required_panels, skip here
         return False
 
+    # Pattern: destruction_recommended == true
+    if cond == "destruction_recommended == true":
+        if emissions:
+            return any(e.get("destruction_recommended", False) for e in emissions)
+        return False
+
     return False
 
 
-def _evaluate_compound_block_condition(condition: str, confidence: float, risk: str, flags: list) -> bool:
+def _evaluate_compound_block_condition(condition: str, confidence: float, risk: str, flags: list, emissions=None) -> bool:
     """Evaluate a compound 'and' block condition by splitting and evaluating each sub-condition."""
     parts = condition.split(" and ")
     for part in parts:
@@ -667,7 +673,7 @@ def _evaluate_compound_block_condition(condition: str, confidence: float, risk: 
         if negated:
             part = part[4:].strip()
 
-        result = _evaluate_block_sub_condition(part, confidence, risk, flags)
+        result = _evaluate_block_sub_condition(part, confidence, risk, flags, emissions=emissions)
         if result is None:
             # Context-dependent sub-condition — cannot fully evaluate
             return False
@@ -678,7 +684,7 @@ def _evaluate_compound_block_condition(condition: str, confidence: float, risk: 
     return True
 
 
-def _evaluate_block_sub_condition(sub_cond: str, confidence: float, risk: str, flags: list):
+def _evaluate_block_sub_condition(sub_cond: str, confidence: float, risk: str, flags: list, emissions=None):
     """Evaluate a single sub-condition within a compound block condition.
 
     Returns True/False if evaluable, or None if context-dependent.
@@ -727,6 +733,12 @@ def _evaluate_block_sub_condition(sub_cond: str, confidence: float, risk: str, f
     # Pattern: auto_remediable (bare boolean — True when all flags are auto-remediable)
     if cond == "auto_remediable":
         return all(f.get("auto_remediable", False) for f in flags) if flags else True
+
+    # Pattern: destruction_recommended == true
+    if cond == "destruction_recommended == true":
+        if emissions:
+            return any(e.get("destruction_recommended", False) for e in emissions)
+        return False
 
     # Pattern: panel_missing("...")
     if cond.startswith("panel_missing("):
@@ -1542,7 +1554,7 @@ def evaluate(emissions_dir, profile_path, ci_passed=True, commit_sha=None, pr_nu
     # Step 9: Evaluate block conditions
     log._stream.write("\n--- Step 9: Evaluate block conditions ---\n")
     blocked, block_reason = evaluate_block_conditions(
-        aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log
+        aggregate_confidence, aggregate_risk, policy_flags, missing_required, ci_passed, profile, log, emissions=emissions
     )
     if blocked:
         manifest = generate_manifest(

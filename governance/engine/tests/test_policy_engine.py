@@ -842,6 +842,7 @@ class TestPhase4bTransition:
             make_emission(panel_name="security-review", confidence_score=0.90),
             make_emission(panel_name="threat-modeling", confidence_score=0.90),
             make_emission(panel_name="cost-analysis", confidence_score=0.90),
+            make_emission(panel_name="finops-review", confidence_score=0.90),
             make_emission(panel_name="documentation-review", confidence_score=0.90),
             # data-governance-review missing
         ]
@@ -1001,7 +1002,7 @@ class TestManifest:
         panel_names = [p["panel_name"] for p in manifest["panels_executed"]]
         assert "code-review" in panel_names
         assert "security-review" in panel_names
-        assert len(panel_names) == 6
+        assert len(panel_names) == 7
 
     def test_repository_context(self):
         log = _log()
@@ -1778,3 +1779,135 @@ class TestPanelOverridesByChangeType:
         emissions = [make_emission(panel_name=p) for p in effective_panels]
         missing = policy_engine.check_required_panels(emissions, overridden_profile, log)
         assert missing == []
+
+
+# ===========================================================================
+# FinOps review panel (issue #455)
+# ===========================================================================
+
+
+class TestFinOpsPanel:
+    """Test FinOps review panel integration with policy engine."""
+
+    def test_finops_review_in_default_required_panels(self, default_profile):
+        """finops-review must be in the default profile's required_panels."""
+        required = default_profile.get("required_panels", [])
+        assert "finops-review" in required
+
+    def test_finops_review_in_fin_pii_high_required_panels(self, fin_pii_high_profile):
+        """finops-review must be in the fin_pii_high profile's required_panels."""
+        required = fin_pii_high_profile.get("required_panels", [])
+        assert "finops-review" in required
+
+    def test_finops_review_in_infrastructure_critical_required_panels(self, infrastructure_profile):
+        """finops-review must be in the infrastructure_critical profile's required_panels."""
+        required = infrastructure_profile.get("required_panels", [])
+        assert "finops-review" in required
+
+    def test_finops_review_in_reduced_touchpoint_required_panels(self, reduced_touchpoint_profile):
+        """finops-review must be in the reduced_touchpoint profile's required_panels."""
+        required = reduced_touchpoint_profile.get("required_panels", [])
+        assert "finops-review" in required
+
+    def test_finops_review_weight_in_default_profile(self, default_profile):
+        """finops-review must have a weight in the default profile's weighting."""
+        weights = default_profile.get("weighting", {}).get("weights", {})
+        assert "finops-review" in weights
+        assert weights["finops-review"] == 0.02
+
+    def test_destruction_recommended_blocks_auto_merge(self):
+        """An emission with destruction_recommended=true must block via block conditions."""
+        log = _log()
+        emissions = [
+            make_emission(
+                panel_name="finops-review",
+                destruction_recommended=True,
+                requires_human_approval=True,
+            )
+        ]
+        profile = make_profile(
+            block_conditions=[
+                {
+                    "description": "Destruction recommended by FinOps review requires human approval.",
+                    "condition": "destruction_recommended == true",
+                }
+            ]
+        )
+        blocked, reason = policy_engine.evaluate_block_conditions(
+            0.90, "low", [], [], True, profile, log, emissions=emissions
+        )
+        assert blocked is True
+        assert "destruction" in reason.lower() or "Destruction" in reason
+
+    def test_no_destruction_does_not_block(self):
+        """An emission without destruction_recommended should not trigger destruction block."""
+        log = _log()
+        emissions = [
+            make_emission(
+                panel_name="finops-review",
+                destruction_recommended=False,
+                requires_human_approval=False,
+            )
+        ]
+        profile = make_profile(
+            block_conditions=[
+                {
+                    "description": "Destruction recommended by FinOps review requires human approval.",
+                    "condition": "destruction_recommended == true",
+                }
+            ]
+        )
+        blocked, _ = policy_engine.evaluate_block_conditions(
+            0.90, "low", [], [], True, profile, log, emissions=emissions
+        )
+        assert blocked is False
+
+    def test_requires_human_approval_triggers_human_review(self):
+        """An emission with requires_human_approval=true should trigger escalation."""
+        log = _log()
+        emissions = [
+            make_emission(
+                panel_name="finops-review",
+                requires_human_review=True,
+            )
+        ]
+        profile = make_profile()
+        result, reason = policy_engine.evaluate_escalation_rules(
+            0.90, "low", [], emissions, profile, log
+        )
+        assert result == "human_review_required"
+        assert "finops-review" in reason
+
+    def test_destruction_block_condition_in_default_profile(self, default_profile):
+        """Default profile must contain a block condition for destruction_recommended."""
+        block_conditions = default_profile.get("block", {}).get("conditions", [])
+        destruction_conditions = [
+            c for c in block_conditions
+            if "destruction_recommended" in c.get("condition", "")
+        ]
+        assert len(destruction_conditions) >= 1
+
+    def test_finops_emission_baseline_exists(self, emissions_dir):
+        """Baseline emission file for finops-review must exist."""
+        emission_path = emissions_dir / "finops-review.json"
+        assert emission_path.exists(), f"Missing baseline emission: {emission_path}"
+
+    def test_finops_emission_baseline_valid(self, emissions_dir, panel_schema):
+        """Baseline emission for finops-review must validate against schema."""
+        import json as _json
+        from jsonschema import validate as _validate
+        emission_path = emissions_dir / "finops-review.json"
+        with open(emission_path) as f:
+            emission = _json.load(f)
+        _validate(instance=emission, schema=panel_schema)
+
+    def test_finops_emission_baseline_destruction_fields(self, emissions_dir):
+        """Baseline emission must include destruction_recommended and requires_human_approval."""
+        import json as _json
+        emission_path = emissions_dir / "finops-review.json"
+        with open(emission_path) as f:
+            emission = _json.load(f)
+        assert "destruction_recommended" in emission
+        assert "requires_human_approval" in emission
+        assert emission["destruction_recommended"] is False
+        assert emission["requires_human_approval"] is False

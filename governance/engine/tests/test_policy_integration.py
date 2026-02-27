@@ -553,20 +553,23 @@ class TestProfileWeightSums:
 PROFILE_REQUIRED_PANELS = {
     "default": [
         "code-review", "security-review", "threat-modeling",
-        "cost-analysis", "documentation-review", "data-governance-review",
+        "cost-analysis", "finops-review", "documentation-review",
+        "data-governance-review",
     ],
     "fin_pii_high": [
         "code-review", "security-review", "data-design-review",
         "testing-review", "threat-modeling", "cost-analysis",
-        "documentation-review", "data-governance-review",
+        "finops-review", "documentation-review", "data-governance-review",
     ],
     "infrastructure_critical": [
         "code-review", "security-review", "architecture-review",
-        "threat-modeling", "cost-analysis", "documentation-review",
+        "threat-modeling", "cost-analysis", "finops-review",
+        "documentation-review",
     ],
     "reduced_touchpoint": [
         "code-review", "security-review", "threat-modeling",
-        "cost-analysis", "documentation-review", "data-governance-review",
+        "cost-analysis", "finops-review", "documentation-review",
+        "data-governance-review",
     ],
 }
 

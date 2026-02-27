@@ -156,6 +156,16 @@
       "description": "EU AI Act risk classification tier for the assessed change.",
       "enum": ["unacceptable", "high", "limited", "minimal"]
     },
+    "destruction_recommended": {
+      "type": "boolean",
+      "description": "Whether the panel recommends resource destruction or shutdown. When true, requires_human_approval must also be true. Used by FinOps review to flag decommission candidates.",
+      "default": false
+    },
+    "requires_human_approval": {
+      "type": "boolean",
+      "description": "Whether the change requires explicit human approval before proceeding. Set to true when destruction_recommended is true or when the panel identifies actions that must not be automated.",
+      "default": false
+    },
     "execution_status": {
       "type": "string",
       "description": "Status of the panel execution. Defaults to 'success' if omitted (backward compatible).",

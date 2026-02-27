@@ -147,6 +147,7 @@ DEFAULT_REQUIRED_PANELS = [
     "security-review",
     "threat-modeling",
     "cost-analysis",
+    "finops-review",
     "documentation-review",
     "data-governance-review",
 ]
@@ -158,7 +159,7 @@ def all_required_emissions(
     panels=None,
     **overrides,
 ):
-    """Generate emissions for all 6 default required panels."""
+    """Generate emissions for all 7 default required panels."""
     panel_list = panels or DEFAULT_REQUIRED_PANELS
     return [
         make_emission(

@@ -125,6 +125,8 @@ block:
       condition: required_panel_missing == true
     - description: "CI checks failed."
       condition: ci_checks_passed == false
+    - description: "Destruction recommended by FinOps review requires human approval."
+      condition: destruction_recommended == true
 
 # Override Rules
 # Streamlined — single approval sufficient for fast-track changes.
