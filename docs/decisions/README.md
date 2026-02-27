@@ -7,6 +7,17 @@
 
 ## Table of Contents
 
+### Standalone ADRs (Retroactive)
+
+- [ADR Template](000-template.md)
+- [ADR-001: Deterministic Policy Engine](001-deterministic-policy-engine.md)
+- [ADR-002: Panel-Based Review System](002-panel-based-review-system.md)
+- [ADR-003: Agent Persona Model](003-agent-persona-model.md)
+- [ADR-004: Git Submodule Distribution](004-submodule-distribution.md)
+- [ADR-005: JIT Context Management](005-jit-context-management.md)
+
+### Inline ADRs
+
 1. [ADR-001: Governance-Only Repository](#adr-001-governance-only-repository)
 2. [ADR-002: Three Artifact Types](#adr-002-three-artifact-types)
 3. [ADR-003: Remove MCP Server Directories](#adr-003-remove-mcp-server-directories)
