@@ -30,6 +30,14 @@ from governance.integrations.ado.auth import (
 )
 from governance.integrations.ado.client import AdoClient
 from governance.integrations.ado.config import AdoConfig, load_config, validate_config_schema
+from governance.integrations.ado.mappers import (
+    map_github_fields_to_ado_patch,
+    map_github_labels_to_ado_type,
+    map_github_priority_to_ado,
+    map_github_state_to_ado,
+    map_github_user_to_ado,
+)
+from governance.integrations.ado.sync_engine import SyncEngine, SyncResult
 from governance.integrations.ado._patch import (
     add_field,
     add_github_commit_link,
@@ -77,6 +85,15 @@ __all__ = [
     "AdoValidationError",
     "AdoServerError",
     "AdoConfigError",
+    # Sync engine
+    "SyncEngine",
+    "SyncResult",
+    # Mappers
+    "map_github_state_to_ado",
+    "map_github_labels_to_ado_type",
+    "map_github_fields_to_ado_patch",
+    "map_github_priority_to_ado",
+    "map_github_user_to_ado",
     # Patch builder
     "add_field",
     "add_github_commit_link",
