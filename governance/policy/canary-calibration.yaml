@@ -69,3 +69,17 @@ canary_calibration:
         severity: "critical"
         category: "hardcoded-secret"
         description_contains: "hardcoded"
+
+  # Red-team adversarial validation
+  # Tests that panels resist manipulation via social engineering,
+  # misleading documentation, obfuscation, and protocol injection.
+  # See docs/guides/red-team-validation.md for interpretation guidance.
+  red_team:
+    enabled: true
+    dataset_path: "governance/evals/red-team/"
+    pass_rate_threshold: 0.70  # Advisory in initial rollout
+    metrics:
+      - adversarial_resistance_rate
+      - false_approval_rate
+      - obfuscation_detection_rate
+    enforcement: "advisory"  # advisory | blocking
