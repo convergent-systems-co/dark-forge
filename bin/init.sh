@@ -7,6 +7,7 @@
 #   bash .ai/bin/init.sh --install-deps           # Symlinks + Python venv + dependencies
 #   bash .ai/bin/init.sh --refresh                # Re-apply structural setup after submodule update
 #   bash .ai/bin/init.sh --check-branch-protection  # Query branch protection status (machine-readable)
+#   bash .ai/bin/init.sh --verify                 # Verify installation is complete and correct
 #   bash .ai/bin/init.sh --dry-run                # Show what would be done without making changes
 #   bash .ai/bin/init.sh --debug                  # Verbose output for troubleshooting
 #
@@ -22,6 +23,7 @@ VENV_DIR="$AI_DIR/.venv"
 INSTALL_DEPS=false
 REFRESH_MODE=false
 CHECK_BRANCH_PROTECTION=false
+VERIFY_MODE=false
 export DRY_RUN="${DRY_RUN:-false}"
 export DEBUG="${DEBUG:-false}"
 export PYTHON_MIN_MAJOR=3
@@ -36,6 +38,7 @@ for arg in "$@"; do
     --install-deps) INSTALL_DEPS=true ;;
     --refresh) REFRESH_MODE=true ;;
     --check-branch-protection) CHECK_BRANCH_PROTECTION=true ;;
+    --verify) VERIFY_MODE=true ;;
     --dry-run) DRY_RUN=true ;;
     --debug) DEBUG=true ;;
     --help|-h)
@@ -45,6 +48,7 @@ for arg in "$@"; do
       echo "  --install-deps              Install Python virtual environment and dependencies"
       echo "  --refresh                   Re-apply structural setup (skip submodule check)"
       echo "  --check-branch-protection   Query if default branch requires PRs"
+      echo "  --verify                    Verify installation is complete and correct"
       echo "  --dry-run                   Show what would be done without making changes"
       echo "  --debug                     Verbose output for troubleshooting"
       echo "  --help, -h                  Show this help message"
@@ -52,7 +56,7 @@ for arg in "$@"; do
       ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: bash .ai/bin/init.sh [--install-deps] [--refresh] [--check-branch-protection] [--dry-run] [--debug]"
+      echo "Usage: bash .ai/bin/init.sh [--install-deps] [--refresh] [--check-branch-protection] [--verify] [--dry-run] [--debug]"
       exit 1
       ;;
   esac
@@ -65,6 +69,12 @@ export AI_DIR PROJECT_ROOT VENV_DIR DRY_RUN DEBUG
 
 if [ "$CHECK_BRANCH_PROTECTION" = "true" ]; then
   exec bash "$LIB_DIR/check-branch-protection.sh"
+fi
+
+# --- Early exit: --verify ---
+
+if [ "$VERIFY_MODE" = "true" ]; then
+  exec bash "$LIB_DIR/verify-installation.sh"
 fi
 
 # --- Platform detection ---

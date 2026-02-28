@@ -215,6 +215,26 @@ bash mcp-server/install.sh --governance-root /path/to/repo   # Auto-configure Cl
 
 See [MCP Server Usage](../guides/mcp-server-usage.md) for details.
 
+## Slash Commands
+
+Three slash commands are available when the `.claude/commands/` symlink is correctly configured:
+
+| Command | Purpose | Usage |
+|---------|---------|-------|
+| `/startup` | Begin the agentic improvement loop | Chains 6 agents through a 5-phase pipeline: pre-flight, planning, implementation, review, merge. Processes open issues autonomously until the session cap is hit. |
+| `/checkpoint` | Save session state and stop | Writes a checkpoint to `.governance/checkpoints/` with current progress, remaining work, and git state. Use when context capacity is high or you need to pause. Follow with `/clear` to reset context. |
+| `/threat-model` | Run threat model analysis | Modes: `/threat-model` (current PR), `/threat-model system` (full platform), `/threat-model pr=N` (specific PR). Outputs markdown and structured JSON to `.governance/panels/`. |
+
+### Verifying Installation
+
+After any installation method, verify everything is correctly set up:
+
+```bash
+bash .ai/bin/init.sh --verify
+```
+
+This runs a read-only diagnostic that checks: project.yaml, symlinks, slash commands, governance directories, workflows, and CODEOWNERS. Any failures include remediation instructions.
+
 ## Skills System
 
 Skills (`.skill.md` files) are self-contained capabilities registered as MCP tools. The `governance-review` skill runs panel reviews against code changes. See [Skills Development Guide](../guides/skills-development.md).
