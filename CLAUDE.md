@@ -132,6 +132,8 @@ Operational CLI commands via `bin/ado-sync.py`: `health` (6-point check battery 
 
 16 GitHub Actions workflows across four categories: Governance (dark-factory-governance, jm-compliance, plan-archival, prompt-eval), Agentic (agentic-issue-worker, agentic-loop, event-trigger, issue-monitor), Self-Repair (auto-rebase, branch-cleanup, self-repair-lint), and Publishing/Automation (propagate-submodule, deploy-docs, publish-dashboard, prompt-catalog, publish-mcp). See `docs/architecture/ci-workflows.md`.
 
+The `dark-factory-governance` workflow auto-detects consuming repos via `.gitmodules` when the `.ai` submodule content is unavailable in CI (private submodule without credentials). In consuming repo mode: the test job is skipped, the policy engine falls back to lightweight emission-only validation reading from `.governance/panels/`, and the `skip_panel_validation` setting is read from the PR merge commit (not the base branch). See `docs/configuration/repository-setup.md` for details.
+
 ### Policy Engine
 
 Four deterministic YAML profiles in `governance/policy/`:

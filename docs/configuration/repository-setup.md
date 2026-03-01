@@ -328,6 +328,49 @@ The Dark Factory Governance repository itself uses `require_code_owner_review: t
 
 The governance workflow runs as `github-actions[bot]`, which is a GitHub system account. It cannot be renamed. If a custom bot identity (e.g., "Dark Factory Governance") is desired, a custom GitHub App would need to be created and configured as the workflow's authentication mechanism. This is outside the scope of the governance framework.
 
+## Consuming Repo CI
+
+The `dark-factory-governance.yml` workflow automatically detects consuming repositories and adapts its behavior accordingly.
+
+### Auto-Detection
+
+The workflow uses a three-tier detection strategy:
+
+1. **Directory check** -- looks for `governance/emissions/` (ai-submodule repo) or `.ai/governance/emissions/` (consuming repo with cloned submodule)
+2. **`.gitmodules` fallback** -- if directory checks fail, the workflow checks `.gitmodules` for a `.ai` submodule entry. This handles the common case where the `.ai` submodule is a private repo and CI lacks credentials to clone it (the submodule appears as a gitlink, not a directory).
+3. **Local emissions path** -- consuming repos detected via `.gitmodules` have their emissions checked in `.governance/panels/` (the standard local emissions directory created by `init.sh`).
+
+The workflow sets `is_consuming_repo=true` when detection falls through to the `.gitmodules` check.
+
+### Behavior Differences for Consuming Repos
+
+| Feature | AI Submodule Repo | Consuming Repo |
+|---------|------------------|----------------|
+| Policy engine tests | Runs `pytest governance/engine/tests/` | Skipped (submodule content unavailable) |
+| Policy engine evaluation | Full `policy-engine.py` execution | Lightweight emission-only validation |
+| Emission location | `governance/emissions/` | `.governance/panels/` |
+| Policy profiles | Resolved from `governance/policy/` | Fallback to lightweight validation |
+
+### Lightweight Emission Validation
+
+When the full policy engine is unavailable (consuming repo without submodule content), the workflow falls back to a lightweight validator that:
+
+1. Reads JSON emission files from `.governance/panels/`
+2. Validates required fields (`panel_name`, `verdict`, `confidence_score`) in each emission
+3. Computes average confidence across all panels
+4. Produces an `auto_merge` decision if all panels pass and average confidence is at or above 0.70, otherwise `human_review_required`
+
+### Configuration Options
+
+Consuming repos have two options for the governance workflow:
+
+- **Provide local emissions** -- run governance panels locally (via the agentic loop or MCP skills) and commit emission JSON files to `.governance/panels/`. The workflow will validate them using the lightweight fallback.
+- **Opt out of panel validation** -- set `governance.skip_panel_validation: true` in `project.yaml` (project root). The workflow will auto-approve with a warning instead of blocking.
+
+### skip_panel_validation in PRs
+
+The `skip_panel_validation` setting is read from the PR merge commit (not the base branch). This means adding `skip_panel_validation: true` to `project.yaml` in a PR takes effect immediately on that PR -- no need to merge the setting first.
+
 ## Backward Compatibility
 
 The `repository` section is fully optional. If absent from `config.yaml`, `init.sh` skips repository configuration entirely. Existing consuming repos are unaffected until they add the section.
