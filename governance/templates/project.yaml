@@ -20,15 +20,36 @@ personas:
   - quality/adversarial-reviewer.md
   - engineering/test-engineer.md
   - engineering/performance-engineer.md
+  - compliance/security-auditor.md
   # - operations/sre.md
-  # - compliance/security-auditor.md
 
-# Which panels are relevant
+# Panels to run on every change
+# The 6 below are REQUIRED by governance/policy/default.yaml.
+# Commenting them out will cause policy engine validation failures.
 panels:
+  # --- required by default policy ---
   - code-review.md
+  - security-review.md
+  - threat-modeling.md
+  - cost-analysis.md
+  - documentation-review.md
+  - data-governance-review.md
+  # --- optional ---
   - architecture-review.md
-  # - security-review.md
   # - production-readiness-review.md
+  # - performance-review.md
+  # - testing-review.md
+
+# Repository settings (applied by init.sh)
+# repository:
+#   auto_merge: false              # Enable auto-merge on PRs
+#   delete_branch_on_merge: true   # Delete branch after merge
+#   codeowners: true               # Generate CODEOWNERS file
+
+# Governance overrides
+# governance:
+#   skip_panel_validation: false   # Set true to skip required-panel checks
+#   policy_profile: "default"     # default, fin_pii_high, infrastructure_critical, reduced_touchpoint
 
 # Project-specific conventions
 conventions:
