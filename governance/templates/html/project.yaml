@@ -1,0 +1,60 @@
+# HTML / Reporting Project Configuration
+# Copy to project.yaml in your project root and customize.
+# For static reporting dashboards, Jekyll sites, and data-driven HTML projects.
+
+name: "my-html-project"
+language: "html"
+framework: ""                      # jekyll, static, 11ty
+
+personas:
+  - quality/code-reviewer.md
+  - quality/adversarial-reviewer.md
+  - compliance/security-auditor.md
+  # - engineering/performance-engineer.md
+  # - operations/sre.md
+
+# Panels to run on every change
+# The 6 below are REQUIRED by governance/policy/default.yaml.
+panels:
+  # --- required by default policy ---
+  - code-review.md
+  - security-review.md
+  - threat-modeling.md
+  - cost-analysis.md
+  - documentation-review.md
+  - data-governance-review.md
+  # --- optional ---
+  # - architecture-review.md
+  # - performance-review.md
+
+# repository:
+#   auto_merge: false
+#   delete_branch_on_merge: true
+
+# governance:
+#   skip_panel_validation: false
+#   policy_profile: "default"
+
+conventions:
+  style:
+    indent: "spaces"
+    indent_size: 4
+    max_line_length: 120
+  architecture:
+    structure: "reports"             # reports/<report-name>/ with data/ and scripts/
+    data_format: "csv,json"          # primary data formats
+    dashboard: "self-contained"      # self-contained HTML with embedded JS/CSS
+  tooling:
+    python: "3.11"                   # for data scripts
+    package_manager: "uv"            # uv, pip
+  git:
+    branch_pattern: "feature/{ticket}-{description}"
+    commit_style: "conventional"
+    pr_template: true
+
+instructions: |
+  - This is HTML reporting that uses scripts to retrieve and process data
+  - Dashboards are self-contained HTML files with embedded JS and CSS
+  - Data lives in reports/<name>/data/ as CSV and JSON
+  - Scripts live in reports/<name>/scripts/ and generate dashboard data
+  - Use the .ai/startup.md for agentic operations
