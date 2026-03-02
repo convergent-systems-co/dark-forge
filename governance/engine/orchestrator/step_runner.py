@@ -34,6 +34,7 @@ from governance.engine.orchestrator.checkpoint import CheckpointManager
 from governance.engine.orchestrator.circuit_breaker import CircuitBreaker
 from governance.engine.orchestrator.claude_code_dispatcher import ClaudeCodeDispatcher
 from governance.engine.orchestrator.config import OrchestratorConfig
+from governance.engine.orchestrator.model_router import ModelRouter
 from governance.engine.orchestrator.session import PersistedSession, SessionStore
 from governance.engine.orchestrator.state_machine import (
     InvalidTransition,
@@ -109,6 +110,7 @@ class StepRunner:
         # Initialized on init_session() or restored from persisted state
         self._machine: StateMachine | None = None
         self._breaker: CircuitBreaker | None = None
+        self._model_router = ModelRouter(config.models)
         self._dispatcher: ClaudeCodeDispatcher | None = None
         self._session: PersistedSession | None = None
 
@@ -135,7 +137,7 @@ class StepRunner:
             max_feedback_cycles=self.config.max_feedback_cycles,
             max_total_eval_cycles=self.config.max_total_eval_cycles,
         )
-        self._dispatcher = ClaudeCodeDispatcher(session_id=self._session_id)
+        self._dispatcher = ClaudeCodeDispatcher(session_id=self._session_id, model_router=self._model_router)
         self._session = PersistedSession(session_id=self._session_id)
 
         # Phase 0: Checkpoint recovery
@@ -367,7 +369,7 @@ class StepRunner:
                     break
 
         # Restore dispatcher
-        self._dispatcher = ClaudeCodeDispatcher(session_id=self._session_id)
+        self._dispatcher = ClaudeCodeDispatcher(session_id=self._session_id, model_router=self._model_router)
 
         self._record_audit("session_restored", session.current_phase, detail={
             "loop_count": session.loop_count,

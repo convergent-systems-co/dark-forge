@@ -16,6 +16,7 @@ from governance.engine.orchestrator.dispatcher import (
     AgentTask,
     Dispatcher,
 )
+from governance.engine.orchestrator.model_router import ModelRouter
 from governance.engine.orchestrator.step_result import DispatchInstruction
 
 # Persona → relative path from repo root
@@ -36,8 +37,9 @@ class ClaudeCodeDispatcher(Dispatcher):
     Task tool call with worktree isolation.
     """
 
-    def __init__(self, session_id: str = ""):
+    def __init__(self, session_id: str = "", model_router: ModelRouter | None = None):
         self._session_id = session_id
+        self._model_router = model_router or ModelRouter()
         self._instructions: dict[str, DispatchInstruction] = {}
         self._results: dict[str, AgentResult] = {}
         self._task_ids: list[str] = []
@@ -54,16 +56,22 @@ class ClaudeCodeDispatcher(Dispatcher):
             task_ids.append(task_id)
 
             persona_path = _PERSONA_PATHS.get(task.persona, "")
+            persona_name = task.persona.value
+
+            # Resolve model for this persona
+            model = self._model_router.resolve_persona_model(persona_name)
+
             instruction = DispatchInstruction(
                 task_id=task_id,
                 correlation_id=task.correlation_id,
-                persona=task.persona.value,
+                persona=persona_name,
                 persona_path=persona_path,
                 plan_path=f".governance/plans/{task.correlation_id}.md",
                 branch_name=task.branch,
                 issue_ref=task.correlation_id,
                 issue_body=task.issue_body,
                 constraints=task.constraints,
+                model=model,
             )
             self._instructions[task_id] = instruction
 

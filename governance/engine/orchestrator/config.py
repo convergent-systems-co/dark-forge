@@ -12,6 +12,8 @@ from pathlib import Path
 
 import yaml
 
+from governance.engine.orchestrator.model_router import ModelConfig
+
 
 @dataclass(frozen=True)
 class OrchestratorConfig:
@@ -23,10 +25,8 @@ class OrchestratorConfig:
     use_project_manager: bool = False
     policy_profile: str = "default"
 
-    # Coder scaling (from project.yaml governance section)
-    coder_min: int = 1
-    coder_max: int = 5
-    require_worktree: bool = True
+    # Model routing configuration (from governance.models in project.yaml)
+    models: ModelConfig = field(default_factory=ModelConfig)
 
     # Paths
     checkpoint_dir: str = ".governance/checkpoints"
@@ -50,13 +50,6 @@ class OrchestratorConfig:
     branch_pattern: str = "{network_id}/{type}/{number}/{name}"
     commit_style: str = "conventional"
 
-    def __post_init__(self) -> None:
-        """Validate coder_min <= coder_max (unless coder_max is -1 for unlimited)."""
-        if self.coder_max != -1 and self.coder_min > self.coder_max:
-            raise ValueError(
-                f"coder_min ({self.coder_min}) must be <= coder_max ({self.coder_max})"
-            )
-
 
 def load_config(project_yaml_path: str | Path) -> OrchestratorConfig:
     """Load orchestrator config from project.yaml.
@@ -74,14 +67,16 @@ def load_config(project_yaml_path: str | Path) -> OrchestratorConfig:
     conv = data.get("conventions", {}) or {}
     git_conv = conv.get("git", {}) or {}
 
+    # Parse model configuration
+    models_data = gov.get("models", None)
+    models_config = ModelConfig.from_dict(models_data)
+
     return OrchestratorConfig(
         parallel_coders=gov.get("parallel_coders", 5),
         parallel_code_managers=gov.get("parallel_code_managers", 3),
         use_project_manager=gov.get("use_project_manager", False),
         policy_profile=gov.get("policy_profile", "default"),
-        coder_min=gov.get("coder_min", 1),
-        coder_max=gov.get("coder_max", 5),
-        require_worktree=gov.get("require_worktree", True),
+        models=models_config,
         branch_pattern=git_conv.get("branch_pattern", "{network_id}/{type}/{number}/{name}"),
         commit_style=git_conv.get("commit_style", "conventional"),
     )

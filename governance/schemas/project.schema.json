@@ -116,6 +116,72 @@
           "type": "boolean",
           "default": true,
           "description": "If true (default), all Coder agents must run in isolated git worktrees. The primary repo always stays on main."
+        },
+        "models": {
+          "type": "object",
+          "description": "Model routing configuration. Controls which AI model runs which panel or persona. When omitted, all tasks use the invoking model. When default is 'auto', the engine routes by task criticality tier.",
+          "properties": {
+            "default": {
+              "type": "string",
+              "default": "auto",
+              "description": "Default model for all tasks. 'auto' enables tier-based routing.",
+              "examples": [
+                "auto",
+                "opus",
+                "sonnet",
+                "haiku"
+              ]
+            },
+            "tiers": {
+              "type": "object",
+              "description": "Map criticality tiers to model IDs. Used when default is 'auto'.",
+              "properties": {
+                "high": {
+                  "type": "string",
+                  "default": "opus",
+                  "description": "Model for high-criticality tasks (security-review, threat-modeling, tester)."
+                },
+                "standard": {
+                  "type": "string",
+                  "default": "sonnet",
+                  "description": "Model for standard-criticality tasks (code-review, coder, code-manager)."
+                },
+                "low": {
+                  "type": "string",
+                  "default": "haiku",
+                  "description": "Model for low-criticality tasks (documentation-review, cost-analysis)."
+                }
+              },
+              "additionalProperties": false
+            },
+            "panels": {
+              "type": "object",
+              "description": "Per-panel model overrides. Keys are panel names, values are model IDs.",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "examples": [
+                {
+                  "security-review": "opus",
+                  "documentation-review": "haiku"
+                }
+              ]
+            },
+            "personas": {
+              "type": "object",
+              "description": "Per-persona model overrides. Keys are persona names, values are model IDs.",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "examples": [
+                {
+                  "tester": "opus",
+                  "coder": "sonnet"
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

@@ -22,6 +22,7 @@ class DispatchInstruction:
     issue_ref: str
     issue_body: str
     constraints: dict = field(default_factory=dict)
+    model: str = ""  # Model directive — which model to use for this task
 
 
 @dataclass
