@@ -43,13 +43,14 @@ The following constraints are non-negotiable:
 
 ## Policy Integration
 
-The `finops-review` panel is a required panel in all four policy profiles:
+The `finops-review` panel is a required panel in four of the five policy profiles:
 
 | Profile | Required |
 |---------|----------|
 | `default.yaml` | Yes |
 | `fin_pii_high.yaml` | Yes |
 | `infrastructure_critical.yaml` | Yes |
+| `fast-track.yaml` | No |
 | `reduced_touchpoint.yaml` | Yes |
 
 ### Block Conditions

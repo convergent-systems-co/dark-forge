@@ -25,10 +25,11 @@ The engine implements:
 - **Rule-by-rule audit logging** for compliance replay
 - **Run manifests** as immutable decision records
 
-Four policy profiles codify distinct risk tolerances:
+Five policy profiles codify distinct risk tolerances:
 - `default.yaml` -- standard risk, auto-merge with conditions
 - `fin_pii_high.yaml` -- SOC2/PCI-DSS/HIPAA/GDPR, auto-merge disabled
 - `infrastructure_critical.yaml` -- mandatory architecture and SRE review
+- `fast-track.yaml` -- lightweight profile for trivial changes (docs, typos, chores)
 - `reduced_touchpoint.yaml` -- near-full autonomy (Phase 5e)
 
 ## Consequences
