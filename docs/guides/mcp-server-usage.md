@@ -216,9 +216,74 @@ List all available governance review panels.
 
 ### list_policy_profiles
 
-List available policy profiles with their key settings.
+List available policy profiles dynamically discovered from `governance/policy/`.
 
-**Returns:** Array of `{name, description, risk_tolerance, auto_merge}`
+**Returns:** Array of `{name, description, version, path}`
+
+### create_plan
+
+Create an implementation plan in `.governance/plans/`.
+
+**Parameters:**
+- `plan_name` (string, required): Plan filename without extension (e.g., `42-fix-auth-flow`)
+- `content` (string, required): Markdown content for the plan
+
+**Returns:** `{success: boolean, path?: string, error?: string}`
+
+### write_emission
+
+Write a validated panel emission to `.governance/panels/`. Validates against the panel-output schema before writing.
+
+**Parameters:**
+- `panel_name` (string, required): Panel name (e.g., `code-review`, `security-review`)
+- `emission_json` (string, required): The emission JSON string to validate and write
+
+**Returns:** `{success: boolean, valid: boolean, path?: string, errors?: string[]}`
+
+### read_checkpoint
+
+Read the latest governance checkpoint from `.governance/checkpoints/`.
+
+**Returns:** `{found: boolean, file?: string, checkpoint?: object}`
+
+### get_governance_status
+
+Get an aggregate view of the project's governance posture.
+
+**Returns:** `{governance_root, emissions_count, plans_count, checkpoints_count, project_yaml_found, available_profiles}`
+
+### validate_project_yaml
+
+Validate `project.yaml` against the project schema.
+
+**Parameters:**
+- `yaml_path` (string, optional): Path to project.yaml (defaults to project root)
+
+**Returns:** `{valid: boolean, error?: string, path?: string[]}`
+
+**Note:** Requires Python 3 with `jsonschema` and `pyyaml` installed.
+
+### health_check
+
+Verify the MCP server's health: governance root, Python availability, required directories, and schema files.
+
+**Returns:** `{server, governance_root, governance_root_exists, directories, python_available, python_version, policy_engine_available, panel_schema_available}`
+
+### list_personas
+
+List all available agentic personas with their descriptions and prompt references.
+
+**Returns:** Array of `{name, description, uri, prompt}`
+
+### search_catalog
+
+Search the governance prompt and resource catalog by keyword.
+
+**Parameters:**
+- `query` (string, required): Search keyword(s)
+- `category` (string, optional): Filter by category: reviews, personas, policies, workflows, prompts
+
+**Returns:** `{query, count, results: [{name, description, uri, category}]}`
 
 ## Azure DevOps Integration
 

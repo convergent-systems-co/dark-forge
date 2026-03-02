@@ -76,6 +76,15 @@ TIER_2_EXCEPTIONS = {
     "security-review.md": 6000,     # ~3,400 documented, currently ~4k
     "data-governance-review.md": 6000,  # Large review prompt
     "finops-review.md": 5000,       # Large review prompt
+    "ai-expert-review.md": 4000,
+    "api-design-review.md": 4000,
+    "architecture-review.md": 4000,
+    "cost-analysis.md": 4000,
+    "documentation-review.md": 4000,
+    "governance-compliance-review.md": 4000,
+    "jm-standards-compliance-review.md": 4000,
+    "migration-review.md": 4000,
+    "production-readiness-review.md": 4000,
 }
 
 

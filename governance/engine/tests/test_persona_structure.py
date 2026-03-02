@@ -25,6 +25,7 @@ EXPECTED_PERSONAS = [
     "code-manager.md",
     "coder.md",
     "devops-engineer.md",
+    "document-writer.md",
     "iac-engineer.md",
     "project-manager.md",
     "tester.md",
@@ -37,7 +38,7 @@ CONSTRAINT_SECTIONS = {"Constraints", "Containment Policy"}
 
 
 class TestPersonaFilesExist:
-    """All 6 agentic persona files must exist."""
+    """All 7 agentic persona files must exist."""
 
     def test_agentic_directory_exists(self):
         assert PERSONAS_DIR.exists(), "governance/personas/agentic/ directory missing"

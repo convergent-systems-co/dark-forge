@@ -1,8 +1,9 @@
-import { join } from "node:path";
-import { existsSync, statSync } from "node:fs";
+import { join, basename } from "node:path";
+import { existsSync, statSync, mkdirSync, writeFileSync, readdirSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { readTextFile, spawnPython } from "./utils.js";
+import { readTextFile, spawnPython, scanYamlFiles } from "./utils.js";
 import { discoverResources } from "./resources.js";
 import {
   discoverSkills,
@@ -354,6 +355,345 @@ export async function registerTools(
       };
     }
   );
+
+
+  // Tool: create_plan — write a plan to .governance/plans/
+  server.tool(
+    "create_plan",
+    "Create an implementation plan in .governance/plans/. The plan file is written with the given content.",
+    {
+      plan_name: z.string().describe("Plan filename without extension (e.g., '42-fix-auth-flow')"),
+      content: z.string().describe("Markdown content for the plan"),
+    },
+    async ({ plan_name, content }) => {
+      try {
+        const plansDir = join(governanceRoot, "..", ".governance", "plans");
+        if (!existsSync(plansDir)) {
+          mkdirSync(plansDir, { recursive: true });
+        }
+        const filePath = join(plansDir, `${plan_name}.md`);
+        writeFileSync(filePath, content, "utf-8");
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify({ success: true, path: filePath }, null, 2),
+            },
+          ],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ success: false, error: message }, null, 2) },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: write_emission — write a validated emission to .governance/panels/
+  server.tool(
+    "write_emission",
+    "Write a panel emission JSON to .governance/panels/. Validates against the schema before writing.",
+    {
+      panel_name: z.string().describe("Panel name (e.g., 'code-review', 'security-review')"),
+      emission_json: z.string().describe("The emission JSON string to validate and write"),
+    },
+    async ({ panel_name, emission_json }) => {
+      try {
+        const emission = JSON.parse(emission_json);
+
+        // Validate against schema
+        const schemaPath = join(governanceRoot, "governance", "schemas", "panel-output.schema.json");
+        const schemaText = await readTextFile(schemaPath);
+        const schema = JSON.parse(schemaText);
+        const errors = validateAgainstSchema(emission, schema);
+
+        if (errors.length > 0) {
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify({ success: false, errors }, null, 2) },
+            ],
+            isError: true,
+          };
+        }
+
+        // Write to .governance/panels/
+        const panelsDir = join(governanceRoot, "..", ".governance", "panels");
+        if (!existsSync(panelsDir)) {
+          mkdirSync(panelsDir, { recursive: true });
+        }
+        const filePath = join(panelsDir, `${panel_name}.json`);
+        writeFileSync(filePath, JSON.stringify(emission, null, 2), "utf-8");
+
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ success: true, path: filePath, valid: true }, null, 2) },
+          ],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ success: false, error: message }, null, 2) },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: read_checkpoint — read the latest checkpoint
+  server.tool(
+    "read_checkpoint",
+    "Read the latest governance checkpoint from .governance/checkpoints/",
+    {},
+    async () => {
+      try {
+        const checkpointDir = join(governanceRoot, "..", ".governance", "checkpoints");
+        if (!existsSync(checkpointDir)) {
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify({ found: false, message: "No checkpoints directory" }, null, 2) },
+            ],
+          };
+        }
+
+        const files = readdirSync(checkpointDir)
+          .filter((f: string) => f.endsWith(".json"))
+          .sort()
+          .reverse();
+
+        if (files.length === 0) {
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify({ found: false, message: "No checkpoints found" }, null, 2) },
+            ],
+          };
+        }
+
+        const latestPath = join(checkpointDir, files[0]);
+        const content = await readFile(latestPath, "utf-8");
+        const checkpoint = JSON.parse(content);
+
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ found: true, file: files[0], checkpoint }, null, 2) },
+          ],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ found: false, error: message }, null, 2) },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: get_governance_status — aggregate project governance posture
+  server.tool(
+    "get_governance_status",
+    "Get an aggregate view of the project's governance posture: emissions, plans, checkpoints, and policy profile",
+    {},
+    async () => {
+      try {
+        const status: Record<string, unknown> = {
+          governance_root: governanceRoot,
+        };
+
+        // Count emissions
+        const panelsDir = join(governanceRoot, "..", ".governance", "panels");
+        if (existsSync(panelsDir) && statSync(panelsDir).isDirectory()) {
+          const emissions = readdirSync(panelsDir).filter((f: string) => f.endsWith(".json"));
+          status.emissions_count = emissions.length;
+          status.emissions = emissions;
+        } else {
+          status.emissions_count = 0;
+        }
+
+        // Count plans
+        const plansDir = join(governanceRoot, "..", ".governance", "plans");
+        if (existsSync(plansDir) && statSync(plansDir).isDirectory()) {
+          const plans = readdirSync(plansDir).filter((f: string) => f.endsWith(".md"));
+          status.plans_count = plans.length;
+        } else {
+          status.plans_count = 0;
+        }
+
+        // Count checkpoints
+        const checkpointDir = join(governanceRoot, "..", ".governance", "checkpoints");
+        if (existsSync(checkpointDir) && statSync(checkpointDir).isDirectory()) {
+          const checkpoints = readdirSync(checkpointDir).filter((f: string) => f.endsWith(".json"));
+          status.checkpoints_count = checkpoints.length;
+        } else {
+          status.checkpoints_count = 0;
+        }
+
+        // Check for project.yaml
+        const projectYamlPaths = [
+          join(governanceRoot, "..", "project.yaml"),
+          join(governanceRoot, "project.yaml"),
+        ];
+        status.project_yaml_found = projectYamlPaths.some((p) => existsSync(p));
+
+        // List available policy profiles
+        const policyDir = join(governanceRoot, "governance", "policy");
+        if (existsSync(policyDir) && statSync(policyDir).isDirectory()) {
+          const profiles = readdirSync(policyDir)
+            .filter((f: string) => f.endsWith(".yaml"))
+            .map((f: string) => f.replace(".yaml", ""));
+          status.available_profiles = profiles;
+        }
+
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify(status, null, 2) },
+          ],
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ error: message }, null, 2) },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: validate_project_yaml — schema validation for project.yaml
+  server.tool(
+    "validate_project_yaml",
+    "Validate project.yaml against the project schema",
+    {
+      yaml_path: z.string().optional().describe("Path to project.yaml (defaults to project root)"),
+    },
+    async ({ yaml_path }) => {
+      try {
+        const projectYaml = yaml_path || join(governanceRoot, "..", "project.yaml");
+        if (!existsSync(projectYaml)) {
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify({ valid: false, error: `File not found: ${projectYaml}` }, null, 2) },
+            ],
+          };
+        }
+
+        const schemaPath = join(governanceRoot, "governance", "schemas", "project.schema.json");
+        if (!existsSync(schemaPath)) {
+          return {
+            content: [
+              { type: "text" as const, text: JSON.stringify({ valid: false, error: "Project schema not found" }, null, 2) },
+            ],
+          };
+        }
+
+        // Use Python for YAML parsing + validation
+        const result = await spawnPython(
+          ["-c", `
+import json, yaml, sys
+from pathlib import Path
+
+yaml_path = sys.argv[1]
+schema_path = sys.argv[2]
+
+with open(yaml_path) as f:
+    data = yaml.safe_load(f) or {}
+
+with open(schema_path) as f:
+    schema = json.load(f)
+
+try:
+    from jsonschema import validate, ValidationError
+    validate(data, schema)
+    print(json.dumps({"valid": True}))
+except ValidationError as e:
+    print(json.dumps({"valid": False, "error": e.message, "path": list(e.path)}))
+except ImportError:
+    print(json.dumps({"valid": None, "error": "jsonschema not installed"}))
+`, projectYaml, schemaPath],
+          governanceRoot
+        );
+
+        if (result.ok) {
+          return {
+            content: [
+              { type: "text" as const, text: result.stdout.trim() },
+            ],
+          };
+        }
+
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ valid: false, error: result.stderr || "Validation failed" }, null, 2) },
+          ],
+          isError: true,
+        };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return {
+          content: [
+            { type: "text" as const, text: JSON.stringify({ valid: false, error: message }, null, 2) },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: health_check — verify server, governance root, Python availability
+  server.tool(
+    "health_check",
+    "Check the health of the MCP server: governance root, Python, schemas, and policy engine availability",
+    {},
+    async () => {
+      const health: Record<string, unknown> = {
+        server: "running",
+        governance_root: governanceRoot,
+        governance_root_exists: existsSync(governanceRoot),
+      };
+
+      // Check governance subdirectories
+      const requiredDirs = [
+        "governance/prompts/reviews",
+        "governance/policy",
+        "governance/schemas",
+        "governance/personas/agentic",
+      ];
+      const dirChecks: Record<string, boolean> = {};
+      for (const dir of requiredDirs) {
+        const fullPath = join(governanceRoot, dir);
+        dirChecks[dir] = existsSync(fullPath);
+      }
+      health.directories = dirChecks;
+
+      // Check Python
+      const pythonResult = await spawnPython(["--version"], governanceRoot);
+      health.python_available = pythonResult.ok;
+      health.python_version = pythonResult.ok ? pythonResult.stdout.trim() : null;
+
+      // Check policy engine
+      const policyEnginePath = join(governanceRoot, "governance", "bin", "policy-engine.py");
+      health.policy_engine_available = existsSync(policyEnginePath);
+
+      // Check schema
+      const schemaPath = join(governanceRoot, "governance", "schemas", "panel-output.schema.json");
+      health.panel_schema_available = existsSync(schemaPath);
+
+      return {
+        content: [
+          { type: "text" as const, text: JSON.stringify(health, null, 2) },
+        ],
+      };
+    }
+  );
+
 
   // --- Skill auto-discovery and registration ---
   const skillsDir = getDefaultSkillsDir();
