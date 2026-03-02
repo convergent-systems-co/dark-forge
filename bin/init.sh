@@ -37,7 +37,7 @@ UNINSTALL_MODE=false
 export DRY_RUN="${DRY_RUN:-false}"
 export DEBUG="${DEBUG:-false}"
 export PYTHON_MIN_MAJOR=3
-export PYTHON_MIN_MINOR=12
+export PYTHON_MIN_MINOR=9
 
 LIB_DIR="$AI_DIR/governance/bin"
 

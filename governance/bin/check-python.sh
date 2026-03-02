@@ -10,7 +10,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 resolve_ai_dir
 
 PYTHON_MIN_MAJOR="${PYTHON_MIN_MAJOR:-3}"
-PYTHON_MIN_MINOR="${PYTHON_MIN_MINOR:-12}"
+PYTHON_MIN_MINOR="${PYTHON_MIN_MINOR:-9}"
 
 check_python_version() {
   local cmd="$1"

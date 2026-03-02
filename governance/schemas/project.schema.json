@@ -13,12 +13,25 @@
     "language": {
       "type": "string",
       "description": "Primary programming language.",
-      "examples": ["python", "typescript", "go", "java"]
+      "examples": [
+        "python",
+        "typescript",
+        "go",
+        "java"
+      ]
     },
     "framework": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Framework used, or null if none.",
-      "examples": ["react", "django", "spring-boot", null]
+      "examples": [
+        "react",
+        "django",
+        "spring-boot",
+        null
+      ]
     },
     "governance": {
       "type": "object",
@@ -28,7 +41,12 @@
           "type": "string",
           "description": "Policy profile to use. Maps to a file in governance/policy/.",
           "default": "default",
-          "examples": ["default", "fin_pii_high", "infrastructure_critical", "reduced_touchpoint"]
+          "examples": [
+            "default",
+            "fin_pii_high",
+            "infrastructure_critical",
+            "reduced_touchpoint"
+          ]
         },
         "skip_panel_validation": {
           "type": "boolean",
@@ -36,16 +54,22 @@
           "description": "Opt out of mandatory panel validation. Use with caution."
         },
         "ai_submodule_pin": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Pin the .ai submodule to a specific commit SHA or tag.",
-          "examples": ["v2.1.0", "abc123def456"]
+          "examples": [
+            "v2.1.0",
+            "abc123def456"
+          ]
         },
         "parallel_coders": {
           "type": "integer",
           "minimum": -1,
           "maximum": 10,
           "default": 5,
-          "description": "Maximum number of concurrent Coder agents spawned during parallel dispatch. Default is 5. Set to -1 for unlimited (context-monitored) — the pipeline processes issues until context pressure triggers the shutdown protocol and checkpoint."
+          "description": "Maximum number of concurrent Coder agents spawned during parallel dispatch. Default is 5. Set to -1 for unlimited (context-monitored) \u2014 the pipeline processes issues until context pressure triggers the shutdown protocol and checkpoint."
         },
         "use_project_manager": {
           "type": "boolean",
@@ -61,24 +85,47 @@
         },
         "evaluation_tier": {
           "type": "string",
-          "enum": ["auto", "full", "lightweight"],
+          "enum": [
+            "auto",
+            "full",
+            "lightweight"
+          ],
           "default": "auto",
-          "description": "Controls which evaluation tier the governance workflow uses. auto: use full engine if available, fall back to lightweight inline validation. full: require the full policy engine — fail if unavailable. lightweight: explicitly accept reduced-coverage inline validation."
+          "description": "Controls which evaluation tier the governance workflow uses. auto: use full engine if available, fall back to lightweight inline validation. full: require the full policy engine \u2014 fail if unavailable. lightweight: explicitly accept reduced-coverage inline validation."
+        },
+        "require_python_engine": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true (default), the PR is blocked when the Python policy engine is unavailable - no silent fallback to lightweight inline validation. If false, the lightweight fallback is used with a warning when the engine is missing. Cross-org repos that cannot bundle the submodule in CI should set this to false."
         }
       },
       "additionalProperties": false
     },
     "personas": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "List of persona file paths to activate.",
-      "examples": [["agentic/devops-engineer.md", "agentic/code-manager.md"]]
+      "examples": [
+        [
+          "agentic/devops-engineer.md",
+          "agentic/code-manager.md"
+        ]
+      ]
     },
     "panels": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "List of panel file paths to activate.",
-      "examples": [["code-review.md", "security-review.md"]]
+      "examples": [
+        [
+          "code-review.md",
+          "security-review.md"
+        ]
+      ]
     },
     "conventions": {
       "type": "object",
@@ -87,27 +134,65 @@
         "testing": {
           "type": "object",
           "properties": {
-            "framework": { "type": "string", "examples": ["pytest", "jest", "junit"] },
-            "coverage_target": { "type": "integer", "minimum": 0, "maximum": 100 },
-            "naming": { "type": "string", "examples": ["test_", "Test", "spec."] }
+            "framework": {
+              "type": "string",
+              "examples": [
+                "pytest",
+                "jest",
+                "junit"
+              ]
+            },
+            "coverage_target": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "naming": {
+              "type": "string",
+              "examples": [
+                "test_",
+                "Test",
+                "spec."
+              ]
+            }
           },
           "additionalProperties": false
         },
         "style": {
           "type": "object",
           "properties": {
-            "max_line_length": { "type": "integer" },
-            "indent": { "type": "string", "enum": ["spaces", "tabs"] },
-            "indent_size": { "type": "integer" }
+            "max_line_length": {
+              "type": "integer"
+            },
+            "indent": {
+              "type": "string",
+              "enum": [
+                "spaces",
+                "tabs"
+              ]
+            },
+            "indent_size": {
+              "type": "integer"
+            }
           },
           "additionalProperties": false
         },
         "git": {
           "type": "object",
           "properties": {
-            "branch_pattern": { "type": "string" },
-            "commit_style": { "type": "string", "enum": ["conventional", "freeform"] },
-            "pr_template": { "type": "boolean" }
+            "branch_pattern": {
+              "type": "string"
+            },
+            "commit_style": {
+              "type": "string",
+              "enum": [
+                "conventional",
+                "freeform"
+              ]
+            },
+            "pr_template": {
+              "type": "boolean"
+            }
           },
           "additionalProperties": false
         }
@@ -125,7 +210,7 @@
         "auto_merge": {
           "type": "boolean",
           "default": false,
-          "description": "Enable GitHub auto-merge. Required for the agentic loop to merge PRs after CI + approval. Default is false (opt-in) — consuming repos must explicitly enable."
+          "description": "Enable GitHub auto-merge. Required for the agentic loop to merge PRs after CI + approval. Default is false (opt-in) \u2014 consuming repos must explicitly enable."
         },
         "delete_branch_on_merge": {
           "type": "boolean",
@@ -159,26 +244,41 @@
             "default_owner": {
               "type": "string",
               "description": "Default code owner for all files (e.g., '@org/team').",
-              "examples": ["@SET-Apps/approvers"]
+              "examples": [
+                "@SET-Apps/approvers"
+              ]
             },
             "rules": {
               "type": "array",
               "description": "Ordered list of CODEOWNERS rules. Later rules take precedence.",
               "items": {
                 "type": "object",
-                "required": ["pattern", "owners"],
+                "required": [
+                  "pattern",
+                  "owners"
+                ],
                 "properties": {
                   "pattern": {
                     "type": "string",
                     "description": "File pattern (CODEOWNERS glob syntax).",
-                    "examples": ["/.github/workflows/", "/infra/", "/.ai"]
+                    "examples": [
+                      "/.github/workflows/",
+                      "/infra/",
+                      "/.ai"
+                    ]
                   },
                   "owners": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                      "type": "string"
+                    },
                     "minItems": 1,
                     "description": "GitHub teams or users who own files matching this pattern.",
-                    "examples": [["@SET-Apps/devops_engineers"]]
+                    "examples": [
+                      [
+                        "@SET-Apps/devops_engineers"
+                      ]
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -196,7 +296,9 @@
               "description": "Rulesets expected to be configured at the org or repo level.",
               "items": {
                 "type": "object",
-                "required": ["name"],
+                "required": [
+                  "name"
+                ],
                 "properties": {
                   "name": {
                     "type": "string",
@@ -244,13 +346,20 @@
         },
         "access_method": {
           "type": "string",
-          "enum": ["api", "az_cli"],
+          "enum": [
+            "api",
+            "az_cli"
+          ],
           "default": "api",
           "description": "How to reach ADO. 'api' uses the REST API via requests (default). 'az_cli' shells out to az boards / az devops invoke commands."
         },
         "auth_method": {
           "type": "string",
-          "enum": ["pat", "service_principal", "managed_identity"],
+          "enum": [
+            "pat",
+            "service_principal",
+            "managed_identity"
+          ],
           "default": "pat",
           "description": "Authentication method for ADO API. For az_cli access_method, auth is handled by the az login session."
         },
@@ -282,7 +391,12 @@
           "properties": {
             "direction": {
               "type": "string",
-              "enum": ["bidirectional", "github_to_ado", "ado_to_github", "disabled"],
+              "enum": [
+                "bidirectional",
+                "github_to_ado",
+                "ado_to_github",
+                "disabled"
+              ],
               "default": "github_to_ado",
               "description": "Sync direction between GitHub and ADO."
             },
@@ -304,7 +418,12 @@
             },
             "conflict_strategy": {
               "type": "string",
-              "enum": ["last_write", "field_ownership", "github_wins", "ado_wins"],
+              "enum": [
+                "last_write",
+                "field_ownership",
+                "github_wins",
+                "ado_wins"
+              ],
               "default": "last_write",
               "description": "Strategy for resolving conflicting updates between GitHub and ADO."
             },
@@ -385,7 +504,10 @@
               "items": {
                 "type": "string"
               },
-              "default": ["internal", "governance"],
+              "default": [
+                "internal",
+                "governance"
+              ],
               "description": "Never sync issues with any of these labels."
             },
             "ado_area_path_filter": {
@@ -397,7 +519,9 @@
           "additionalProperties": false
         }
       },
-      "required": ["organization"],
+      "required": [
+        "organization"
+      ],
       "additionalProperties": false
     },
     "escalation": {
@@ -407,7 +531,7 @@
         "enabled": {
           "type": "boolean",
           "default": false,
-          "description": "Enable cross-repo escalation. Must be explicitly set to true — disabled by default."
+          "description": "Enable cross-repo escalation. Must be explicitly set to true \u2014 disabled by default."
         },
         "target_repository": {
           "type": "string",
@@ -417,14 +541,20 @@
         },
         "auth_method": {
           "type": "string",
-          "enum": ["GITHUB_TOKEN", "PAT", "GITHUB_APP"],
+          "enum": [
+            "GITHUB_TOKEN",
+            "PAT",
+            "GITHUB_APP"
+          ],
           "default": "GITHUB_TOKEN",
           "description": "Authentication method for creating issues on the target repository."
         },
         "token_secret": {
           "type": "string",
           "description": "Name of the repository secret containing the PAT. Only used when auth_method is PAT.",
-          "examples": ["ESCALATION_TOKEN"]
+          "examples": [
+            "ESCALATION_TOKEN"
+          ]
         },
         "app_id_secret": {
           "type": "string",

@@ -38,11 +38,49 @@ configure_repository() {
   fi
 
   local auto_merge delete_branch allow_squash allow_merge allow_rebase
-  auto_merge=$(parse_yaml_field "repository.auto_merge" "true")
+  auto_merge=$(parse_yaml_field "repository.auto_merge" "__UNSET__")
   delete_branch=$(parse_yaml_field "repository.delete_branch_on_merge" "true")
   allow_squash=$(parse_yaml_field "repository.allow_squash_merge" "true")
   allow_merge=$(parse_yaml_field "repository.allow_merge_commit" "true")
   allow_rebase=$(parse_yaml_field "repository.allow_rebase_merge" "true")
+
+  # Conditional auto-merge: if not explicitly set, auto-enable when the governance
+  # bot pipeline is fully configured (CODEOWNERS includes github-actions[bot] AND
+  # the dark-factory-governance.yml workflow is deployed).
+  if [ "$auto_merge" = "__UNSET__" ]; then
+    local codeowners_has_bot=false
+    local governance_workflow_exists=false
+
+    # Check CODEOWNERS for github-actions[bot]
+    local codeowners_path=""
+    for candidate in "$PROJECT_ROOT/.github/CODEOWNERS" "$PROJECT_ROOT/CODEOWNERS" "$PROJECT_ROOT/docs/CODEOWNERS"; do
+      if [ -f "$candidate" ]; then
+        codeowners_path="$candidate"
+        break
+      fi
+    done
+    if [ -n "$codeowners_path" ] && grep -q 'github-actions\[bot\]' "$codeowners_path" 2>/dev/null; then
+      codeowners_has_bot=true
+    fi
+
+    # Check for governance workflow
+    if [ -f "$PROJECT_ROOT/.github/workflows/dark-factory-governance.yml" ]; then
+      governance_workflow_exists=true
+    fi
+
+    if [ "$codeowners_has_bot" = "true" ] && [ "$governance_workflow_exists" = "true" ]; then
+      auto_merge=true
+      log_ok "Auto-merge conditionally enabled (CODEOWNERS has github-actions[bot] + governance workflow present)"
+    else
+      auto_merge=false
+      if [ "$codeowners_has_bot" = "false" ]; then
+        log_debug "Auto-merge not enabled: CODEOWNERS missing github-actions[bot]"
+      fi
+      if [ "$governance_workflow_exists" = "false" ]; then
+        log_debug "Auto-merge not enabled: dark-factory-governance.yml workflow not found"
+      fi
+    fi
+  fi
 
   echo "  Configuring $repo..."
 

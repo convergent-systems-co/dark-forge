@@ -63,7 +63,12 @@ gitignore:
 # These are defaults; consuming projects override in project.yaml
 repository:
   # GitHub repo settings
-  auto_merge: false  # opt-in: consuming repos must explicitly enable in project.yaml
+  # auto_merge default is false. When not explicitly set in project.yaml, init.sh
+  # conditionally enables auto-merge if BOTH conditions are met:
+  #   1. CODEOWNERS contains github-actions[bot]
+  #   2. .github/workflows/dark-factory-governance.yml exists
+  # Set to false explicitly in project.yaml to disable even when conditions are met.
+  auto_merge: false
   delete_branch_on_merge: true
   allow_squash_merge: true
   allow_merge_commit: true
