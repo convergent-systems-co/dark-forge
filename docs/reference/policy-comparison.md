@@ -7,17 +7,17 @@ AI models never interpret policy rules.
 > **Auto-generated** by `governance/bin/generate-catalog.py`.
 > Do not edit manually -- regenerate with `python governance/bin/generate-catalog.py`.
 
-| Feature | **default** | **fin_pii_high** | **infrastructure_critical** | **reduced_touchpoint** |
-|---------|------|------|------|------|
-| Profile Version | 1.4.0 | 1.0.1 | 1.0.1 | 1.0.1 |
-| Required Panels (count) | 6 | 8 | 6 | 6 |
-| Auto-merge Enabled | Yes | No | Yes | Yes |
-| Auto-merge Confidence Threshold | 0.85 | N/A | 0.90 | 0.75 |
-| Escalation Threshold | 0.70 | 0.85 | 0.80 | policy override only |
-| Block Threshold | 0.40 | 0.50 | 0.50 | 0.40 |
-| Risk Aggregation | highest_severity | highest_severity | highest_severity | highest_severity |
-| Override Min Approvals | 2 | 3 | 2 | 1 |
-| Override Required Roles | senior_engineer, tech_lead | senior_engineer, security_lead, compliance_officer | sre_lead, infrastructure_lead | tech_lead |
+| Feature | **default** | **fast_track** | **fin_pii_high** | **infrastructure_critical** | **reduced_touchpoint** |
+|---------|------|------|------|------|------|
+| Profile Version | 1.4.0 | 1.0.0 | 1.0.1 | 1.0.1 | 1.0.1 |
+| Required Panels (count) | 6 | 2 | 8 | 6 | 6 |
+| Auto-merge Enabled | Yes | Yes | No | Yes | Yes |
+| Auto-merge Confidence Threshold | 0.85 | 0.75 | N/A | 0.90 | 0.75 |
+| Escalation Threshold | 0.70 | critical risk only | 0.85 | 0.80 | policy override only |
+| Block Threshold | 0.40 | 0.40 | 0.50 | 0.50 | 0.40 |
+| Risk Aggregation | highest_severity | highest_severity | highest_severity | highest_severity | highest_severity |
+| Override Min Approvals | 2 | 1 | 3 | 2 | 1 |
+| Override Required Roles | senior_engineer, tech_lead | tech_lead | senior_engineer, security_lead, compliance_officer | sre_lead, infrastructure_lead | tech_lead |
 
 ## Profile Descriptions
 
@@ -32,6 +32,10 @@ High-security policy profile for financial services and PII-handling repositorie
 ### infrastructure_critical
 
 Policy profile for infrastructure and platform repositories. Emphasizes production stability, blast radius assessment, and rollback capability. Mandatory architecture and production readiness reviews for structural changes.
+
+### fast_track
+
+Lightweight policy profile for trivial changes such as documentation updates, typo fixes, chore tasks, and test-only changes. Reduces required panels and lowers confidence thresholds to minimize ceremony overhead. Security-review remains mandatory — it is never skipped regardless of change type.
 
 ### reduced_touchpoint
 
@@ -67,6 +71,11 @@ Near-full-autonomy policy profile that requires human approval only for policy-o
 - threat-modeling
 - cost-analysis
 - documentation-review
+
+### fast_track
+
+- code-review
+- security-review
 
 ### reduced_touchpoint
 

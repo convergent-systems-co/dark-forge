@@ -579,7 +579,7 @@ ALL_PROFILES = list(PROFILE_REQUIRED_PANELS.keys())
 class TestCrossProfileMatrix:
     """Cross-profile tests verifying the same emissions produce differentiated decisions.
 
-    Each scenario is run against all 4 policy profiles. The parametrized expected
+    Each scenario is run against all 5 policy profiles. The parametrized expected
     outcomes capture the documented behavioral differences between profiles:
 
     - default: standard risk tolerance, auto-merge at confidence >= 0.85

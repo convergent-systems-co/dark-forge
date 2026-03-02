@@ -34,7 +34,7 @@ The guide grew to 360+ lines with framework internals (governance layers, policy
 
 1. Keep Quick Start (setup commands) — unchanged
 2. Condense "Key Concepts" to a compact glossary linking to persona index
-3. Replace "Four Policy Profiles" with 1-line + link
+3. Replace "Five Policy Profiles" with 1-line + link
 4. Replace "How a Change Flows Through Governance" with 1-line + link
 5. Condense "Repository Configuration" to essential setup + link
 6. Replace "Context Management" with the hard rule + link
