@@ -25,10 +25,11 @@
 12. [Decision Authority Matrix](#12-decision-authority-matrix)
 13. [Rationale Capture Requirements](#13-rationale-capture-requirements)
 14. [Failure Taxonomy](#14-failure-taxonomy)
-15. [Backward Compatibility](#15-backward-compatibility)
-16. [Appendix A: Architecture Diagrams](#appendix-a-architecture-diagrams)
-17. [Appendix B: Artifact Type Reference](#appendix-b-artifact-type-reference)
-18. [Appendix C: Governance Layer Interaction Matrix](#appendix-c-governance-layer-interaction-matrix)
+15. [Tiered Evaluation Model](#15-tiered-evaluation-model)
+16. [Backward Compatibility](#16-backward-compatibility)
+17. [Appendix A: Architecture Diagrams](#appendix-a-architecture-diagrams)
+18. [Appendix B: Artifact Type Reference](#appendix-b-artifact-type-reference)
+19. [Appendix C: Governance Layer Interaction Matrix](#appendix-c-governance-layer-interaction-matrix)
 
 ---
 
@@ -1198,9 +1199,76 @@ flowchart TD
 
 ---
 
-## 15. Backward Compatibility
+## 15. Tiered Evaluation Model
 
-### 15.1 Compatibility Guarantees
+The governance workflow supports two evaluation tiers. When the full Python policy engine is available, evaluation runs at Tier 1 with complete schema validation, plausibility checks, and deterministic policy enforcement. When the engine is unavailable -- typically in consuming repos where the `.ai/` submodule is a private cross-org gitlink without credentials in CI -- the workflow falls back to Tier 2 lightweight inline validation.
+
+This fallback is intentional: it allows consuming repos to receive governance coverage even when they cannot execute the full engine. However, it represents reduced assurance, and repo owners must understand the trade-offs.
+
+### 15.1 Tier Comparison
+
+| Capability | Tier 1 (Full Engine) | Tier 2 (Lightweight Fallback) |
+|-----------|---------------------|-------------------------------|
+| Schema validation against `panel-output.schema.json` | Yes | No |
+| Plausibility checks | Yes | No |
+| Canary calibration | Yes | No |
+| Execution trace validation | Yes | No |
+| Deterministic policy profile evaluation | Yes | No |
+| Run manifest generation | Yes | No (minimal manifest only) |
+| Field-level emission checks | Yes (full) | Required fields only (`panel_name`, `verdict`, `confidence_score`) |
+| Confidence threshold | Per policy profile (0.85 for `default`) | Fixed at 0.70 |
+| Decision outcomes | `auto_merge`, `block`, `human_review_required`, `auto_remediate` | `auto_merge`, `human_review_required` |
+| CI workflow logging | Standard engine output | Lightweight validation summary |
+
+### 15.2 When Each Tier Activates
+
+**Tier 1** activates when the policy engine script exists at `${GOV_ROOT}/governance/bin/policy-engine.py`. This is the case for the `ai-submodule` repository itself and for consuming repos where the `.ai/` submodule content is fully checked out in CI.
+
+**Tier 2** activates when the policy engine script is not found. This typically occurs in consuming repos where the `.ai/` submodule is registered in `.gitmodules` but is a private cross-organization submodule that cannot be cloned in CI (GitHub Actions does not have credentials for the submodule's origin).
+
+### 15.3 Configuration: `evaluation_tier`
+
+The `evaluation_tier` key in `project.yaml` under the `governance` section controls tier selection:
+
+```yaml
+governance:
+  evaluation_tier: auto  # auto | full | lightweight
+```
+
+| Value | Behavior |
+|-------|----------|
+| `auto` (default) | Use Tier 1 if the policy engine is available; fall back to Tier 2 otherwise. No error on fallback. |
+| `full` | Require Tier 1. If the policy engine is unavailable, the governance workflow fails with a clear error message instead of silently degrading. Use this when reduced coverage is unacceptable. |
+| `lightweight` | Explicitly accept Tier 2 evaluation. The workflow always uses inline validation regardless of engine availability. Use this when the consuming repo intentionally opts into reduced coverage. |
+
+### 15.4 Observability
+
+The governance workflow logs the active evaluation tier as a GitHub Actions step annotation:
+
+- **Tier 1 active**: `notice` annotation -- "Evaluation tier: full (policy engine available)"
+- **Tier 2 active with `auto`**: `warning` annotation -- "Evaluation tier: lightweight (policy engine unavailable, falling back from auto)"
+- **Tier 2 active with `lightweight`**: `notice` annotation -- "Evaluation tier: lightweight (explicitly configured)"
+- **Tier 1 required but unavailable**: `error` annotation -- "Evaluation tier: full required but policy engine unavailable. Set evaluation_tier to auto or lightweight to allow fallback."
+
+These annotations appear in the workflow run summary and are visible without expanding individual step logs.
+
+### 15.5 Risk Implications
+
+Tier 2 provides meaningful but reduced assurance. Consuming repo owners should understand:
+
+1. **No schema validation** means malformed emissions are not detected. A panel emission missing optional fields or containing invalid data types will not be caught.
+2. **No plausibility checks** means confidence scores are taken at face value. A panel that always emits 1.0 confidence will not be flagged.
+3. **No canary calibration** means drift in panel behavior is not detected over time.
+4. **Lower confidence threshold** (0.70 vs 0.85) means merges are auto-approved with less certainty.
+5. **No run manifest** means the full audit trail of decisions, persona activations, and policy evaluations is not generated. The minimal manifest contains only the aggregate decision.
+
+For repositories handling sensitive data or operating under compliance requirements, set `evaluation_tier: full` to prevent silent degradation.
+
+---
+
+## 16. Backward Compatibility
+
+### 16.1 Compatibility Guarantees
 
 This governance model is additive to the existing system. The following guarantees are maintained:
 
@@ -1216,7 +1284,7 @@ This governance model is additive to the existing system. The following guarante
 | MCP server integration | Unchanged. MCP servers are treated as opaque tool providers. |
 | `project.yaml` | Extended, not replaced. Governance adds a `governance:` section. Existing configuration remains valid. |
 
-### 15.2 Migration Path from Phase 3
+### 16.2 Migration Path from Phase 3
 
 The transition from Phase 3 to Phase 4 is incremental. Repositories can adopt governance capabilities progressively:
 

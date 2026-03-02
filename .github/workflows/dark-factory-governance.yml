@@ -168,6 +168,67 @@ jobs:
       - name: Install dependencies
         run: pip install jsonschema pyyaml
 
+      - name: Determine evaluation tier
+        id: tier
+        env:
+          GOV_ROOT: ${{ needs.detect.outputs.gov_root }}
+        run: |
+          # Read evaluation_tier from project.yaml (default: auto)
+          EVAL_TIER="auto"
+          PROJECT_YAML=""
+          if [ -f "project.yaml" ]; then
+            PROJECT_YAML="project.yaml"
+          elif [ -f "${GOV_ROOT}/project.yaml" ]; then
+            PROJECT_YAML="${GOV_ROOT}/project.yaml"
+          fi
+          if [ -n "$PROJECT_YAML" ] && command -v python3 &>/dev/null; then
+            RESOLVED=$(python3 -c "
+          import yaml
+          try:
+              with open('${PROJECT_YAML}') as f:
+                  config = yaml.safe_load(f) or {}
+              print(config.get('governance', {}).get('evaluation_tier', 'auto'))
+          except Exception:
+              print('auto')
+          " 2>/dev/null || echo "auto")
+            EVAL_TIER="$RESOLVED"
+          fi
+
+          # Determine if full engine is available
+          POLICY_ENGINE="${GOV_ROOT}/governance/bin/policy-engine.py"
+          ENGINE_AVAILABLE="false"
+          if [ -f "$POLICY_ENGINE" ]; then
+            ENGINE_AVAILABLE="true"
+          fi
+
+          # Resolve active tier based on config and availability
+          if [ "$EVAL_TIER" = "full" ]; then
+            if [ "$ENGINE_AVAILABLE" = "true" ]; then
+              ACTIVE_TIER="full"
+              echo "::notice::Evaluation tier: full (policy engine available)"
+            else
+              echo "::error::Evaluation tier: full required but policy engine unavailable. Set evaluation_tier to auto or lightweight to allow fallback."
+              exit 1
+            fi
+          elif [ "$EVAL_TIER" = "lightweight" ]; then
+            ACTIVE_TIER="lightweight"
+            echo "::notice::Evaluation tier: lightweight (explicitly configured)"
+          else
+            # auto mode
+            if [ "$ENGINE_AVAILABLE" = "true" ]; then
+              ACTIVE_TIER="full"
+              echo "::notice::Evaluation tier: full (policy engine available)"
+            else
+              ACTIVE_TIER="lightweight"
+              echo "::warning::Evaluation tier: lightweight (policy engine unavailable, falling back from auto)"
+            fi
+          fi
+
+          echo "active_tier=${ACTIVE_TIER}" >> "$GITHUB_OUTPUT"
+          echo "engine_available=${ENGINE_AVAILABLE}" >> "$GITHUB_OUTPUT"
+          echo "configured_tier=${EVAL_TIER}" >> "$GITHUB_OUTPUT"
+          echo "Active evaluation tier: ${ACTIVE_TIER} (configured: ${EVAL_TIER}, engine available: ${ENGINE_AVAILABLE})"
+
       - name: Trust boundary — flag PR-modified emissions
         if: needs.detect.outputs.pr_modified_emissions == 'true'
         env:
@@ -222,12 +283,13 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO_NAME: ${{ github.repository }}
           PROFILE_PATH: ${{ steps.profile.outputs.profile_path }}
+          ACTIVE_TIER: ${{ steps.tier.outputs.active_tier }}
         run: |
           POLICY_ENGINE="${GOV_ROOT}/governance/bin/policy-engine.py"
 
-          if [ ! -f "$POLICY_ENGINE" ]; then
-            echo "Policy engine not available (consuming repo without submodule content)"
-            echo "Falling back to lightweight emission-only validation"
+          if [ "$ACTIVE_TIER" = "lightweight" ]; then
+            echo "Using lightweight evaluation (tier: ${ACTIVE_TIER})"
+            echo "Lightweight emission-only validation active — see docs/architecture/governance-model.md section 15 for coverage details"
 
             # Lightweight fallback: validate emissions directly
             python3 << 'PYEOF'

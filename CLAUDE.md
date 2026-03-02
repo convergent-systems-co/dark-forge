@@ -56,6 +56,8 @@ Seven agentic personas in `governance/personas/agentic/`: Project Manager, DevOp
 
 21 review prompts in `governance/prompts/reviews/`. Five policy profiles and 18 supporting policy configurations in `governance/policy/`. Panel output validated against `governance/schemas/panel-output.schema.json`.
 
+**Tiered evaluation**: Governance runs at Tier 1 (full policy engine) or Tier 2 (lightweight inline fallback) depending on engine availability. Controlled by `governance.evaluation_tier` in `project.yaml` (`auto`/`full`/`lightweight`). See `docs/architecture/governance-model.md` section 15.
+
 **Context management**: Hard stop at 80% capacity. Four-tier model (Green/Yellow/Orange/Red). See `docs/architecture/context-management.md`.
 
 ## Key Directories
