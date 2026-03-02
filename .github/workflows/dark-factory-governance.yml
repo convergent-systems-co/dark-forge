@@ -30,8 +30,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
           fetch-depth: 0
+
+      - name: Initialize submodule (optional)
+        id: submodule
+        continue-on-error: true
+        run: |
+          git submodule update --init --recursive 2>/dev/null || true
+          if [ -d ".ai/governance" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Check for panel emissions
         id: check
@@ -119,8 +129,10 @@ jobs:
     if: needs.detect.outputs.is_consuming_repo != 'true'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+
+      - name: Initialize submodule (optional)
+        continue-on-error: true
+        run: git submodule update --init --recursive 2>/dev/null || true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -143,8 +155,10 @@ jobs:
     if: needs.detect.outputs.has_emissions == 'true'
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
+
+      - name: Initialize submodule (optional)
+        continue-on-error: true
+        run: git submodule update --init --recursive 2>/dev/null || true
 
       - name: Set up Python
         uses: actions/setup-python@v5

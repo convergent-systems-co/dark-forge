@@ -181,7 +181,10 @@ fi
 
 # --- Check 7: Governance workflow (submodule context only) ---
 if [ "$IS_SUBMODULE" = "true" ]; then
-  if [ -f "$PROJECT_ROOT/.github/workflows/dark-factory-governance.yml" ]; then
+  WF_PATH="$PROJECT_ROOT/.github/workflows/dark-factory-governance.yml"
+  if [ -L "$WF_PATH" ]; then
+    record_warn "Governance workflow is a symlink (breaks CI in cross-org repos) — run: bash .ai/bin/init.sh --refresh"
+  elif [ -f "$WF_PATH" ]; then
     record_pass "Governance workflow present (dark-factory-governance.yml)"
   else
     record_fail "Governance workflow missing — run: bash .ai/bin/init.sh"

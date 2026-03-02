@@ -1,5 +1,5 @@
 #!/bin/bash
-# governance/bin/setup-workflows.sh — Issue templates, governance workflow symlinks, GOALS.md template.
+# governance/bin/setup-workflows.sh — Issue templates, governance workflow copies, GOALS.md template.
 # Only runs in submodule context (consuming repo has .gitmodules with .ai entry).
 
 set -euo pipefail
@@ -84,34 +84,67 @@ print('OPTIONAL=' + ' '.join(opt))
     fi
   fi
 
-  # Link required workflows (warn if source is missing)
+  # --- Detect consuming repo's default branch ---
+  DEFAULT_BRANCH="main"
+  if command -v gh &>/dev/null; then
+    # Extract owner/repo from git remote
+    REMOTE_URL=$(git -C "$PROJECT_ROOT" remote get-url origin 2>/dev/null || true)
+    if [ -n "$REMOTE_URL" ]; then
+      OWNER_REPO=$(echo "$REMOTE_URL" | sed -E 's#.*(github\.com[:/])##; s/\.git$//')
+      if [ -n "$OWNER_REPO" ]; then
+        DETECTED_BRANCH=$(gh api "repos/$OWNER_REPO" --jq '.default_branch' 2>/dev/null || true)
+        if [ -n "$DETECTED_BRANCH" ]; then
+          DEFAULT_BRANCH="$DETECTED_BRANCH"
+        fi
+      fi
+    fi
+  fi
+
+  # --- Helper: copy workflow file only if content changed ---
+  copy_with_diff() {
+    local src="$1" dst="$2"
+    if [ -L "$dst" ]; then
+      # Replace existing symlink with a real copy
+      rm -f "$dst"
+    fi
+    if [ -f "$dst" ] && diff -q "$src" "$dst" &>/dev/null; then
+      return 1  # no change needed
+    fi
+    cp "$src" "$dst"
+    return 0  # file was copied
+  }
+
+  # --- Helper: patch branch triggers to match consuming repo's default branch ---
+  patch_branch_triggers() {
+    local file="$1" branch="$2"
+    if [ "$branch" != "main" ]; then
+      sed -i.bak "s/branches: \\[main\\]/branches: [${branch}]/" "$file"
+      rm -f "${file}.bak"
+    fi
+  }
+
+  # Copy required workflows (warn if source is missing)
   for wf_name in $REQUIRED_WORKFLOWS; do
     if [ -f "$WORKFLOW_SRC/$wf_name" ]; then
-      link_target="../../.ai/.github/workflows/$wf_name"
-      if [ -L "$WORKFLOW_DST/$wf_name" ] && [ "$(readlink "$WORKFLOW_DST/$wf_name")" = "$link_target" ]; then
-        echo "  Workflow $wf_name already linked"
-      elif [ -f "$WORKFLOW_DST/$wf_name" ] && [ ! -L "$WORKFLOW_DST/$wf_name" ]; then
-        echo "  Workflow $wf_name exists as regular file, skipping (remove to use symlink)"
+      if copy_with_diff "$WORKFLOW_SRC/$wf_name" "$WORKFLOW_DST/$wf_name"; then
+        patch_branch_triggers "$WORKFLOW_DST/$wf_name" "$DEFAULT_BRANCH"
+        echo "  Copied $wf_name (default branch: $DEFAULT_BRANCH)"
       else
-        run_cmd "Symlink workflow $wf_name" ln -sf "$link_target" "$WORKFLOW_DST/$wf_name"
-        echo "  Linked $wf_name -> .ai/.github/workflows/$wf_name"
+        echo "  Workflow $wf_name already up to date"
       fi
     else
       log_warn "Required workflow $wf_name not found in .ai/.github/workflows/"
     fi
   done
 
-  # Link optional workflows (skip silently if source is missing)
+  # Copy optional workflows (skip silently if source is missing)
   for wf_name in $OPTIONAL_WORKFLOWS; do
     if [ -f "$WORKFLOW_SRC/$wf_name" ]; then
-      link_target="../../.ai/.github/workflows/$wf_name"
-      if [ -L "$WORKFLOW_DST/$wf_name" ] && [ "$(readlink "$WORKFLOW_DST/$wf_name")" = "$link_target" ]; then
-        echo "  Workflow $wf_name already linked (optional)"
-      elif [ -f "$WORKFLOW_DST/$wf_name" ] && [ ! -L "$WORKFLOW_DST/$wf_name" ]; then
-        echo "  Workflow $wf_name exists as regular file, skipping (optional)"
+      if copy_with_diff "$WORKFLOW_SRC/$wf_name" "$WORKFLOW_DST/$wf_name"; then
+        patch_branch_triggers "$WORKFLOW_DST/$wf_name" "$DEFAULT_BRANCH"
+        echo "  Copied $wf_name (optional, default branch: $DEFAULT_BRANCH)"
       else
-        run_cmd "Symlink optional workflow $wf_name" ln -sf "$link_target" "$WORKFLOW_DST/$wf_name"
-        echo "  Linked $wf_name -> .ai/.github/workflows/$wf_name (optional)"
+        echo "  Workflow $wf_name already up to date (optional)"
       fi
     fi
   done
