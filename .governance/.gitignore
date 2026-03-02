@@ -1,0 +1,12 @@
+# Ephemeral governance state — tracked by retention policy, not git
+# See governance/bin/cleanup-state.sh for lifecycle management
+
+# Agent session logs (retained 30 days by default)
+state/agent-log/*.jsonl
+
+# Session checkpoints (retained 7 days by default)
+checkpoints/*.json
+
+# Test/CI artifacts
+*.coverage
+*.hypothesis
