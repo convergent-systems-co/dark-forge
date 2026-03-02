@@ -24,18 +24,21 @@ Deep-dive into platform design and internals.
 | [Session State Persistence](architecture/session-state-persistence.md) | Cross-session governance state storage strategy (Phase 5c) |
 | [Event-Driven Triggers](architecture/event-driven-triggers.md) | Event-driven governance session dispatch (Phase 5c) |
 | [Formal Specification](architecture/formal-spec.md) | Formal specification of governance invariants |
-| [Agent Architecture](architecture/agent-architecture.md) | 6-agent prompt-chained architecture, protocol, transport phases, failure modes |
+| [Agent Architecture](architecture/agent-architecture.md) | 7-agent prompt-chained architecture, protocol, transport phases, failure modes |
 
 ### Agentic Architecture
 
-The agentic loop uses a 6-agent prompt-chained pipeline. Start it with `/startup` in your AI tool.
+The agentic loop uses a 7-agent prompt-chained pipeline. Start it with `/startup` in your AI tool.
 
 | Persona | Pattern | Role |
 |---------|---------|------|
+| [Project Manager](../governance/personas/agentic/project-manager.md) | Orchestrator-Workers | Portfolio orchestrator, multiplexed Code Managers (opt-in) |
 | [DevOps Engineer](../governance/personas/agentic/devops-engineer.md) | Routing | Session entry, pre-flight, triage, issue routing |
 | [Code Manager](../governance/personas/agentic/code-manager.md) | Orchestrator-Workers | Intent validation, panel selection, review coordination, merge |
 | [Coder](../governance/personas/agentic/coder.md) | Worker | Implementation, tests, documentation |
+| [IaC Engineer](../governance/personas/agentic/iac-engineer.md) | Worker | Infrastructure changes (conditional) |
 | [Tester](../governance/personas/agentic/tester.md) | Evaluator-Optimizer | Independent evaluation, test coverage gate, structured feedback |
+| [Document Writer](../governance/personas/agentic/document-writer.md) | Worker | Documentation generation and maintenance |
 
 ```mermaid
 flowchart TD

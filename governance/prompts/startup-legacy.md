@@ -1,6 +1,6 @@
 # Startup: Agentic Improvement Loop
 
-Execute this on agent launch. This prompt chains six agentic personas through a structured pipeline. Each phase loads a specific persona and delegates work via the agent protocol (`governance/prompts/agent-protocol.md`).
+Execute this on agent launch. This prompt chains seven agentic personas through a structured pipeline. Each phase loads a specific persona and delegates work via the agent protocol (`governance/prompts/agent-protocol.md`).
 
 <!-- ANCHOR: This instruction must survive context resets -->
 

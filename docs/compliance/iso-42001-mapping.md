@@ -37,7 +37,7 @@ ISO/IEC 42001 follows the Annex SL high-level structure (clauses 4-10) common to
 |-------------|-------------------|----------|
 | 5.1 Leadership and commitment | Governance pipeline is mandatory in all modes; no exceptions or bypasses | `CLAUDE.md` key conventions |
 | 5.2 AI policy | Five deterministic policy profiles define risk tolerance, review requirements, and merge conditions | `governance/policy/*.yaml` |
-| 5.3 Roles and responsibilities | Six agentic personas with defined boundaries; CODEOWNERS for approval authority; agent protocol for communication | `governance/personas/agentic/`, `CODEOWNERS`, `governance/prompts/agent-protocol.md` |
+| 5.3 Roles and responsibilities | Seven agentic personas with defined boundaries; CODEOWNERS for approval authority; agent protocol for communication | `governance/personas/agentic/`, `CODEOWNERS`, `governance/prompts/agent-protocol.md` |
 
 ## Clause 6 -- Planning
 
@@ -58,7 +58,7 @@ ISO/IEC 42001 follows the Annex SL high-level structure (clauses 4-10) common to
 | Requirement | Governance Control | Artifact |
 |-------------|-------------------|----------|
 | 7.1 Resources | Context management tiers (Tier 0-3) optimize resource allocation; parallel Coder dispatch scales execution | Context management architecture |
-| 7.2 Competence | 24 specialized review perspectives with full evaluation criteria; six agentic personas with domain expertise | `governance/prompts/reviews/`, `governance/prompts/shared-perspectives.md` |
+| 7.2 Competence | 24 specialized review perspectives with full evaluation criteria; seven agentic personas with domain expertise | `governance/prompts/reviews/`, `governance/prompts/shared-perspectives.md` |
 | 7.3 Awareness | CLAUDE.md and instructions.md distributed via symlinks to all consuming repos; copilot-instructions.md for IDE integration | `config.yaml` symlink configuration |
 | 7.4 Communication | Agent protocol with typed messages (ASSIGN, STATUS, RESULT, FEEDBACK, ESCALATE, APPROVE, BLOCK, CANCEL) | `governance/prompts/agent-protocol.md` |
 | 7.5 Documented information | Three artifact types (Cognitive, Enforcement, Audit) with defined mutability; schemas enforce structure | Artifact type system, JSON schemas |

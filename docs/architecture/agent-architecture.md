@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Dark Factory Governance Platform uses a 6-agent prompt-chained architecture for autonomous software delivery. Each agent has a distinct role, bounded authority, and communicates via a structured protocol. The architecture implements three Anthropic agent patterns: Routing, Orchestrator-Workers with Parallelization, and Evaluator-Optimizer.
+The Dark Factory Governance Platform uses a 7-agent prompt-chained architecture for autonomous software delivery. Each agent has a distinct role, bounded authority, and communicates via a structured protocol. The architecture implements three Anthropic agent patterns: Routing, Orchestrator-Workers with Parallelization, and Evaluator-Optimizer.
 
 No agent can self-approve its own work. Every work item flows through at least three agents before merge.
 
-The six agents operate in two modes:
+The seven agents operate in two modes:
 - **Standard mode** (default) — DevOps Engineer is the session entry point, dispatching to Code Manager, which orchestrates Coder, IaC Engineer (conditional), and Tester
 - **Project Manager mode** (opt-in via `governance.use_project_manager: true`) — Project Manager replaces DevOps Engineer as entry point, multiplexing multiple Code Managers for higher throughput
 
@@ -99,7 +99,7 @@ flowchart TD
 
 ---
 
-## The Six Agents
+## The Seven Agents
 
 ### 1. Project Manager (Opt-In)
 
@@ -328,6 +328,43 @@ The Tester is the independent evaluator. It reviews the Coder's implementation, 
 
 ---
 
+### 7. Document Writer
+
+**Pattern:** Worker in Anthropic's Orchestrator-Workers pattern
+**Source:** [`governance/personas/agentic/document-writer.md`](../../governance/personas/agentic/document-writer.md)
+
+The Document Writer is the documentation maintenance agent. It runs during Phase 4 (Collect & Review) to analyze code changes and update all affected documentation, ensuring documentation never drifts from implementation.
+
+**Responsibilities:**
+
+- Receive ASSIGN messages from Code Manager with branch diffs and staleness scope
+- Analyze changed files and identify affected documentation
+- Run `bin/check-doc-staleness.py` to detect stale numeric claims, path references, and descriptions
+- Update stale references in all affected documentation files
+- Verify counts match actual file counts (personas, prompts, policies)
+- Verify path references point to existing files
+- Emit structured RESULT messages on completion
+
+**Authority boundaries:**
+
+| Domain | Authority |
+|--------|-----------|
+| Documentation content | Full (within factual accuracy) |
+| Staleness detection | Full |
+| Path and count corrections | Full |
+| Documentation structure | Limited (reorganize, not restructure) |
+| Source code changes | None |
+| Test changes | None |
+| Push authorization | None (Code Manager controls push) |
+
+**Containment limits:** Max 20 files/PR, 500 lines/commit, 10 new files/PR.
+
+**Allowed paths:** `*.md`, `docs/**`, `CLAUDE.md`, `README.md`, `GOALS.md`, `CONTRIBUTING.md`, `.governance/plans/**`.
+
+**Key constraint:** The Document Writer never modifies source code, tests, or governance infrastructure. All documentation updates must be grounded in actual repository state — no assertions without verification.
+
+---
+
 ## Agent Protocol
 
 Full specification: [`governance/prompts/agent-protocol.md`](../../governance/prompts/agent-protocol.md)
@@ -456,7 +493,7 @@ Each file contains the full message schema as JSON. The orchestrator reads the d
 
 ## Pipeline Phases
 
-The startup sequence (`governance/prompts/startup.md`) chains the six agents through five phases (standard mode):
+The startup sequence (`governance/prompts/startup.md`) chains the seven agents through five phases (standard mode):
 
 | Phase | Agent(s) | What Happens |
 |-------|----------|--------------|
@@ -639,4 +676,5 @@ governance:
 - [Coder Persona](../../governance/personas/agentic/coder.md)
 - [IaC Engineer Persona](../../governance/personas/agentic/iac-engineer.md)
 - [Tester Persona](../../governance/personas/agentic/tester.md)
+- [Document Writer Persona](../../governance/personas/agentic/document-writer.md)
 - [Project Manager Architecture](project-manager-architecture.md)

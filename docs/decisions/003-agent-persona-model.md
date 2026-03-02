@@ -50,7 +50,7 @@ The protocol defines nine message types: ASSIGN, STATUS, RESULT, FEEDBACK, ESCAL
 
 ### Neutral
 
-- The architecture distinguishes between agentic personas (these six agents with decision authority) and review personas (perspectives within panel prompts) -- they serve different purposes and live in different directories
+- The architecture distinguishes between agentic personas (these seven agents with decision authority) and review personas (perspectives within panel prompts) -- they serve different purposes and live in different directories
 - The WATCH message type enables the DevOps Engineer to emit new work discovered during background polling, but this requires continuous-session support not yet universal across AI coding tools
 
 ## Alternatives Considered

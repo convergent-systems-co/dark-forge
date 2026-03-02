@@ -84,7 +84,7 @@ This removes symlinks, the virtual environment, and provides instructions for fu
 | Directory | Contents |
 |-----------|----------|
 | `governance/prompts/reviews/` | 21 consolidated review prompts (canonical location for all reviews) |
-| `governance/personas/agentic/` | 6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) |
+| `governance/personas/agentic/` | 7 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer) |
 | `governance/policy/` | 5 deterministic policy profiles (default, fin_pii_high, infrastructure_critical, fast-track, reduced_touchpoint) |
 | `governance/schemas/` | JSON schemas for structured emissions and panel configuration |
 | `governance/prompts/` | Workflow prompts, templates (plan, runtime DI), startup loop |

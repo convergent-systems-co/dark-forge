@@ -53,7 +53,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
 | #51 | #60 | Panel pass/fail criteria | Standardized scoring, schema, and local override system for all 15 panels |
-| #53 | #64 | Evaluate personas and panels | Added language, platform, and LLM review perspectives + Cost Analysis panel; all non-agentic personas later consolidated into 21 self-contained review prompts (Issue #220) and the 58 separate persona files removed (Issue #257). Only 6 agentic personas remain in `governance/personas/agentic/`. |
+| #53 | #64 | Evaluate personas and panels | Added language, platform, and LLM review perspectives + Cost Analysis panel; all non-agentic personas later consolidated into 21 self-contained review prompts (Issue #220) and the 58 separate persona files removed (Issue #257). Only 7 agentic personas remain in `governance/personas/agentic/`. |
 | #5 | #13 | Agile Coach persona | Sprint planning, velocity, retrospective guidance (consolidated into review prompts in #220; persona file removed in #257) |
 | #6 | #15 | FinOps group | FinOps Engineer and FinOps Analyst personas (consolidated into review prompts in #220; persona files removed in #257) |
 | #7 | #16 | MITRE Specialist | Threat modeling panel and MITRE ATT&CK mapping (consolidated into review prompts in #220; persona file removed in #257) |
@@ -148,7 +148,7 @@ This document tracks the maturity phases, completed work, and open enhancements 
 
 | Issue | PR | Title | Impact |
 |-------|----|-------|--------|
-| #464 | #464 | Project Manager persona | Opt-in portfolio-level orchestrator with multiplexed Code Managers; 6-agent architecture |
+| #464 | #464 | Project Manager persona | Opt-in portfolio-level orchestrator with multiplexed Code Managers; 7-agent architecture |
 | #469 | #486 | Developer prompt library | 12 global prompts in `prompts/global/` for code review, debugging, PR creation, refactoring, test writing |
 | — | — | Prompt catalog system | `bin/generate-prompt-catalog.py`, `catalog/prompt-catalog.json`, `prompt-catalog.schema.json`, `prompt-catalog.yml` CI workflow |
 | — | — | Skills system | `.skill.md` format in `mcp-server/skills/`, Zod validation, MCP tool registration, `governance-review` skill |
@@ -444,7 +444,7 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 | 5a | Self-Proving Systems | Partially | Can create test governance schemas, test-generation panel definition, proof-of-correctness policy. Cannot build runtime test execution — requires consuming repo integration. |
 | 5b | Self-Evolution | Yes (governance artifacts) | Retrospective aggregation schema, threshold auto-tuning policy, persona effectiveness scoring schema, governance change proposal workflow. All are config/schema artifacts. |
 | 5c | Always-On Orchestration | Yes (governance artifacts) | All governance artifacts complete: event-driven triggers (PR #192), checkpoint resumption (PR #189), cross-session state persistence (PR #209). Partial CI-native runtime achieved via `agentic-issue-worker` + `agentic-loop` workflows. |
-| 5d | Multi-Agent Coordination | Governance artifacts complete; single-session prompt-chaining implemented | All governance artifacts defined. Single-session multi-agent architecture implemented: 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) with structured agent protocol. Cross-session parallelism still blocked by AI tooling. |
+| 5d | Multi-Agent Coordination | Governance artifacts complete; single-session prompt-chaining implemented | All governance artifacts defined. Single-session multi-agent architecture implemented: 7-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer) with structured agent protocol. Cross-session parallelism still blocked by AI tooling. |
 | 5e | Spec-Driven Interface | Yes (governance artifacts) | Formal spec schema (richer than GitHub issues), acceptance verification workflow, reduced human touchpoint model. All are config artifacts. |
 
 ### 5a — Self-Proving Systems (Partially Achievable)
@@ -474,9 +474,9 @@ The Phase 5 roadmap is informed by industry maturity models for autonomous softw
 - [x] Conflict detection schema — JSON Schema for detecting when multiple agents modify overlapping files or governance state (PR #171)
 - [x] Merge sequencing policy — Policy rules for ordering concurrent agent PRs to avoid conflicts and maintain governance consistency (PR #174)
 - [x] Parallel agent session protocol — Specification for spawning, coordinating, and reconciling multiple concurrent agent sessions (PR #181)
-- [x] Single-session multi-agent architecture — 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) with structured agent protocol, implementing Anthropic's Routing, Orchestrator-Workers, and Evaluator-Optimizer patterns (PR #228, #464)
+- [x] Single-session multi-agent architecture — 7-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer) with structured agent protocol, implementing Anthropic's Routing, Orchestrator-Workers, and Evaluator-Optimizer patterns (PR #228, #464)
 
-> **Partially runtime:** Single-session multi-agent coordination is implemented via prompt-chaining (six agents execute within one context window with parallel Coder dispatch). Project Manager mode enables multiplexed Code Managers for higher throughput. Cross-session parallelism (multiple concurrent agent processes) still requires a multi-agent orchestrator, which does not exist in current AI tooling.
+> **Partially runtime:** Single-session multi-agent coordination is implemented via prompt-chaining (seven agents execute within one context window with parallel Coder dispatch). Project Manager mode enables multiplexed Code Managers for higher throughput. Cross-session parallelism (multiple concurrent agent processes) still requires a multi-agent orchestrator, which does not exist in current AI tooling.
 
 ### 5e — Spec-Driven Interface (Achievable — Governance Artifacts)
 

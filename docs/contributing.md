@@ -249,7 +249,7 @@ Pattern: `NETWORK_ID/{type}/{issue-number}/{short-name}`
 | Directory | Purpose | Mutability |
 |-----------|---------|------------|
 | `governance/prompts/reviews/` | 21 consolidated review prompts | Editable (cognitive artifacts) |
-| `governance/personas/agentic/` | 6 agentic personas | Editable (cognitive artifacts) |
+| `governance/personas/agentic/` | 7 agentic personas | Editable (cognitive artifacts) |
 | `governance/policy/` | Deterministic policy profiles (YAML) | Versioned (enforcement artifacts) |
 | `governance/schemas/` | JSON Schema definitions | Versioned (enforcement artifacts) |
 | `governance/engine/` | Python policy engine + tests | Standard code (with tests) |
@@ -385,7 +385,7 @@ Key directories for contributors:
 .ai/  (or repo root when working on this repo directly)
   bin/                         Executable scripts (init.sh, issue-monitor.sh)
   governance/
-    personas/agentic/          6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
+    personas/agentic/          7 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer)
     prompts/
       reviews/                 21 consolidated review prompts (canonical)
       shared-perspectives.md   Canonical perspective definitions
@@ -424,13 +424,15 @@ This repository uses the agentic pipeline for development. You can invoke it wit
 /startup
 ```
 
-This activates the 6-agent pipeline:
+This activates the 7-agent pipeline:
 
-1. **DevOps Engineer** — Pre-flight checks, issue triage, routing
-2. **Code Manager** — Intent validation, panel selection, review coordination
-3. **Coder** — Implementation, tests, structured output
-4. **IaC Engineer** — Infrastructure execution (conditional)
-5. **Tester** — Independent evaluation, feedback, approval
+1. **Project Manager** — Portfolio orchestration, multiplexed Code Managers (opt-in)
+2. **DevOps Engineer** — Pre-flight checks, issue triage, routing
+3. **Code Manager** — Intent validation, panel selection, review coordination
+4. **Coder** — Implementation, tests, structured output
+5. **IaC Engineer** — Infrastructure execution (conditional)
+6. **Tester** — Independent evaluation, feedback, approval
+7. **Document Writer** — Documentation staleness detection and updates
 
 The pipeline loops until the session cap is hit or no work remains. See [startup.md](governance/prompts/startup.md) for the full protocol.
 

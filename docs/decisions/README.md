@@ -167,7 +167,7 @@ At Phase 3 (2026-02-21), no multi-agent runtime existed. Claude Code and GitHub 
 
 ### Consequences
 
-- 60 persona files across 13 categories (subsequently consolidated into 21 review prompts in Issue #220; deprecated files removed in Issue #257; only 6 agentic personas remain)
+- 60 persona files across 13 categories (subsequently consolidated into 21 review prompts in Issue #220; deprecated files removed in Issue #257; only 7 agentic personas remain)
 - One model, sequential thinking, multiple hats
 - The file separation suggests a distributed system that doesn't exist at runtime
 - **This is the decision that ADR-010 and ADR-011 revisit**
@@ -402,7 +402,7 @@ ADR-010 decided on self-contained review prompts. This ADR documents the impleme
 
 - 58 persona files across 13 categories — deprecation notice added, pointing to `governance/prompts/reviews/` and `shared-perspectives.md`
 - 21 panel files — deprecation notice added, pointing to corresponding review prompt
-- Excluded: All agentic personas in `governance/personas/agentic/` (these define decision authority, not evaluation checklists). At the time of #220, 4 agentic personas existed; the current count is 6 (Project Manager added in #464, IaC Engineer added separately).
+- Excluded: All agentic personas in `governance/personas/agentic/` (these define decision authority, not evaluation checklists). At the time of #220, 4 agentic personas existed; the current count is 7 (Project Manager added in #464, IaC Engineer added separately, Document Writer added later).
 
 #### Updated (15+ files)
 

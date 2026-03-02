@@ -13,7 +13,7 @@ The Dark Factory Governance Platform exists to:
 1. **Automate software delivery governance** — Replace manual code review gates with structured, auditable AI-driven review panels that produce deterministic merge decisions.
 2. **Enforce policy without human bottlenecks** — Five deterministic policy profiles (default, financial/PII, infrastructure-critical, fast-track, reduced-touchpoint) evaluate every change programmatically. AI models never interpret policy rules.
 3. **Maintain compliance at scale** — Embed SOC2, PCI-DSS, HIPAA, and GDPR compliance into the review pipeline so regulated changes are caught at intake, not after merge.
-4. **Enable autonomous agentic operation** — A 6-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester) orchestrates the full lifecycle (session management, issue triage, planning, implementation, evaluation, review, merge) with human oversight only where policy requires it.
+4. **Enable autonomous agentic operation** — A 7-agent prompt-chained pipeline (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer) orchestrates the full lifecycle (session management, issue triage, planning, implementation, evaluation, review, merge) with human oversight only where policy requires it.
 5. **Distribute governance as infrastructure** — Ship as a git submodule so any repository gets personas, panels, policies, and CI workflows by adding a single dependency.
 6. **Reach full Dark Factory** — Progress through defined maturity phases toward fully autonomous software delivery with runtime feedback loops and self-evolving governance.
 
@@ -355,7 +355,7 @@ Quick navigation to all documentation in this repository.
 | Document | Topic |
 |----------|-------|
 | [Governance Model](docs/architecture/governance-model.md) | Five governance layers and decision authority |
-| [Agent Architecture](docs/architecture/agent-architecture.md) | 6-agent prompt-chained architecture and protocol |
+| [Agent Architecture](docs/architecture/agent-architecture.md) | 7-agent prompt-chained architecture and protocol |
 | [CI Workflows](docs/architecture/ci-workflows.md) | All 18 GitHub Actions workflows |
 | [Artifact Classification](docs/governance/artifact-classification.md) | Cognitive, Enforcement, and Audit artifact types |
 | [Context Management](docs/architecture/context-management.md) | JIT loading tiers and checkpoint-based reset protection |

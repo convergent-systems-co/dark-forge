@@ -11,7 +11,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 ### Added
 
 - **MIT License** — Repository is now MIT-licensed
-- **Project Manager persona** (#464) — Opt-in portfolio-level orchestrator (`governance.use_project_manager: true`) implementing multiplexed Code Managers for higher throughput. 6-agent architecture: Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester
+- **Project Manager persona** (#464) — Opt-in portfolio-level orchestrator (`governance.use_project_manager: true`) implementing multiplexed Code Managers for higher throughput. 7-agent architecture: Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer
 - **Developer prompt library** (#469) — 12 production-ready global prompts in `prompts/global/` covering code review, debugging, PR creation, refactoring, test writing, and more
 - **Prompt catalog system** — Auto-generated `catalog/prompt-catalog.json` with SHA-256 hashes and git timestamps; `bin/generate-prompt-catalog.py` generator; `prompt-catalog.yml` CI workflow for regeneration on push; `prompt-catalog.schema.json` validation schema
 - **Skills system** — `.skill.md` format in `mcp-server/skills/` with Zod validation and MCP tool registration; initial `governance-review` skill

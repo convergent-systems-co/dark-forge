@@ -43,7 +43,7 @@ git add .ai && git commit -m "Update .ai submodule"
 
 ## Starting the Agentic Loop
 
-Run `/startup` in your AI tool (Claude Code or GitHub Copilot). This activates the 6-agent pipeline:
+Run `/startup` in your AI tool (Claude Code or GitHub Copilot). This activates the 7-agent pipeline:
 
 ```
 /startup
@@ -214,7 +214,7 @@ Three slash commands are available when the `.claude/commands/` symlink is corre
 
 | Command | Purpose | Usage |
 |---------|---------|-------|
-| `/startup` | Begin the agentic improvement loop | Chains 6 agents through a 5-phase pipeline: pre-flight, planning, implementation, review, merge. Processes open issues autonomously until the session cap is hit. |
+| `/startup` | Begin the agentic improvement loop | Chains 7 agents through a 5-phase pipeline: pre-flight, planning, implementation, review, merge. Processes open issues autonomously until the session cap is hit. |
 | `/checkpoint` | Save session state and stop | Writes a checkpoint to `.governance/checkpoints/` with current progress, remaining work, and git state. Use when context capacity is high or you need to pause. Follow with `/clear` to reset context. |
 | `/threat-model` | Run threat model analysis | Modes: `/threat-model` (current PR), `/threat-model system` (full platform), `/threat-model pr=N` (specific PR). Outputs markdown and structured JSON to `.governance/panels/`. |
 
@@ -237,7 +237,7 @@ Skills (`.skill.md` files) are self-contained capabilities registered as MCP too
 - [README.md](../../README.md) — Full architecture, governance layers, file structure, and [Documentation Index](../../README.md#documentation-index)
 - [GOALS.md](../../GOALS.md) — Phase status and completed work
 - [governance/prompts/reviews/](../../governance/prompts/reviews/) — 21 consolidated review prompts (preferred, replaces individual persona/panel files)
-- [governance/personas/agentic/](../../governance/personas/agentic/) — 6 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester)
+- [governance/personas/agentic/](../../governance/personas/agentic/) — 7 agentic personas (Project Manager, DevOps Engineer, Code Manager, Coder, IaC Engineer, Tester, Document Writer)
 - [docs/architecture/governance-model.md](../architecture/governance-model.md) — Governance layers, policy profiles, and how changes flow through the system
 - [docs/guides/project-yaml-configuration.md](../guides/project-yaml-configuration.md) — Complete project.yaml configuration reference
 - [docs/architecture/ci-workflows.md](../architecture/ci-workflows.md) — All 18 GitHub Actions workflows

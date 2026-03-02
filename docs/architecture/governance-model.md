@@ -95,7 +95,7 @@ It does NOT govern:
 
 The governance model operates on the following existing components:
 
-**Agentic Personas (6):**
+**Agentic Personas (7):**
 
 | Persona | File |
 |---------|------|
@@ -105,11 +105,12 @@ The governance model operates on the following existing components:
 | Coder | `governance/personas/agentic/coder.md` |
 | IaC Engineer | `governance/personas/agentic/iac-engineer.md` |
 | Tester | `governance/personas/agentic/tester.md` |
+| Document Writer | `governance/personas/agentic/document-writer.md` |
 
 > **History:** The framework previously contained 60 non-agentic persona files across 13
 > categories. Per Issue #220, these were consolidated into self-contained review prompts in
 > `governance/prompts/reviews/`. The deprecated persona files were removed in Issue #257.
-> The 6 agentic personas above are the only persona files that remain.
+> The 7 agentic personas above are the only persona files that remain.
 > See `docs/research/README.md` for the research supporting the consolidation decision.
 
 **Review Panels (21 consolidated review prompts in `governance/prompts/reviews/`):**
@@ -835,14 +836,17 @@ flowchart TD
 
 ## 11. Role Definitions
 
-The agentic pipeline uses a 6-agent prompt-chained architecture implementing Anthropic's orchestration patterns:
+The agentic pipeline uses a 7-agent prompt-chained architecture implementing Anthropic's orchestration patterns:
 
 | Agent | Pattern | Role |
 |-------|---------|------|
+| Project Manager | Orchestrator-Workers | Portfolio orchestration, multiplexed Code Managers (opt-in) |
 | DevOps Engineer | Routing | Session lifecycle, pre-flight, issue triage, routing |
 | Code Manager | Orchestrator-Workers | Intent validation, panel selection, review coordination, merge |
 | Coder | Worker | Implementation, test coverage, structured output |
+| IaC Engineer | Worker | Infrastructure changes (conditional) |
 | Tester | Evaluator-Optimizer | Independent evaluation, test verification, feedback |
+| Document Writer | Worker | Documentation staleness detection and updates |
 
 See [Agent Protocol](../../governance/prompts/agent-protocol.md) for inter-agent communication contract and [startup.md](../../governance/prompts/startup.md) for the 5-phase pipeline.
 

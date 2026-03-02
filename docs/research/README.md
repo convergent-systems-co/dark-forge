@@ -161,7 +161,7 @@ The consolidated review prompts implement this Voting pattern directly.
 | Ralph Loop compatibility | Requires file-chasing | Self-contained per iteration | **Consolidation** |
 | Schema compliance | Preserved | Preserved | **Equivalent** |
 
-> **Current state:** Consolidation was implemented in Issue #220. The 60 non-agentic persona files were removed in Issue #257. Only 6 agentic personas remain in `governance/personas/agentic/`, alongside 21 consolidated review prompts in `governance/prompts/reviews/`.
+> **Current state:** Consolidation was implemented in Issue #220. The 60 non-agentic persona files were removed in Issue #257. Only 7 agentic personas remain in `governance/personas/agentic/`, alongside 21 consolidated review prompts in `governance/prompts/reviews/`.
 
 ---
 
@@ -322,7 +322,7 @@ This is a **separate follow-up issue**, independent of the consolidation work.
 2. **`shared-perspectives.md`** — Canonical definitions for 19 perspectives appearing in 2+ panels (authoring-time DRY)
 3. **Per-persona emission structure preserved** — `findings[].persona` labels unchanged
 4. **Workflow references updated** — All 7 workflow files + startup.md point to new prompts
-5. **Deprecation notices** — 77 files (58 personas + 19 panels) marked deprecated; agentic personas excluded (4 at the time of #220; now 6 after Project Manager #464 and IaC Engineer additions)
+5. **Deprecation notices** — 77 files (58 personas + 19 panels) marked deprecated; agentic personas excluded (4 at the time of #220; now 7 after Project Manager #464, IaC Engineer, and Document Writer additions)
 
 ### Deferred
 
