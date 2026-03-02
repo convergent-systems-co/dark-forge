@@ -212,6 +212,21 @@ This panel is designed to work alongside GitHub's native Copilot review integrat
 - **The governance pipeline parses Copilot's output** regardless of whether branch protection requires it. If Copilot is not enabled for the repository, this panel emits `confidence_score: 0.0` with the `copilot_review_missing` flag and does not block.
 - **Copilot approval in branch protection does not satisfy governance approval.** The policy engine evaluates Copilot findings alongside all other panels to produce an aggregate verdict.
 
+## Execution Trace
+
+To provide evidence of actual code evaluation, include an `execution_trace` object in your structured emission:
+
+- **`files_read`** (required) — List every file you read during this review. Include the full relative path for each file (e.g., `src/auth/login.ts`, `infrastructure/main.bicep`). Do not omit files — this is the audit record of what was actually evaluated.
+- **`diff_lines_analyzed`** — Count the total number of diff lines (added + removed + modified) you analyzed.
+- **`analysis_duration_ms`** — Approximate wall-clock time spent on the analysis in milliseconds.
+- **`grounding_references`** — For each finding, link it to a specific code location. Each entry must include `file` (file path) and `finding_id` (matching the finding's persona or a unique identifier). Include `line` (line number) when the finding maps to a specific line.
+
+The `execution_trace` field is optional in the schema but **strongly recommended** for auditability. When present, it provides verifiable evidence that the panel agent actually read and analyzed the code rather than producing a generic assessment.
+
+## Grounding Requirement
+
+**Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
+
 ## Limitations
 
 - **No veto authority.** Copilot cannot independently block a merge. Critical findings escalate to human review.

@@ -81,7 +81,7 @@ See [`shared-perspectives.md`](../shared-perspectives.md) for the canonical defi
 - Tradeoff summary (conflicts between perspectives and resolution reasoning)
 - Final recommendation (Approve / Request Changes / Reject)
 
-### Execution Trace
+## Execution Trace
 
 To provide evidence of actual code evaluation, include an `execution_trace` object in your structured emission:
 
@@ -92,7 +92,7 @@ To provide evidence of actual code evaluation, include an `execution_trace` obje
 
 The `execution_trace` field is optional in the schema but **strongly recommended** for auditability. When present, it provides verifiable evidence that the panel agent actually read and analyzed the code rather than producing a generic assessment.
 
-### Grounding Requirement
+## Grounding Requirement
 
 **Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
 

@@ -174,6 +174,21 @@ confidence = base - (critical * 0.25) - (high * 0.15) - (medium * 0.05) - (low *
 
 The final confidence score is clamped to the range [0.0, 1.0]. If the calculated score falls below 0.0, it is reported as 0.0.
 
+## Execution Trace
+
+To provide evidence of actual code evaluation, include an `execution_trace` object in your structured emission:
+
+- **`files_read`** (required) — List every file you read during this review. Include the full relative path for each file (e.g., `src/auth/login.ts`, `infrastructure/main.bicep`). Do not omit files — this is the audit record of what was actually evaluated.
+- **`diff_lines_analyzed`** — Count the total number of diff lines (added + removed + modified) you analyzed.
+- **`analysis_duration_ms`** — Approximate wall-clock time spent on the analysis in milliseconds.
+- **`grounding_references`** — For each finding, link it to a specific code location. Each entry must include `file` (file path) and `finding_id` (matching the finding's persona or a unique identifier). Include `line` (line number) when the finding maps to a specific line.
+
+The `execution_trace` field is optional in the schema but **strongly recommended** for auditability. When present, it provides verifiable evidence that the panel agent actually read and analyzed the code rather than producing a generic assessment.
+
+## Grounding Requirement
+
+**Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
+
 ## Constraints
 
 - Ensure rollback capability exists and has been tested for every deployment mechanism in use
