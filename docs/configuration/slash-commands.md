@@ -12,6 +12,7 @@ The Dark Factory Governance Framework provides slash commands for initiating and
 | `/review` | Review panel router — list, run, and inspect governance review panels | Claude Code, GitHub Copilot |
 | `/plan` | Governance plan management — list, create, and show plans | Claude Code, GitHub Copilot |
 | `/governance` | Pipeline dashboard — status, policy, and emissions | Claude Code, GitHub Copilot |
+| `/issue` | Issue triage and planning without the full startup loop | Claude Code, GitHub Copilot |
 
 ## `/startup` - Agentic Loop
 
@@ -440,6 +441,79 @@ The command resolves the active policy profile:
 
 Policy files are read from `governance/policy/{profile}.yaml` (submodule) or `.ai/governance/policy/{profile}.yaml` (consuming repo).
 
+## `/issue` - Issue Triage & Planning
+
+The `/issue` command provides quick issue triage and planning without entering the full startup loop. It can show the next actionable issue or create a branch and plan for a specific issue.
+
+### Modes
+
+| Argument | Mode | Description |
+|----------|------|-------------|
+| `next` | Show next issue | Shows highest-priority actionable issue with triage details |
+| `plan <N>` | Plan issue | Creates branch and plan for issue #N without implementing |
+| *(no args)* | Show next issue | Defaults to `next` mode |
+
+### Usage
+
+=== "Claude Code"
+
+    ```bash
+    /issue                   # Show next actionable issue
+    /issue next              # Show next actionable issue
+    /issue plan 42           # Create branch and plan for issue #42
+    ```
+
+=== "GitHub Copilot"
+
+    ```bash
+    /issue                   # Show next actionable issue
+    /issue next              # Show next actionable issue
+    /issue plan 42           # Create branch and plan for issue #42
+    ```
+
+### Next Issue Logic
+
+The `next` mode finds the highest-priority actionable issue:
+
+1. Fetches up to 50 open issues via `gh issue list`
+2. Filters out non-actionable issues:
+   - Issues with existing branches matching `*/feat/*`, `*/fix/*`, `*/chore/*`, or `feature/*` patterns
+   - Issues labeled `blocked`, `wontfix`, or `duplicate`
+   - Issues assigned to humans (empty assignees or bot-assigned only)
+3. Prioritizes by: P0 > P1 > P2 > P3 > P4 (label-based), then creation date (oldest first). Bugs take precedence over enhancements at the same priority level.
+4. Displays the top issue with number, title, labels, body summary, and recommended branch name
+
+### Plan Mode Workflow
+
+The `plan <N>` mode:
+
+1. Verifies the issue is open via `gh issue view`
+2. Reads issue details (number, title, body, labels)
+3. Creates branch: `itsfwcp/{type}/{N}/{slug}` (type derived from labels: `bug` → `fix`, `enhancement` → `feat`, default `feat`)
+4. Reads plan template from `governance/prompts/templates/plan-template.md`
+5. Creates plan following the template structure
+6. Saves to `.governance/plans/{N}-{slug}.md`
+7. Stops after plan creation — does NOT implement
+
+### Branch Naming
+
+Branches follow the convention: `NETWORK_ID/{type}/{number}/{slug}`
+
+| Label | Branch Type |
+|-------|-------------|
+| `bug` | `fix` |
+| `enhancement` | `feat` |
+| *(default)* | `feat` |
+
+The slug is a lowercase kebab-case summary of the issue title, max 40 characters.
+
+### Output
+
+| Mode | What Is Displayed |
+|------|-------------------|
+| `next` | Issue number, title, labels, body summary, recommended branch name, suggested next step (`/issue plan <N>`) |
+| `plan <N>` | Branch name, plan file location, confirmation that implementation is deferred |
+
 ## Context Capacity Protocol
 
 Both commands integrate with the framework's context management system. The protocol enforces a hard stop at 80% context capacity to prevent instruction loss during compaction.
@@ -485,6 +559,7 @@ The slash commands are implemented in these files:
   - `.claude/commands/review.md` - Review panel router command definition
   - `.claude/commands/plan.md` - Plan management command definition
   - `.claude/commands/governance.md` - Governance dashboard command definition
+  - `.claude/commands/issue.md` - Issue triage and planning command definition
 
 - **GitHub Copilot:**
   - `.github/copilot-chat/startup.md` - Startup command definition
@@ -493,6 +568,7 @@ The slash commands are implemented in these files:
   - `.github/copilot-chat/review.md` - Review panel router command definition
   - `.github/copilot-chat/plan.md` - Plan management command definition
   - `.github/copilot-chat/governance.md` - Governance dashboard command definition
+  - `.github/copilot-chat/issue.md` - Issue triage and planning command definition
 
 - **Core workflow:**
   - `governance/prompts/startup.md` - Agentic loop specification
