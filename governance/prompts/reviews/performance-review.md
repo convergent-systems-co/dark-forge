@@ -144,15 +144,15 @@ See [`shared-perspectives.md`](../shared-perspectives.md) for the canonical defi
 
 **Formula:** `final = base - sum(severity_penalties)`
 
-| Severity | Penalty per finding |
-|---|---|
-| Base | 0.85 |
-| Critical | -0.25 |
-| High | -0.15 |
-| Medium | -0.05 |
-| Low | -0.01 |
-
-The confidence score is floored at 0.0 and capped at 1.0. Each finding's severity contributes its penalty once. If multiple perspectives flag the same bottleneck, count it once at the highest severity.
+| Parameter | Value |
+|-----------|-------|
+| Base confidence | 0.85 |
+| Per critical finding | -0.25 |
+| Per high finding | -0.15 |
+| Per medium finding | -0.05 |
+| Per low finding | -0.01 |
+| Floor | 0.0 |
+| Cap | 1.0 |
 
 ## Execution Trace
 
@@ -169,6 +169,7 @@ The `execution_trace` field is optional in the schema but **strongly recommended
 
 **Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
 
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## Constraints
 
 - Measure before optimizing -- do not recommend changes without evidence of a performance problem or credible projections

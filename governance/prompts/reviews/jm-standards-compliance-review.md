@@ -135,19 +135,21 @@ Each participant produces:
 
 ## Scoring
 
-Confidence score calculation:
+## Confidence Score Calculation
+
+**Formula:** `final = base - sum(severity_penalties)`
 
 | Parameter | Value |
 |-----------|-------|
-| Base confidence | 0.90 |
+| Base confidence | 0.85 |
 | Per critical finding | -0.25 |
 | Per high finding | -0.15 |
 | Per medium finding | -0.05 |
 | Per low finding | -0.01 |
 | Floor | 0.0 |
+| Cap | 1.0 |
 
-**Formula:** `confidence = max(0.0, 0.90 - (critical * 0.25) - (high * 0.15) - (medium * 0.05) - (low * 0.01))`
-
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## Pass/Fail Criteria
 
 | Criterion | Threshold |

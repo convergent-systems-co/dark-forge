@@ -184,26 +184,19 @@ Copilot comment severities map to policy engine severities as follows:
 
 ## Confidence Score Calculation
 
-**Base confidence:** 0.80
+**Formula:** `final = base - sum(severity_penalties)`
 
-Apply deductions based on classified Copilot findings:
+| Parameter | Value |
+|-----------|-------|
+| Base confidence | 0.85 |
+| Per critical finding | -0.25 |
+| Per high finding | -0.15 |
+| Per medium finding | -0.05 |
+| Per low finding | -0.01 |
+| Floor | 0.0 |
+| Cap | 1.0 |
 
-| Severity | Deduction (per finding) |
-|----------|------------------------|
-| Critical | -0.25 |
-| High | -0.15 |
-| Medium | -0.05 |
-| Low | -0.01 |
-
-**Formula:**
-```
-final_confidence = base - sum(deductions for each finding by severity)
-```
-
-Clamp to 0.0 minimum. A clean Copilot review (no comments) results in the base confidence of 0.80.
-
-Note: Unlike persona-based panels that deduct per participant's highest finding, the Copilot panel deducts per individual finding since there is only one participant.
-
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## GitHub Branch Protection Compatibility
 
 This panel is designed to work alongside GitHub's native Copilot review integration in branch protection rules:

@@ -160,22 +160,17 @@ Full definition in [`shared-perspectives.md`](../shared-perspectives.md).
 
 ## Confidence Score Calculation
 
-**Formula:** Start with base confidence and deduct per finding severity.
+**Formula:** `final = base - sum(severity_penalties)`
 
-```
-confidence = base - (critical * 0.25) - (high * 0.15) - (medium * 0.05) - (low * 0.01)
-```
-
-| Finding Severity | Deduction per Finding |
-|---|---|
-| Critical | -0.25 |
-| High | -0.15 |
-| Medium | -0.05 |
-| Low | -0.01 |
-
-**Base confidence:** 0.85
-
-The final confidence score is clamped to the range [0.0, 1.0]. If the calculated score falls below 0.0, it is reported as 0.0.
+| Parameter | Value |
+|-----------|-------|
+| Base confidence | 0.85 |
+| Per critical finding | -0.25 |
+| Per high finding | -0.15 |
+| Per medium finding | -0.05 |
+| Per low finding | -0.01 |
+| Floor | 0.0 |
+| Cap | 1.0 |
 
 ## Execution Trace
 
@@ -192,6 +187,7 @@ The `execution_trace` field is optional in the schema but **strongly recommended
 
 **Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
 
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## Constraints
 
 - Consider both the **build phase** (implementation effort, team capability) and the **operate phase** (monitoring, incident response, scaling)

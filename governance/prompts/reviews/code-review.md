@@ -173,16 +173,17 @@ The `execution_trace` field is optional in the schema but **strongly recommended
 
 **Formula:** `final = base - sum(severity_penalties)`
 
-| Severity | Penalty per finding |
-|---|---|
-| Base | 0.85 |
-| Critical | -0.25 |
-| High | -0.15 |
-| Medium | -0.05 |
-| Low | -0.01 |
+| Parameter | Value |
+|-----------|-------|
+| Base confidence | 0.85 |
+| Per critical finding | -0.25 |
+| Per high finding | -0.15 |
+| Per medium finding | -0.05 |
+| Per low finding | -0.01 |
+| Floor | 0.0 |
+| Cap | 1.0 |
 
-The confidence score is floored at 0.0 and capped at 1.0. Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity.
-
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## Canary Calibration Input
 
 When a code snippet is provided with a `# CANARY INPUT` comment marker, evaluate it with the same rigor as production code. Report findings using the standard finding format. Canary inputs test calibration — they contain known issues that a thorough review must detect. Do not treat canary inputs differently from production code.

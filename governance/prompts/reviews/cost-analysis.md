@@ -337,23 +337,17 @@ See PR #<number> for full cost analysis.
 
 ## Confidence Score Calculation
 
-**Base confidence:** 0.85
+**Formula:** `final = base - sum(severity_penalties)`
 
-Apply deductions based on the highest-severity finding from each participant:
-
-| Severity | Deduction |
-|----------|-----------|
-| Critical | -0.25 |
-| High | -0.15 |
-| Medium | -0.05 |
-| Low | -0.01 |
-
-**Formula:**
-```
-final_confidence = base - sum(deductions for each participant's highest-severity finding)
-```
-
-If any single deduction would push the score below 0.0, clamp to 0.0. Confidence scores above 1.0 are not possible given the base and deduction model.
+| Parameter | Value |
+|-----------|-------|
+| Base confidence | 0.85 |
+| Per critical finding | -0.25 |
+| Per high finding | -0.15 |
+| Per medium finding | -0.05 |
+| Per low finding | -0.01 |
+| Floor | 0.0 |
+| Cap | 1.0 |
 
 ## Execution Trace
 
@@ -370,6 +364,7 @@ The `execution_trace` field is optional in the schema but **strongly recommended
 
 **Grounding Requirement**: Every finding with severity 'medium' or above MUST include an `evidence` block containing the file path, line range, and a code snippet (max 200 chars) from the actual code. Findings without evidence may be treated as hallucinated and discarded. If the review produces zero findings, you must still demonstrate analysis by populating `execution_trace.grounding_references` with at least one file+line reference showing what was examined.
 
+Each finding's severity contributes its penalty once. If multiple perspectives flag the same issue, count it once at the highest severity. The score is floored at 0.0 and capped at 1.0.
 ## Constraints
 
 - Cost estimates must be expressed in ranges, not false precision (e.g., "$200-350/month" not "$273.41/month")
