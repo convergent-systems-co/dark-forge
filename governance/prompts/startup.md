@@ -100,9 +100,15 @@ This removes worktrees older than 2 days and their orphaned branches.
 3. Complete: `step --complete 2 --result '{"plans": {"#42": "plan content", ...}}'`
 
 ### Phase 3: Parallel Dispatch
+
+**Coder scaling:** Read `coder_min`, `coder_max`, and `require_worktree` from the step result `instructions` (sourced from `project.yaml` governance section). Dispatch at least `coder_min` agents, up to `coder_max` agents. If `coder_max` is -1, dispatch is unlimited (bounded only by context pressure).
+
+**Worktree isolation (mandatory by default):** When `require_worktree` is `true` (the default), all Coder agents MUST run in isolated git worktrees. The primary repo must remain on `main`. Use the Agent tool with `isolation: worktree` for each task. If worktree isolation is unavailable, fall back to sequential execution but never modify the primary repo working tree.
+
 1. Parse `tasks` from the step result — each has persona, branch, plan details
-2. For each task, spawn an agent using the Task tool with worktree isolation
-3. Complete: `step --complete 3 --result '{"dispatched_task_ids": ["cc-abc123", ...]}'`
+2. Validate task count is within `[coder_min, coder_max]` range
+3. For each task, spawn an agent using the Task tool with worktree isolation
+4. Complete: `step --complete 3 --result '{"dispatched_task_ids": ["cc-abc123", ...]}'`
 
 ### Phase 4: Collect & Review
 1. Wait for dispatched agents to complete

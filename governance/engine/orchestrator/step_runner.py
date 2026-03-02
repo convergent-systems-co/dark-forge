@@ -60,7 +60,12 @@ _PHASE_DESCRIPTIONS: dict[int, dict] = {
     },
     3: {
         "name": "Parallel Dispatch",
-        "description": "Dispatch Coder agents for each planned issue.",
+        "description": (
+            "Dispatch Coder agents for each planned issue. "
+            "All Coder agents MUST use worktree isolation when require_worktree is true. "
+            "The primary repo must remain on main. "
+            "Dispatch at least coder_min agents, up to coder_max agents."
+        ),
         "outputs_expected": ["dispatched_task_ids"],
     },
     4: {
@@ -433,17 +438,25 @@ class StepRunner:
         else:
             result_action = "execute_phase"
 
+        instructions = {
+            "name": desc.get("name", f"Phase {phase}"),
+            "description": desc.get("description", ""),
+            "outputs_expected": desc.get("outputs_expected", []),
+            "gate_action": action.value,
+        }
+
+        # Include coder scaling and worktree config in Phase 3 instructions
+        if phase == 3:
+            instructions["coder_min"] = self.config.coder_min
+            instructions["coder_max"] = self.config.coder_max
+            instructions["require_worktree"] = self.config.require_worktree
+
         result = StepResult(
             session_id=self._session_id,
             action=result_action,
             phase=phase,
             tier=tier.value,
-            instructions={
-                "name": desc.get("name", f"Phase {phase}"),
-                "description": desc.get("description", ""),
-                "outputs_expected": desc.get("outputs_expected", []),
-                "gate_action": action.value,
-            },
+            instructions=instructions,
             gate_block=gate_block,
             signals={
                 "tool_calls": self._machine.signals.tool_calls,

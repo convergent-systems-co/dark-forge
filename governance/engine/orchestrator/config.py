@@ -23,6 +23,11 @@ class OrchestratorConfig:
     use_project_manager: bool = False
     policy_profile: str = "default"
 
+    # Coder scaling (from project.yaml governance section)
+    coder_min: int = 1
+    coder_max: int = 5
+    require_worktree: bool = True
+
     # Paths
     checkpoint_dir: str = ".governance/checkpoints"
     audit_log_dir: str = ".governance/state/agent-log"
@@ -44,6 +49,13 @@ class OrchestratorConfig:
     # Git conventions (from project.yaml)
     branch_pattern: str = "{network_id}/{type}/{number}/{name}"
     commit_style: str = "conventional"
+
+    def __post_init__(self) -> None:
+        """Validate coder_min <= coder_max (unless coder_max is -1 for unlimited)."""
+        if self.coder_max != -1 and self.coder_min > self.coder_max:
+            raise ValueError(
+                f"coder_min ({self.coder_min}) must be <= coder_max ({self.coder_max})"
+            )
 
 
 def load_config(project_yaml_path: str | Path) -> OrchestratorConfig:
@@ -67,6 +79,9 @@ def load_config(project_yaml_path: str | Path) -> OrchestratorConfig:
         parallel_code_managers=gov.get("parallel_code_managers", 3),
         use_project_manager=gov.get("use_project_manager", False),
         policy_profile=gov.get("policy_profile", "default"),
+        coder_min=gov.get("coder_min", 1),
+        coder_max=gov.get("coder_max", 5),
+        require_worktree=gov.get("require_worktree", True),
         branch_pattern=git_conv.get("branch_pattern", "{network_id}/{type}/{number}/{name}"),
         commit_style=git_conv.get("commit_style", "conventional"),
     )

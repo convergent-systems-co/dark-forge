@@ -601,6 +601,29 @@ governance:
 
 This controls the maximum number of `Task` tool dispatches in Phase 3.
 
+### Coder Scaling: Min/Max Range
+
+In addition to `parallel_coders`, fine-grained scaling is available via `coder_min` and `coder_max`:
+
+```yaml
+governance:
+  coder_min: 1    # Minimum agents per batch (default: 1)
+  coder_max: 5    # Maximum agents per batch (default: 5, -1 for unlimited)
+  require_worktree: true  # Mandatory worktree isolation (default: true)
+```
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `coder_min` | integer (1-20) | 1 | Minimum number of Coder agents dispatched per batch. The orchestrator will not proceed with fewer tasks than this threshold. |
+| `coder_max` | integer (-1 to 20) | 5 | Maximum number of Coder agents dispatched per batch. Set to -1 for unlimited (bounded only by context pressure). |
+| `require_worktree` | boolean | true | When true, all Coder agents must run in isolated git worktrees. The primary repository always stays on the main branch. |
+
+**Validation:** The orchestrator validates that `coder_min <= coder_max` at config load time (unless `coder_max` is -1 for unlimited). Invalid configurations raise a `ValueError` before any work begins.
+
+**Worktree isolation enforcement:** When `require_worktree` is true (the default), Phase 3 dispatch includes `require_worktree: true` in the step result instructions. The LLM must use `isolation: worktree` for every Task tool call. If worktree isolation is unavailable at runtime, the Code Manager falls back to sequential execution but never modifies the primary repo working tree directly.
+
+**Relationship to `parallel_coders`:** `coder_max` supplements `parallel_coders`. The `parallel_coders` field controls the capacity signal thresholds in the state machine, while `coder_min`/`coder_max` control the actual dispatch batch size in Phase 3. Both are read from the governance section of `project.yaml`.
+
 ---
 
 ## Related Documents

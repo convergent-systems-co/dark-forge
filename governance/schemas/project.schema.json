@@ -97,6 +97,25 @@
           "type": "boolean",
           "default": true,
           "description": "If true (default), the PR is blocked when the Python policy engine is unavailable - no silent fallback to lightweight inline validation. If false, the lightweight fallback is used with a warning when the engine is missing. Cross-org repos that cannot bundle the submodule in CI should set this to false."
+        },
+        "coder_min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "default": 1,
+          "description": "Minimum number of Coder agents to dispatch per batch."
+        },
+        "coder_max": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 20,
+          "default": 5,
+          "description": "Maximum number of Coder agents to dispatch per batch. Use -1 for unlimited."
+        },
+        "require_worktree": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true (default), all Coder agents must run in isolated git worktrees. The primary repo always stays on main."
         }
       },
       "additionalProperties": false
