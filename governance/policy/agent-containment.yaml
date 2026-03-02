@@ -13,10 +13,12 @@ description: >
   least-privilege and limit blast radius of any single agent.
 
 # Enforcement mode controls whether violations block or warn.
-# - "advisory": log violations but do not block execution (initial rollout)
-# - "enforced": block operations that violate containment rules
+# - "enforced": block operations that violate containment rules (default)
+# - "advisory": log violations but do not block execution (opt-in for dev/debug)
+# To use advisory mode during development, set mode: advisory below or
+# override via project.yaml: governance.containment_mode: advisory
 enforcement:
-  mode: advisory
+  mode: enforced
 
 # Shared denied paths — governance infrastructure files that no worker agent
 # may modify. These are enforcement artifacts managed by humans or the
