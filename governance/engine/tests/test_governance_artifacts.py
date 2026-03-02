@@ -16,6 +16,7 @@ REVIEWS_DIR = GOVERNANCE_DIR / "prompts" / "reviews"
 SCHEMAS_DIR = GOVERNANCE_DIR / "schemas"
 PROMPTS_DIR = GOVERNANCE_DIR / "prompts"
 POLICY_DIR = GOVERNANCE_DIR / "policy"
+EMISSIONS_DIR = GOVERNANCE_DIR / "emissions"
 
 
 # ===========================================================================
@@ -75,6 +76,27 @@ class TestReviewPrompts:
                     missing.append(f"{profile_name}: {panel}")
 
         assert not missing, f"Missing review prompts for required panels: {missing}"
+
+    def test_review_prompts_have_baseline_emissions(self):
+        """Every review prompt must have a corresponding baseline emission JSON file."""
+        review_names = {p.stem for p in REVIEWS_DIR.glob("*.md")}
+        emission_names = {p.stem for p in EMISSIONS_DIR.glob("*.json")}
+        missing = sorted(review_names - emission_names)
+        assert not missing, (
+            f"Review prompt(s) missing baseline emission in governance/emissions/: {missing}"
+        )
+
+    def test_baseline_emission_panel_name_matches_filename(self):
+        """Each baseline emission's panel_name field must match its filename."""
+        mismatches = []
+        for fpath in sorted(EMISSIONS_DIR.glob("*.json")):
+            with open(fpath) as f:
+                data = json.load(f)
+            expected = fpath.stem
+            actual = data.get("panel_name", "")
+            if actual != expected:
+                mismatches.append(f"{fpath.name}: panel_name={actual!r}, expected={expected!r}")
+        assert not mismatches, "Baseline emission panel_name mismatches:\n" + "\n".join(mismatches)
 
 
 # ===========================================================================
