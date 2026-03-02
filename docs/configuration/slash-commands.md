@@ -10,6 +10,7 @@ The Dark Factory Governance Framework provides slash commands for initiating and
 | `/checkpoint` | Saves session state and executes context capacity shutdown protocol | Claude Code, GitHub Copilot |
 | `/threat-model` | Runs threat model analysis (system-level or PR-level) | Claude Code, GitHub Copilot |
 | `/review` | Review panel router — list, run, and inspect governance review panels | Claude Code, GitHub Copilot |
+| `/plan` | Governance plan management — list, create, and show plans | Claude Code, GitHub Copilot |
 
 ## `/startup` - Agentic Loop
 
@@ -305,6 +306,64 @@ The 21 review panels in `governance/prompts/reviews/` cover:
 | Review prompts | `governance/prompts/reviews/*.md` | `.ai/governance/prompts/reviews/*.md` |
 | Shared perspectives | `governance/prompts/shared-perspectives.md` | `.ai/governance/prompts/shared-perspectives.md` |
 
+## `/plan` - Plan Management
+
+The `/plan` command manages governance plans without entering the full startup loop. Plans are mandatory before implementation per governance rules.
+
+### Modes
+
+| Argument | Mode | Description |
+|----------|------|-------------|
+| `list` | List plans | Lists all plans in `.governance/plans/` with issue number, title, status, and date |
+| `create <N>` | Create plan | Creates a plan from template for issue #N using `gh issue view` |
+| `show <N>` | Show plan | Reads and displays the existing plan for issue #N |
+| *(no args)* | Help | Shows help text with available subcommands |
+
+### Usage
+
+=== "Claude Code"
+
+    ```bash
+    /plan list               # List all governance plans
+    /plan create 42          # Create plan for issue #42
+    /plan show 42            # Display plan for issue #42
+    /plan                    # Show help text
+    ```
+
+=== "GitHub Copilot"
+
+    ```bash
+    /plan list               # List all governance plans
+    /plan create 42          # Create plan for issue #42
+    /plan show 42            # Display plan for issue #42
+    /plan                    # Show help text
+    ```
+
+### Plan Creation Workflow
+
+The `create <N>` mode:
+
+1. Verifies the issue is open via `gh issue view`
+2. Checks for existing plans (warns if one exists)
+3. Reads the plan template from `governance/prompts/templates/plan-template.md`
+4. Generates a plan populated from the issue body
+5. Saves to `.governance/plans/{N}-{slug}.md` with `draft` status
+
+### Output
+
+| Mode | What Is Displayed |
+|------|-------------------|
+| `list` | Table: Issue, Title, Status, Date |
+| `create <N>` | Plan file location, confirmation, reminder that status is `draft` |
+| `show <N>` | Full plan content |
+
+### Prompt Files
+
+| Resource | Location (submodule) | Location (consuming repo) |
+|----------|---------------------|--------------------------|
+| Plan template | `governance/prompts/templates/plan-template.md` | `.ai/governance/prompts/templates/plan-template.md` |
+| Plans directory | `.governance/plans/` | `.governance/plans/` |
+
 ## Context Capacity Protocol
 
 All commands integrate with the framework's context management system. The protocol enforces a hard stop at 80% context capacity to prevent instruction loss during compaction.
@@ -348,12 +407,14 @@ The slash commands are implemented in these files:
   - `.claude/commands/checkpoint.md` - Checkpoint command definition
   - `.claude/commands/threat-model.md` - Threat model command definition
   - `.claude/commands/review.md` - Review panel router command definition
+  - `.claude/commands/plan.md` - Plan management command definition
 
 - **GitHub Copilot:**
   - `.github/copilot-chat/startup.md` - Startup command definition
   - `.github/copilot-chat/checkpoint.md` - Checkpoint command definition
   - `.github/copilot-chat/threat-model.md` - Threat model command definition
   - `.github/copilot-chat/review.md` - Review panel router command definition
+  - `.github/copilot-chat/plan.md` - Plan management command definition
 
 - **Core workflow:**
   - `governance/prompts/startup.md` - Agentic loop specification
