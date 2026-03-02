@@ -26,7 +26,7 @@ The review system uses 21 self-contained review prompts in `governance/prompts/r
 
 Perspectives appearing in two or more panels are canonically defined in `governance/prompts/shared-perspectives.md` for authoring-time DRY. At runtime, each panel is fully self-contained -- no cross-file loading required.
 
-Six panels are mandatory on every PR regardless of files changed: code-review, security-review, threat-modeling, cost-analysis, documentation-review, and data-governance-review. All four policy profiles enforce this requirement.
+Six panels are mandatory on every PR regardless of files changed: code-review, security-review, threat-modeling, cost-analysis, documentation-review, and data-governance-review. Four of the five policy profiles enforce this full set; the fast-track profile requires only code-review and security-review.
 
 ## Consequences
 

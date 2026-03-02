@@ -392,7 +392,7 @@ Key directories for contributors:
       agent-protocol.md        Inter-agent communication protocol
       templates/               Reusable document templates (plan-template.md)
       workflows/               Multi-phase orchestration prompts
-    policy/                    4 policy profiles + supporting rules (YAML)
+    policy/                    5 policy profiles + supporting rules (YAML)
     schemas/                   JSON Schema definitions (20+ schemas)
     engine/                    Python policy engine + test suite
       tests/                   pytest test suite (7 test modules)

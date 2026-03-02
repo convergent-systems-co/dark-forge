@@ -233,7 +233,7 @@ Both modes use the same 5-track, 9-participant structure:
 
 ### Governance Pipeline Integration
 
-The PR-level variant (`threat-modeling`) is included in `required_panels` for all 4 policy profiles and runs automatically on every PR. The system-level variant (`threat-model-system`) is on-demand only and is not included in any policy profile's required panels.
+The PR-level variant (`threat-modeling`) is included in `required_panels` for 4 of the 5 policy profiles and runs automatically on every PR (excluded from the fast-track profile). The system-level variant (`threat-model-system`) is on-demand only and is not included in any policy profile's required panels.
 
 ### Prompt Files
 
