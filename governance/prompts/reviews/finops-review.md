@@ -215,41 +215,46 @@ See PR #<number> for full FinOps review.
 {
   "panel_name": "finops-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.82,
-  "risk_level": "medium",
-  "compliance_score": 0.88,
-  "destruction_recommended": false,
-  "requires_human_approval": false,
+  "confidence_score": 0.65,
+  "risk_level": "high",
+  "compliance_score": 0.7,
   "policy_flags": [
     {
-      "flag": "idle_resources_detected",
+      "flag": "missing_budget_alert",
+      "severity": "high",
+      "description": "New resource group 'rg-analytics-prod' has no budget alert configured, risking undetected cost overruns.",
+      "remediation": "Add a consumption budget with alert at 80% of the $2000/month allocation for the resource group.",
+      "auto_remediable": true
+    },
+    {
+      "flag": "oversized_sku",
       "severity": "medium",
-      "description": "3 resources with <5% utilization over 30 days identified as candidates for right-sizing or shutdown.",
-      "remediation": "Review identified resources and apply right-sizing recommendations or initiate decommission workflow.",
-      "auto_remediable": false
+      "description": "Cosmos DB provisioned throughput set to 10,000 RU/s but projected peak usage is only 2,000 RU/s.",
+      "remediation": "Reduce to 4,000 RU/s with autoscale enabled (max 10,000 RU/s) to save ~$400/month.",
+      "auto_remediable": true
     }
   ],
   "requires_human_review": false,
-  "timestamp": "2026-02-27T12:00:00Z",
+  "timestamp": "2026-02-25T12:00:00Z",
   "findings": [
     {
-      "persona": "finops/finops-strategist",
-      "verdict": "approve",
+      "persona": "finops/finops-analyst",
+      "verdict": "request_changes",
       "confidence": 0.85,
-      "rationale": "Changes align with cloud financial management strategy. Unit economics remain favorable. No budget variance concerns.",
+      "rationale": "No budget alerts on the new resource group. Projected spend of $1800/month has no monitoring or alerting configured.",
       "findings_count": {
         "critical": 0,
-        "high": 0,
+        "high": 1,
         "medium": 0,
-        "low": 1,
+        "low": 0,
         "info": 0
       }
     },
     {
-      "persona": "finops/resource-optimizer",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "Resource sizing is appropriate for projected workload. 3 idle resources identified as right-sizing candidates. No over-provisioning detected in new resources.",
+      "persona": "finops/finops-engineer",
+      "verdict": "request_changes",
+      "confidence": 0.8,
+      "rationale": "Cosmos DB is over-provisioned by 5x. Autoscale not enabled despite variable workload pattern.",
       "findings_count": {
         "critical": 0,
         "high": 0,
@@ -259,36 +264,23 @@ See PR #<number> for full FinOps review.
       }
     },
     {
-      "persona": "finops/shutdown-decommission-analyst",
+      "persona": "operations/cost-optimizer",
       "verdict": "approve",
       "confidence": 0.78,
-      "rationale": "No resources require immediate shutdown. Idle resources flagged for review but do not meet destruction threshold. All active resources have valid business justification.",
-      "findings_count": {
-        "critical": 0,
-        "high": 0,
-        "medium": 1,
-        "low": 0,
-        "info": 0
-      }
-    },
-    {
-      "persona": "finops/savings-plan-advisor",
-      "verdict": "approve",
-      "confidence": 0.83,
-      "rationale": "Current savings plan coverage at 72%. New resources are eligible for existing compute savings plan. No additional commitment required.",
+      "rationale": "Reserved instance coverage is adequate. Right-sizing Cosmos DB would save ~$400/month.",
       "findings_count": {
         "critical": 0,
         "high": 0,
         "medium": 0,
         "low": 1,
-        "info": 0
+        "info": 1
       }
     },
     {
-      "persona": "finops/cost-allocation-auditor",
+      "persona": "operations/infrastructure-engineer",
       "verdict": "approve",
-      "confidence": 0.82,
-      "rationale": "All new resources are properly tagged. Cost allocation mapping is accurate. Showback model alignment confirmed.",
+      "confidence": 0.85,
+      "rationale": "Deployment topology is sound. Scaling parameters need adjustment but are functionally correct.",
       "findings_count": {
         "critical": 0,
         "high": 0,
@@ -298,12 +290,12 @@ See PR #<number> for full FinOps review.
       }
     }
   ],
-  "aggregate_verdict": "approve",
+  "aggregate_verdict": "request_changes",
   "execution_context": {
     "repository": "example/repo",
-    "branch": "feat/new-service",
+    "branch": "feat/analytics-pipeline",
     "commit_sha": "abc123def456abc123def456abc123def456abc1",
-    "pr_number": 42,
+    "pr_number": 72,
     "policy_profile": "default",
     "triggered_by": "ci"
   }

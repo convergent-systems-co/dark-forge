@@ -257,50 +257,65 @@ Wrap the JSON in these markers:
 {
   "panel_name": "security-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.85,
-  "risk_level": "low",
-  "compliance_score": 0.92,
-  "policy_flags": [],
+  "confidence_score": 0.65,
+  "risk_level": "high",
+  "compliance_score": 0.70,
+  "policy_flags": [
+    {
+      "flag": "sql_injection_vector",
+      "severity": "high",
+      "description": "User input from request.query is interpolated directly into SQL query string in UserController.search() at line 45 without parameterization.",
+      "remediation": "Replace string interpolation with parameterized query: `db.query('SELECT * FROM users WHERE name = $1', [request.query.name])`.",
+      "auto_remediable": true
+    },
+    {
+      "flag": "missing_rate_limiting",
+      "severity": "medium",
+      "description": "New /api/export endpoint has no rate limiting, enabling potential data exfiltration at scale.",
+      "remediation": "Add rate limiting middleware with max 10 requests per minute per user.",
+      "auto_remediable": true
+    }
+  ],
   "requires_human_review": false,
   "timestamp": "2026-01-15T10:30:00Z",
   "findings": [
     {
       "persona": "compliance/security-auditor",
-      "verdict": "approve",
+      "verdict": "request_changes",
       "confidence": 0.90,
-      "rationale": "No injection vectors, input validation present at all boundaries, no secret exposure detected.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "rationale": "SQL injection vector in UserController.search() via unsanitized query parameter. Input validation absent at this entry point despite being present elsewhere.",
+      "findings_count": {"critical": 0, "high": 1, "medium": 0, "low": 0, "info": 0}
     },
     {
       "persona": "operations/infrastructure-engineer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Least privilege maintained, TLS configuration correct, rollback procedure verified.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "verdict": "request_changes",
+      "confidence": 0.80,
+      "rationale": "New export endpoint lacks rate limiting. TLS configuration is correct. Rollback procedure verified.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 1, "low": 0, "info": 0}
     },
     {
       "persona": "compliance/compliance-officer",
       "verdict": "approve",
       "confidence": 0.85,
-      "rationale": "No PII handling changes, audit trail intact, data classification unchanged.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "rationale": "Audit trail intact, data classification unchanged. The SQL injection finding is a security concern, not a compliance gap per se.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 1}
     },
     {
       "persona": "quality/adversarial-reviewer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "No hidden assumptions identified, error handling covers failure modes, no race conditions detected.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "verdict": "request_changes",
+      "confidence": 0.75,
+      "rationale": "Attacker can extract full user table via crafted query parameter. Error messages in catch block leak internal schema details.",
+      "findings_count": {"critical": 0, "high": 1, "medium": 1, "low": 0, "info": 0}
     },
     {
       "persona": "domain/backend-engineer",
       "verdict": "approve",
       "confidence": 0.85,
-      "rationale": "API patterns follow established conventions, parameterized queries in use, rate limiting present.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "rationale": "API patterns follow conventions except for the injection issue. Parameterized queries are used in all other controllers.",
+      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 1, "info": 0}
     }
   ],
-  "aggregate_verdict": "approve"
+  "aggregate_verdict": "request_changes"
 }
 ```
 <!-- STRUCTURED_EMISSION_END -->

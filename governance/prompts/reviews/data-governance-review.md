@@ -290,43 +290,90 @@ Wrap the JSON in these markers:
 {
   "panel_name": "data-governance-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.80,
-  "risk_level": "low",
-  "compliance_score": 0.90,
-  "policy_flags": [],
-  "requires_human_review": false,
-  "timestamp": "2026-01-15T10:30:00Z",
-  "findings": [
+  "confidence_score": 0.6,
+  "risk_level": "high",
+  "compliance_score": 0.65,
+  "policy_flags": [
     {
-      "persona": "domain/data-architect",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Schema changes align with canonical model, naming conventions followed, migration is additive.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "flag": "pii_logged_without_redaction",
+      "severity": "high",
+      "description": "User email addresses are logged at INFO level in AuthService.login() without redaction, violating data minimization requirements.",
+      "remediation": "Replace `logger.info(f'Login: {user.email}')` with `logger.info(f'Login: {redact_email(user.email)}')` using the standard redaction utility.",
+      "auto_remediable": true
     },
     {
-      "persona": "compliance/compliance-officer",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "Data classification unchanged, retention policies maintained, audit trail intact.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "domain/domain-expert",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "Entity names match domain vocabulary, relationships reflect business rules accurately.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "compliance/security-auditor",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "PII fields properly classified, access controls appropriate, no sensitive data exposure.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "flag": "missing_data_classification",
+      "severity": "medium",
+      "description": "New UserPreferences table stores location data but has no data classification label in the schema definition.",
+      "remediation": "Add `classification: confidential` to the UserPreferences table schema and document in the data catalog.",
+      "auto_remediable": false
     }
   ],
-  "aggregate_verdict": "approve"
+  "requires_human_review": false,
+  "timestamp": "2026-02-25T12:00:00Z",
+  "findings": [
+    {
+      "persona": "compliance/data-protection-officer",
+      "verdict": "request_changes",
+      "confidence": 0.9,
+      "rationale": "PII (email addresses) logged without redaction. Violates GDPR Article 5(1)(c) data minimization principle.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "compliance/data-classifier",
+      "verdict": "request_changes",
+      "confidence": 0.85,
+      "rationale": "UserPreferences table contains location data without classification label. Cannot enforce retention or access policies without classification.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "engineering/data-engineer",
+      "verdict": "approve",
+      "confidence": 0.8,
+      "rationale": "Data pipeline architecture is sound. Schema design is normalized. Query patterns are efficient.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "info": 1
+      }
+    },
+    {
+      "persona": "specialist/api-consumer",
+      "verdict": "approve",
+      "confidence": 0.82,
+      "rationale": "API contracts are clear. Data serialization is consistent. No breaking changes to existing consumers.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 1,
+        "info": 0
+      }
+    }
+  ],
+  "aggregate_verdict": "request_changes",
+  "execution_context": {
+    "repository": "example/repo",
+    "branch": "feat/user-preferences",
+    "commit_sha": "abc123def456abc123def456abc123def456abc1",
+    "pr_number": 67,
+    "policy_profile": "default",
+    "triggered_by": "ci"
+  }
 }
 ```
 <!-- STRUCTURED_EMISSION_END -->

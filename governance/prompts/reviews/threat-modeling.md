@@ -654,76 +654,77 @@ Wrap the JSON in these markers:
 ```json
 {
   "panel_name": "threat-modeling",
-  "panel_version": "2.0.0",
-  "confidence_score": 0.85,
-  "risk_level": "low",
-  "compliance_score": 0.90,
-  "policy_flags": [],
+  "panel_version": "1.0.0",
+  "confidence_score": 0.65,
+  "risk_level": "high",
+  "compliance_score": 0.7,
+  "policy_flags": [
+    {
+      "flag": "unauthenticated_admin_endpoint",
+      "severity": "high",
+      "description": "New /admin/config endpoint accepts PUT requests without authentication middleware, allowing unauthorized configuration changes.",
+      "remediation": "Add authentication middleware to the admin router: `router.use('/admin', authMiddleware.requireRole('admin'))`.",
+      "auto_remediable": true
+    },
+    {
+      "flag": "insecure_deserialization",
+      "severity": "medium",
+      "description": "Config payload is deserialized from JSON without schema validation, enabling potential injection of unexpected fields.",
+      "remediation": "Add JSON schema validation before deserialization using the existing `validateSchema()` utility.",
+      "auto_remediable": true
+    }
+  ],
   "requires_human_review": false,
-  "timestamp": "2026-02-26T10:30:00Z",
+  "timestamp": "2026-02-25T12:00:00Z",
   "findings": [
     {
-      "persona": "architecture/systems-architect",
-      "verdict": "approve",
-      "confidence": 0.90,
-      "rationale": "PR affects 2 components. No new trust boundaries introduced. Data flow changes are additive with existing protections.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 1}
+      "persona": "security/threat-modeler",
+      "verdict": "request_changes",
+      "confidence": 0.9,
+      "rationale": "Admin endpoint lacks authentication. STRIDE analysis: Spoofing (high) and Elevation of Privilege (high) threats identified.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
     },
     {
-      "persona": "compliance/mitre-analyst",
-      "verdict": "approve",
+      "persona": "security/attack-surface-analyst",
+      "verdict": "request_changes",
       "confidence": 0.85,
-      "rationale": "2 trust boundary crossings assessed. STRIDE analysis complete for affected boundaries. No new high-risk threats introduced. Attack trees not warranted for this change scope.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 1, "info": 0}
-    },
-    {
-      "persona": "security/red-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "1 attack path assessed. Low feasibility, existing controls adequate. No new unmitigated paths.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 1}
-    },
-    {
-      "persona": "operations/infrastructure-engineer",
-      "verdict": "approve",
-      "confidence": 0.88,
-      "rationale": "Configuration changes reviewed. IAM scope unchanged. No new network exposure. Encryption settings maintained.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "security/blue-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.82,
-      "rationale": "Detection coverage adequate for PR changes. No new alerting gaps. Existing SIEM rules cover introduced attack surface.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "security/purple-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "ATT&CK techniques relevant to PR changes have existing coverage. No new validation exercises required.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "rationale": "Attack surface expanded by unauthenticated admin endpoint. Deserialization without validation adds injection vector.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0,
+        "info": 0
+      }
     },
     {
       "persona": "compliance/security-auditor",
       "verdict": "approve",
-      "confidence": 0.88,
-      "rationale": "No vulnerabilities introduced. OWASP checklist passed for changed code paths. Dependency changes assessed — no known CVEs.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "compliance/compliance-officer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "PR does not affect regulatory compliance posture. No changes to data handling, access controls, or audit mechanisms.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "confidence": 0.8,
+      "rationale": "Existing endpoints maintain proper authentication. Only the new admin endpoint is affected.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 1,
+        "info": 0
+      }
     }
   ],
-  "aggregate_verdict": "approve",
-  "data_classification": {
-    "level": "internal",
-    "contains_sensitive_evidence": false,
-    "redaction_applied": false
+  "aggregate_verdict": "request_changes",
+  "execution_context": {
+    "repository": "example/repo",
+    "branch": "feat/admin-config",
+    "commit_sha": "abc123def456abc123def456abc123def456abc1",
+    "pr_number": 83,
+    "policy_profile": "default",
+    "triggered_by": "ci"
   }
 }
 ```

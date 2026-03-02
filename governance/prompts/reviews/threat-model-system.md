@@ -776,75 +776,76 @@ Wrap the JSON in these markers:
 {
   "panel_name": "threat-model-system",
   "panel_version": "1.0.0",
-  "confidence_score": 0.80,
-  "risk_level": "medium",
-  "compliance_score": 0.85,
-  "policy_flags": [],
+  "confidence_score": 0.6,
+  "risk_level": "high",
+  "compliance_score": 0.68,
+  "policy_flags": [
+    {
+      "flag": "trust_boundary_violation",
+      "severity": "high",
+      "description": "Internal microservice communicates with external payment gateway over unencrypted HTTP, crossing a trust boundary without TLS.",
+      "remediation": "Configure the payment gateway client to use HTTPS with certificate pinning. Update the service URL in config from `http://` to `https://`.",
+      "auto_remediable": true
+    },
+    {
+      "flag": "insufficient_input_validation",
+      "severity": "medium",
+      "description": "Payment amount field accepts negative values, enabling potential credit fraud through refund manipulation.",
+      "remediation": "Add validation: `if amount <= 0: raise ValueError('Payment amount must be positive')`.",
+      "auto_remediable": true
+    }
+  ],
   "requires_human_review": false,
-  "timestamp": "2026-02-26T14:30:00Z",
+  "timestamp": "2026-02-25T12:00:00Z",
   "findings": [
     {
-      "persona": "architecture/systems-architect",
-      "verdict": "approve",
+      "persona": "security/system-threat-modeler",
+      "verdict": "request_changes",
+      "confidence": 0.9,
+      "rationale": "Trust boundary between internal service and external payment gateway is not protected by TLS. Data in transit is vulnerable to interception.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "security/data-flow-analyst",
+      "verdict": "request_changes",
       "confidence": 0.85,
-      "rationale": "Architecture documented with 5 trust zones, 8 trust boundaries, 3 external dependencies. Data flow diagrams complete.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 2}
-    },
-    {
-      "persona": "compliance/mitre-analyst",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "12 trust boundary crossings cataloged. STRIDE analysis complete for all boundaries. 3 threat actor profiles with relevant TTPs. Attack trees constructed for 2 primary objectives.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 2, "low": 3, "info": 0}
-    },
-    {
-      "persona": "security/red-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "5 attack paths validated. 2 paths rated high feasibility but existing controls reduce risk to medium. No unmitigated critical paths.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 2, "low": 1, "info": 0}
-    },
-    {
-      "persona": "operations/infrastructure-engineer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Infrastructure configuration assessed. IAM follows least privilege. Network segmentation adequate. 2 medium findings for encryption configuration.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 2, "low": 0, "info": 0}
-    },
-    {
-      "persona": "security/blue-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.75,
-      "rationale": "Detection coverage at 72% of assessed techniques. 3 alerting gaps identified for lateral movement techniques. Incident response runbooks need update.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 3, "low": 1, "info": 0}
-    },
-    {
-      "persona": "security/purple-team-engineer",
-      "verdict": "approve",
-      "confidence": 0.78,
-      "rationale": "ATT&CK heat map generated. 68% full coverage, 15% prevention only, 12% detection only, 5% no coverage. 4 validation exercises designed.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 1, "low": 2, "info": 0}
+      "rationale": "Negative payment amounts not validated. Data flow from user input to payment processor lacks boundary validation.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0,
+        "info": 0
+      }
     },
     {
       "persona": "compliance/security-auditor",
       "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "8 vulnerabilities classified with CVSS scoring. No critical or high severity. All medium findings have documented remediation paths.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 3, "low": 3, "info": 2}
-    },
-    {
-      "persona": "compliance/compliance-officer",
-      "verdict": "approve",
-      "confidence": 0.82,
-      "rationale": "SOC 2 Type II controls assessed — 2 partial gaps in CC6.3. GDPR Art. 32 controls adequate. NIST 800-53 control family assessment complete.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 2, "low": 0, "info": 1}
+      "confidence": 0.8,
+      "rationale": "Authentication and authorization flows are correctly implemented. Audit logging is comprehensive.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "info": 1
+      }
     }
   ],
-  "aggregate_verdict": "approve",
-  "data_classification": {
-    "level": "confidential",
-    "contains_sensitive_evidence": false,
-    "redaction_applied": false
+  "aggregate_verdict": "request_changes",
+  "execution_context": {
+    "repository": "example/repo",
+    "branch": "feat/payment-integration",
+    "commit_sha": "abc123def456abc123def456abc123def456abc1",
+    "pr_number": 91,
+    "policy_profile": "default",
+    "triggered_by": "ci"
   }
 }
 ```

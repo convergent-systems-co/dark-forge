@@ -193,36 +193,70 @@ Wrap the JSON in these markers:
 {
   "panel_name": "jm-standards-compliance-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.85,
-  "risk_level": "low",
-  "compliance_score": 0.90,
-  "policy_flags": [],
-  "requires_human_review": false,
-  "timestamp": "2026-02-27T00:00:00Z",
-  "findings": [
+  "confidence_score": 0.7,
+  "risk_level": "medium",
+  "compliance_score": 0.75,
+  "policy_flags": [
     {
-      "persona": "standards/compliance-reviewer",
-      "verdict": "approve",
-      "confidence": 0.90,
-      "rationale": "All technology choices align with JM Paved Roads standards. No unapproved deviations detected.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 1}
-    },
-    {
-      "persona": "infrastructure/engineer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Infrastructure patterns follow JM Paved Roads. Azure-native services used with Managed Identity.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "standards/deviation-auditor",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "No deviations detected. project.yaml paved_roads section is properly configured.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "flag": "non_compliant_resource_name",
+      "severity": "high",
+      "description": "Key Vault name 'my-keyvault-prod' does not follow the JM naming convention. Expected format: `kv-{app}-{env}-{region}-{id}`.",
+      "remediation": "Rename to follow the convention: `kv-myapp-prod-eus-001`. Use `bin/generate-name.py` to generate compliant names.",
+      "auto_remediable": true
     }
   ],
-  "aggregate_verdict": "approve"
+  "requires_human_review": false,
+  "timestamp": "2026-02-25T12:00:00Z",
+  "findings": [
+    {
+      "persona": "compliance/jm-standards-auditor",
+      "verdict": "request_changes",
+      "confidence": 0.9,
+      "rationale": "Key Vault naming does not comply with JM Azure resource naming standards. One resource out of compliance.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "compliance/naming-reviewer",
+      "verdict": "request_changes",
+      "confidence": 0.85,
+      "rationale": "Resource name 'my-keyvault-prod' lacks required segments (app, env, region, instance ID).",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "operations/infrastructure-engineer",
+      "verdict": "approve",
+      "confidence": 0.8,
+      "rationale": "Infrastructure configuration is functionally correct. Only the naming convention is non-compliant.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 1,
+        "info": 0
+      }
+    }
+  ],
+  "aggregate_verdict": "request_changes",
+  "execution_context": {
+    "repository": "example/repo",
+    "branch": "feat/keyvault-setup",
+    "commit_sha": "abc123def456abc123def456abc123def456abc1",
+    "pr_number": 55,
+    "policy_profile": "default",
+    "triggered_by": "ci"
+  }
 }
 ```
 <!-- STRUCTURED_EMISSION_END -->

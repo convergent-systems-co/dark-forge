@@ -211,26 +211,46 @@ See PR #<number> for full cost analysis.
 {
   "panel_name": "cost-analysis",
   "panel_version": "1.0.0",
-  "confidence_score": 0.82,
-  "risk_level": "medium",
-  "compliance_score": 0.90,
+  "confidence_score": 0.65,
+  "risk_level": "high",
+  "compliance_score": 0.72,
   "policy_flags": [
     {
-      "flag": "high_runtime_cost",
-      "severity": "medium",
-      "description": "Estimated monthly runtime cost exceeds $500/month for the new service tier.",
-      "remediation": "Evaluate reserved instance pricing or autoscaling policies to reduce steady-state cost.",
+      "flag": "unbudgeted_resource_tier",
+      "severity": "high",
+      "description": "Proposed Premium-tier App Service Plan ($800-1200/month) was not included in the quarterly budget forecast and exceeds the $500/month threshold for auto-approval.",
+      "remediation": "Downgrade to Standard tier ($150-300/month) or obtain finance team approval for Premium tier with documented justification.",
       "auto_remediable": false
+    },
+    {
+      "flag": "missing_resource_tags",
+      "severity": "medium",
+      "description": "Three new Azure resources lack cost-center and environment tags, preventing accurate showback allocation.",
+      "remediation": "Add 'cost-center' and 'environment' tags to all resources in the Bicep template.",
+      "auto_remediable": true
     }
   ],
-  "requires_human_review": false,
+  "requires_human_review": true,
   "timestamp": "2026-02-25T12:00:00Z",
   "findings": [
     {
       "persona": "finops/finops-analyst",
-      "verdict": "approve",
+      "verdict": "request_changes",
       "confidence": 0.85,
-      "rationale": "Unit economics remain favorable. Cost increase is proportional to projected user growth. Showback allocation is straightforward.",
+      "rationale": "Monthly runtime cost of $800-1200 exceeds quarterly budget allocation by 40%. Unit economics are unfavorable without at least 2x projected user growth.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "finops/finops-engineer",
+      "verdict": "request_changes",
+      "confidence": 0.8,
+      "rationale": "Three resources missing cost-center tags. Budget alerts not configured for the new resource group.",
       "findings_count": {
         "critical": 0,
         "high": 0,
@@ -240,27 +260,14 @@ See PR #<number> for full cost analysis.
       }
     },
     {
-      "persona": "finops/finops-engineer",
-      "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "All new resources are tagged. Budget alerts configured. Commitment coverage is adequate for projected usage.",
-      "findings_count": {
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 1,
-        "info": 1
-      }
-    },
-    {
       "persona": "operations/cost-optimizer",
-      "verdict": "approve",
+      "verdict": "request_changes",
       "confidence": 0.78,
-      "rationale": "Right-sizing is appropriate for initial launch. Recommend re-evaluation after 30 days of production data.",
+      "rationale": "Premium tier is over-provisioned for projected load. Standard tier with autoscaling handles 3x current peak.",
       "findings_count": {
         "critical": 0,
-        "high": 0,
-        "medium": 1,
+        "high": 1,
+        "medium": 0,
         "low": 0,
         "info": 0
       }
@@ -268,8 +275,8 @@ See PR #<number> for full cost analysis.
     {
       "persona": "finops/cloud-cost-analyst",
       "verdict": "approve",
-      "confidence": 0.83,
-      "rationale": "IaC resource costs estimated at $200-350/month across all environments. Reserved instance savings of ~30% available if commitment is viable.",
+      "confidence": 0.75,
+      "rationale": "IaC resource definitions are structurally sound. Reserved instance savings of ~30% available if commitment is viable.",
       "findings_count": {
         "critical": 0,
         "high": 0,
@@ -281,21 +288,21 @@ See PR #<number> for full cost analysis.
     {
       "persona": "finops/llm-cost-analyst",
       "verdict": "approve",
-      "confidence": 0.80,
-      "rationale": "Token usage projections are within budget. Caching strategy reduces redundant inference by ~40%. Agentic loop costs bounded by iteration limits.",
+      "confidence": 0.8,
+      "rationale": "Token usage projections are within budget. No agentic workflow cost concerns.",
       "findings_count": {
         "critical": 0,
         "high": 0,
         "medium": 0,
         "low": 0,
-        "info": 2
+        "info": 1
       }
     },
     {
       "persona": "operations/infrastructure-engineer",
       "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Deployment topology is cost-appropriate. No unnecessary redundancy. Scaling parameters align with load projections.",
+      "confidence": 0.82,
+      "rationale": "Deployment topology is sound, but the tier selection is more expensive than required for the workload profile.",
       "findings_count": {
         "critical": 0,
         "high": 0,
@@ -305,12 +312,12 @@ See PR #<number> for full cost analysis.
       }
     }
   ],
-  "aggregate_verdict": "approve",
+  "aggregate_verdict": "request_changes",
   "execution_context": {
     "repository": "example/repo",
-    "branch": "feat/new-service",
+    "branch": "feat/premium-service",
     "commit_sha": "abc123def456abc123def456abc123def456abc1",
-    "pr_number": 42,
+    "pr_number": 95,
     "policy_profile": "default",
     "triggered_by": "ci"
   }

@@ -202,36 +202,77 @@ Wrap the JSON in these markers:
 {
   "panel_name": "governance-compliance-review",
   "panel_version": "1.0.0",
-  "confidence_score": 0.90,
-  "risk_level": "low",
-  "compliance_score": 0.95,
-  "policy_flags": [],
-  "requires_human_review": false,
-  "timestamp": "2026-01-15T10:30:00Z",
-  "findings": [
+  "confidence_score": 0.65,
+  "risk_level": "high",
+  "compliance_score": 0.68,
+  "policy_flags": [
     {
-      "persona": "governance/governance-auditor",
-      "verdict": "approve",
-      "confidence": 0.95,
-      "rationale": "All required panels executed, structured emissions valid, manifest complete and consistent.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "flag": "missing_governance_plan",
+      "severity": "high",
+      "description": "Implementation proceeded without a plan in `.governance/plans/`. No plan file exists for issue #42.",
+      "remediation": "Create `.governance/plans/42-feature-description.md` with objective, rationale, scope, approach, testing strategy, and risk assessment.",
+      "auto_remediable": false
     },
     {
-      "persona": "agentic/code-manager",
-      "verdict": "approve",
-      "confidence": 0.90,
-      "rationale": "Plan exists in .governance/plans/, implementation matches plan, issue linked, branch naming compliant.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
-    },
-    {
-      "persona": "documentation/documentation-reviewer",
-      "verdict": "approve",
-      "confidence": 0.85,
-      "rationale": "Affected documentation updated in same commit, code examples verified, terminology consistent.",
-      "findings_count": {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+      "flag": "missing_panel_emission",
+      "severity": "medium",
+      "description": "Security-review panel emission is absent from `.governance/panels/`. The default policy profile requires it for all changes.",
+      "remediation": "Run the security-review panel and commit its emission to `.governance/panels/security-review.json`.",
+      "auto_remediable": false
     }
   ],
-  "aggregate_verdict": "approve"
+  "requires_human_review": false,
+  "timestamp": "2026-02-25T12:00:00Z",
+  "findings": [
+    {
+      "persona": "compliance/governance-auditor",
+      "verdict": "request_changes",
+      "confidence": 0.9,
+      "rationale": "No governance plan exists for this change. The plan-before-code requirement is mandatory per the governance pipeline.",
+      "findings_count": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "compliance/process-auditor",
+      "verdict": "request_changes",
+      "confidence": 0.85,
+      "rationale": "Security-review panel emission missing. Required panels must execute on every change per the active policy profile.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0,
+        "info": 0
+      }
+    },
+    {
+      "persona": "compliance/policy-reviewer",
+      "verdict": "approve",
+      "confidence": 0.8,
+      "rationale": "Commit messages follow conventional commit format. Branch naming convention is correct.",
+      "findings_count": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "info": 1
+      }
+    }
+  ],
+  "aggregate_verdict": "request_changes",
+  "execution_context": {
+    "repository": "example/repo",
+    "branch": "feat/new-feature",
+    "commit_sha": "abc123def456abc123def456abc123def456abc1",
+    "pr_number": 42,
+    "policy_profile": "default",
+    "triggered_by": "ci"
+  }
 }
 ```
 <!-- STRUCTURED_EMISSION_END -->
